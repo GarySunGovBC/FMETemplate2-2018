@@ -96,10 +96,12 @@ class TemplateConstants():
     
     # development mode json database params file
     DevelopmentDatabaseCredentialsFile = 'dbCreds.json'
-    DevelopmentDatabaseCredentialsFile_CredsSection = 'creds'
-    DevelopmentDatabaseCredentialsFile_CredsSection_dbUser = 'username'
-    DevelopmentDatabaseCredentialsFile_CredsSection_dbInst = 'instance'
-    DevelopmentDatabaseCredentialsFile_CredsSection_dbPswd = 'password'
+    DevelopmentDatabaseCredentialsFile_DestCreds = 'destinationCreds'
+    DevelopmentDatabaseCredentialsFile_SourceCreds = "sourceCredentials"
+    DevelopmentDatabaseCredentialsFile_dbUser = 'username'
+    DevelopmentDatabaseCredentialsFile_dbInst = 'instance'
+    DevelopmentDatabaseCredentialsFile_dbPswd = 'password'
+    
 
 class Start():
     
@@ -304,10 +306,10 @@ class CalcParamsDevelopment():
         with open(credsFileFullPath, 'r') as jsonFile:
             data = json.load(jsonFile)
         retVal = None
-        for dbParams in data[self.const.DevelopmentDatabaseCredentialsFile_CredsSection]:
-            dbUser = dbParams[self.const.DevelopmentDatabaseCredentialsFile_CredsSection_dbUser]
-            dbInst = dbParams[self.const.DevelopmentDatabaseCredentialsFile_CredsSection_dbInst]
-            dbPass = dbParams[self.const.DevelopmentDatabaseCredentialsFile_CredsSection_dbInst]
+        for dbParams in data[self.const.DevelopmentDatabaseCredentialsFile_DestCreds]:
+            dbUser = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbUser]
+            dbInst = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbInst]
+            dbPass = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbInst]
             if dbInst.lower().strip() == inst.lower().strip() and \
                dbUser.lower().strip() == schema.lower().strip():
                 retVal =  dbPass
@@ -318,6 +320,28 @@ class CalcParamsDevelopment():
             msg = msg.format(credsFileFullPath, schema, inst)
             warnings.warn(msg)
         return retVal
+    
+    def getSourcePassword(self):
+        pass
+    
+class PMPSourceAccountParser():
+    
+    def __init__(self, accntName):
+        self.accntName = accntName
+        self.accntList = self.accntName.split('@')
+        if len(self.accntList) == 1:
+            msg = 'unexpected account name format: {0}'.format(self.accntName)
+            raise ValueError, msg
+        
+    def getSchema(self):
+        return self.accntList[0].strip()
+    
+    def getInstance(self):
+        return self.accntList[1].strip()
+    
+    def getInstanceNoDomain(self):
+        accntList = self.accntList[1].strip().split('.')
+        return accntList[0].strip()
     
 class Util(object):
     @staticmethod
@@ -353,11 +377,15 @@ class CalcParamsDataBC():
         pswd = self.getDestinationPassword(destKey)
         return pswd
     
-    def getSourcePassword(self):
+    def getPmpDict(self):
         computerName = Util.getComputerName()
         pmpDict = {'token': self.paramObj.getPmpToken(computerName),
                    'baseurl': self.paramObj.getPmpBaseUrl(), 
                    'restdir': self.paramObj.getPmpRestDir()}
+        return pmpDict
+    
+    def getSourcePassword(self):
+        pmpDict = self.getPmpDict()
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
         accntName = self.fmeMacroVals[self.const.FMWParams_SrcSchema]
         accntName = accntName
@@ -369,18 +397,98 @@ class CalcParamsDataBC():
         
         for pmpResource in srcResources:
             print 'pmpResource', pmpResource
+            # start by trying to just retrieve the account using 
+            # schema@instance as the "User Account" parameter
             try:
-                pswd = pmp.getAccountPassword(accntName, pmpResource)
+                accntATInstance = accntName.strip() + '@' + instance.strip()
+                print 'trying to retrieve ', accntATInstance
+                pswd = pmp.getAccountPassword(accntATInstance, pmpResource)
+                
             except ValueError:
                 # TODO: Add a proper FME log message here
                 msg = 'There is no account {0} in pmp for the resource {1} using the token {2} from the machine {3}'
                 msg = msg.format(accntName, pmpResource, pmp.token, platform.node())
+                # Going to do a search for accounts that might match the user
+                self.getSourcePasswordHeuristic(pmpResource)
                 print msg
             if pswd:
                 break
             # add some more warnings
         return pswd
-         
+    
+    def getSourcePasswordHeuristic(self, pmpResource):
+        '''
+        Gets a list of accounts for the pmp resource.  Iterates through 
+        the list looking for an account that is similar to the schema 
+        instance combination defined in the FMW.  PMP stores the account 
+        names for pmp in the format schema@instance.  This method will parse 
+        that into schema and instance then look for schemas that match then 
+        for instance it will look for matchs independent of any domain.  
+        Thus envprod1.nrs.bcgov will match envprod1.env.gov.bc.ca.  
+        
+        If more than one schema / instance is discovered, The method will 
+        check to see if they are duplicates by testing to see if both 
+        the accounts have the same password.  if they do not the method will
+        thow an exception.
+          
+        :param  pmpResource: Name of the pmp resource to search for the 
+                             password in.
+        :type pmpResource: string
+        
+        :returns: The source password from pmp that matches the the current
+                  fmws schema / instance combination
+        :rtype: str
+        '''
+        pswd = None
+        pmpDict = self.getPmpDict()
+        pmp = PMP.PMPRestConnect.PMP(pmpDict)
+        # resource id for the pmp resource.
+        resId = pmp.getResourceId(pmpResource)
+        # list of accounts attached to the resource
+        accounts = pmp.getAccountsForResourceID(resId)
+        instList = []
+        # source instance, and the source instance less the domain portion
+        srcInst = self.fmeMacroVals[self.const.FMWParams_SrcInstance]
+        srcInstList = srcInst.split('.')
+        srcInstNoDomain = srcInstList[0]
+        for accntDict in accounts:
+            accntName = PMPSourceAccountParser(accntDict['ACCOUNT NAME'])
+            schema = accntName.getSchema()
+            if schema.lower() == self.fmeMacroVals[self.const.FMWParams_SrcSchema].lower():
+                # found the srcSchema
+                # now check see if the instance matches
+                #print 'schemas {0} : {1}'.format(schema, self.fmeMacroVals[self.const.FMWParams_SrcSchema])
+                inst = accntName.getInstanceNoDomain()
+                #print 'instance', inst, srcInstNoDomain
+                if inst.lower() == srcInstNoDomain.lower():
+                    instList.append([accntDict['ACCOUNT NAME'], accntDict['ACCOUNT ID']])
+            #print 'accntName', schema
+        if instList:
+            if len(instList) > 1:
+                # get the passwords, if they are the same then return
+                # the password
+                print 'found more than one match', instList
+                pswdList = []
+                for accnts in instList:
+                    pswdList.append(pmp.getAccountPasswordWithAccountId(accnts[1], resId))
+                pswdList = list(set(pswdList))
+                if len(pswdList) > 1:
+                    msg = 'Looking for the password for the schema {0}, and instance {1}' +\
+                          'Found the following accounts that roughly match that combination {2}' + \
+                          'pmp has different passwords for each of these.  Unable to proceed as ' + \
+                          'not sure which password to use.  Fix this by changing the parameter {3} ' + \
+                          'to match a "User Account" in pmp exactly.'
+                    msg = msg.format(self.fmeMacroVals[self.const.FMWParams_SrcSchema], 
+                                     self.fmeMacroVals[self.const.FMWParams_SrcInstance], 
+                                     ','.join(instList), 
+                                     self.const.FMWParams_SrcInstance)
+                    raise ValueError, msg
+            else:
+                # get the password and return it
+                print 'getting the password'
+                pswd = pmp.getAccountPasswordWithAccountId(instList[0][1], resId)
+        return pswd
+            
 class CalcParamsBase( CalcParamsDataBC ):
     '''
     This method contains the base functionality which is the 
@@ -392,7 +500,7 @@ class CalcParamsBase( CalcParamsDataBC ):
           defined in t
     
     '''
-    def __init__(self, fmeMacroVals):
+    def __init__(self, fmeMacroVals, forceDevel=False):
         self.fmeMacroVals = fmeMacroVals
         self.const = TemplateConstants()
         self.templateVals = TemplateConfigFileReader(self.fmeMacroVals[self.const.FMWParams_DestKey])
@@ -404,7 +512,9 @@ class CalcParamsBase( CalcParamsDataBC ):
         # database credentials from a json file. (file path is 
         # returned by the TemplateConfigFileReader class
         # when necessary.   
-        if self.templateVals.isDataBCNode():
+        if forceDevel:
+            CalcParamsDevelopment.__init__(self, fmeMacroVals)
+        elif self.templateVals.isDataBCNode():
             # inheriting from CalcParamsDataBC which will 
             # override various methods specific to password
             # recovery
@@ -446,7 +556,7 @@ class CalcParamsBase( CalcParamsDataBC ):
     
     def getDestinationOraclePort(self):
         port = self.paramObj.getDestinationOraclePort()
-        return port
+        return port 
            
 class CalcParams(CalcParamsBase):
     '''

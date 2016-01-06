@@ -8,32 +8,9 @@ import site
 import sys
 import os
 import pprint
-
-
-# pathList = os.environ['PATH'].split(';')
-# fmedir = pathList.pop()
-# pathList.insert(0, fmedir)
-
-
-# os.environ['PATH'] =  ';'.join(pathList)
-# print os.environ['PATH']
-
-
-# site.addsitedir(r'E:\sw_nt\FME2014')
-# site.addsitedir(r'E:\sw_nt\FME2014\fmeobjects\python27')
-# sys.path.insert(0,r'E:\sw_nt\FME2014\fmeobjects\python27')
-# sys.path.append(r'E:\sw_nt\FME2014\python\DLLs')
-# sys.path.append(r'E:\sw_nt\FME2014')
-# sys.path.append(r'E:\sw_nt\FME2014\python\python27')
-# sys.path.append(r'E:\sw_nt\FME2014\plugins')
-# print sys.path
-
-
-
 import DataBCFMWTemplate
 
 class Test_CalcParams(unittest.TestCase):
-
 
     def setUp(self):
         
@@ -153,9 +130,78 @@ class Test_CalcParams(unittest.TestCase):
     def test_getSourcePassword(self):
         self.fmeMacroValues = self.fmeMacroValues_DBSrc
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
+        #spass = self.calcParams.getSourcePassword()
+        #print 'src pass', spass
+        # CWI_SPI_OPD@ENVPROD1.NRS.BCGOV
+        self.calcParams.fmeMacroVals['SRC_SCHEMA'] =  'CWI_SPI_OPD'
+        self.calcParams.fmeMacroVals['SRC_INSTANCE'] = 'ENVPROD1'
         spass = self.calcParams.getSourcePassword()
-
+        print 'src pass', spass
         
+    def test_getSourcePasswordHeuristic(self):
+        self.fmeMacroValues = self.fmeMacroValues_DBSrc
+        self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
+        self.calcParams.fmeMacroVals['SRC_SCHEMA'] =  'CWI_SPI_OPD'
+        self.calcParams.fmeMacroVals['SRC_INSTANCE'] = 'ENVPROD1'
+        spass = self.calcParams.getSourcePasswordHeuristic('ETL_OPERATIONAL_DBLINKS')
+        print 'pass is:', spass
+   
+class Test_CalcParamsDevel(unittest.TestCase):
+    def setUp(self):
+        self.fmeMacroValues_DBSrc = {     'DEST_DB_ENV_KEY': 'DEV',
+                                    'DEST_FEATURE_1': 'AEI_2000_AIR_PERMIT_POINTS_SP',
+                                    'DEST_INSTANCE': 'bcgw.bcgov',
+                                    'DEST_SCHEMA': 'whse_environmental_monitoring',
+                                    'FME_BASE': 'no',
+                                    'FME_BUILD_DATE': '20141210',
+                                    'FME_BUILD_DATE_ENCODED': '20141210',
+                                    'FME_BUILD_NUM': '14440',
+                                    'FME_BUILD_NUM_ENCODED': '14440',
+                                    'FME_CF_DIR': 'Z:\\Workspace\\kjnether\\proj\\FMETemplateRevision\\wrk\\newTemplate\\fmws/',
+                                    'FME_CF_DIR_ENCODED': 'Z:<backslash>Workspace<backslash>kjnether<backslash>proj<backslash>FMETemplateRevision<backslash>wrk<backslash>newTemplate<backslash>fmws<solidus>',
+                                    'FME_CF_DIR_MASTER': 'Z:\\Workspace\\kjnether\\proj\\FMETemplateRevision\\wrk\\newTemplate\\fmws/',
+                                    'FME_CF_DIR_MASTER_ENCODED': 'Z:<backslash>Workspace<backslash>kjnether<backslash>proj<backslash>FMETemplateRevision<backslash>wrk<backslash>newTemplate<backslash>fmws<solidus>',
+                                    'FME_DESKTOP': 'no',
+                                    'FME_HOME': 'E:\\sw_nt\\FME2014\\',
+                                    'FME_HOME_DOS': 'E:\\sw_nt\\FME2014',
+                                    'FME_HOME_DOS_ENCODED': 'E:<backslash>sw_nt<backslash>FME2014',
+                                    'FME_HOME_ENCODED': 'E:<backslash>sw_nt<backslash>FME2014<backslash>',
+                                    'FME_HOME_UNIX': 'E:/sw_nt/FME2014',
+                                    'FME_HOME_UNIX_ENCODED': 'E:<solidus>sw_nt<solidus>FME2014',
+                                    'FME_HOME_USERTYPED': 'E:\\sw_nt\\FME2014\\',
+                                    'FME_HOME_USERTYPED_ENCODED': 'E:<backslash>sw_nt<backslash>FME2014<backslash>',
+                                    'FME_MF_DIR': 'Z:\\Workspace\\kjnether\\proj\\FMETemplateRevision\\wrk\\newTemplate\\fmws/',
+                                    'FME_MF_DIR_DOS': 'Z:\\Workspace\\kjnether\\proj\\FMETemplateRevision\\wrk\\newTemplate\\fmws',
+                                    'FME_MF_DIR_DOS_ENCODED': 'Z:<backslash>Workspace<backslash>kjnether<backslash>proj<backslash>FMETemplateRevision<backslash>wrk<backslash>newTemplate<backslash>fmws',
+                                    'FME_MF_DIR_DOS_MASTER': 'Z:\\Workspace\\kjnether\\proj\\FMETemplateRevision\\wrk\\newTemplate\\fmws',
+                                    'FME_MF_DIR_DOS_MASTER_ENCODED': 'Z:<backslash>Workspace<backslash>kjnether<backslash>proj<backslash>FMETemplateRevision<backslash>wrk<backslash>newTemplate<backslash>fmws',
+                                    'FME_MF_DIR_ENCODED': 'Z:<backslash>Workspace<backslash>kjnether<backslash>proj<backslash>FMETemplateRevision<backslash>wrk<backslash>newTemplate<backslash>fmws<solidus>',
+                                    'FME_MF_DIR_MASTER': 'Z:\\Workspace\\kjnether\\proj\\FMETemplateRevision\\wrk\\newTemplate\\fmws/',
+                                    'FME_MF_DIR_MASTER_ENCODED': 'Z:<backslash>Workspace<backslash>kjnether<backslash>proj<backslash>FMETemplateRevision<backslash>wrk<backslash>newTemplate<backslash>fmws<solidus>',
+                                    'FME_MF_DIR_MASTER_USERTYPED': 'Z:\\Workspace\\kjnether\\proj\\FMETemplateRevision\\wrk\\newTemplate\\fmws/',
+                                    'FME_MF_DIR_MASTER_USERTYPED_ENCODED': 'Z:<backslash>Workspace<backslash>kjnether<backslash>proj<backslash>FMETemplateRevision<backslash>wrk<backslash>newTemplate<backslash>fmws<solidus>',
+                                    'FME_MF_DIR_UNIX': 'Z:/Workspace/kjnether/proj/FMETemplateRevision/wrk/newTemplate/fmws',
+                                    'FME_MF_DIR_UNIX_ENCODED': 'Z:<solidus>Workspace<solidus>kjnether<solidus>proj<solidus>FMETemplateRevision<solidus>wrk<solidus>newTemplate<solidus>fmws',
+                                    'FME_MF_DIR_UNIX_MASTER': 'Z:/Workspace/kjnether/proj/FMETemplateRevision/wrk/newTemplate/fmws',
+                                    'FME_MF_DIR_UNIX_MASTER_ENCODED': 'Z:<solidus>Workspace<solidus>kjnether<solidus>proj<solidus>FMETemplateRevision<solidus>wrk<solidus>newTemplate<solidus>fmws',
+                                    'FME_MF_DIR_USERTYPED': 'Z:\\Workspace\\kjnether\\proj\\FMETemplateRevision\\wrk\\newTemplate\\fmws/',
+                                    'FME_MF_DIR_USERTYPED_ENCODED': 'Z:<backslash>Workspace<backslash>kjnether<backslash>proj<backslash>FMETemplateRevision<backslash>wrk<backslash>newTemplate<backslash>fmws<solidus>',
+                                    'FME_MF_NAME': 'aei_2000_air_permit_points_sp_air_odb_bcgw.fmw',
+                                    'FME_MF_NAME_ENCODED': 'wb-xlate-1450398403413_5388',
+                                    'FME_MF_NAME_MASTER': 'aei_2000_air_permit_points_sp_air_odb_bcgw.fmw',
+                                    'FME_MF_NAME_MASTER_ENCODED': 'wb-xlate-1450398403413_5388',
+                                    'FME_PRODUCT_NAME': 'FME(R) 2014 SP5',
+                                    'FME_PRODUCT_NAME_ENCODED': 'FME<openparen>R<closeparen><space>2014<space>SP5',
+                                    'LogURL': 'http://arneb.dmz/fmejobsubmitter/DWRSPUB/fme_logger.fmw',
+                                    'NotificationEmail': 'dataetl@gov.bc.ca',
+                                    'SRC_FEATURE_1': 'I2K_PERMIT',
+                                    'SRC_INSTANCE': 'airprod1.nrs.bcgov',
+                                    'SRC_SCHEMA': 'inventory2000'}
+        self.fmeMacroValues = self.fmeMacroValues_DBSrc
+        self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues, True)
+        
+    def test_getSourcePassword(self):
+        self.calcParams.
     
 class Test_TemplateConfigFileReader(unittest.TestCase):
     
@@ -225,7 +271,7 @@ if __name__ == "__main__":
     #unittest.main()
     
     suite = unittest.TestSuite()
-    suite.addTest(Test_CalcParams('test_getSourcePassword'))
+    suite.addTest(Test_CalcParams('test_getSourcePasswordHeuristic'))
     #suite.addTest(Test_TemplateConfigFileReader('test_validateKey'))
     unittest.TextTestRunner().run(suite)
     
