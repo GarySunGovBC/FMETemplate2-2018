@@ -1,0 +1,28 @@
+{
+ "_comment": "for this file to work in development mode the instance needs to align with the instance name defined in the instances defined in the templateDefaults.config file",
+ "destinationCreds" : [
+     { "instance": "bcgwdlv.bcgov", 
+       "username": "WHSE_MONTREAL_CANADIANS",
+       "password": "thisIsNotThePassword"
+     }, 
+     {"instance": "bcgwdlv.bcgov", 
+       "username": "WHSE_MONTREAL_CANADIANS",
+       "password": "thisIsNotThePassword"
+     }, 
+     {"instance": "bcgwdlv.bcgov", 
+       "username": "WHSE_ENVIRONMENTAL_MONITORING",
+       "password": "thisIsNotThePassword"
+     }
+ ], 
+ "sourceCredentials" : [
+ 	{"instance": "envprod1.nrs.bcgov", 
+ 	 "username": "USERNAME",
+ 	 "password": "thisIsNotThePassword"
+ 	},
+ 	{"instance": "airprod1.nrs.bcgov", 
+ 	 "username": "inventory2000",
+ 	 "password": "thisIsNotThePassword"
+ 	}
+ 	
+ ]
+}
