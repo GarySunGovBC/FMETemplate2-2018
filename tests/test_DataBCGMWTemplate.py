@@ -124,6 +124,7 @@ class Test_CalcParams(unittest.TestCase):
         print 'server', server
         
     def test_getDestinationPassword(self):
+        
         passw = self.calcParams.getDestinationPassword()
         print 'passw', passw
         
@@ -143,12 +144,14 @@ class Test_CalcParams(unittest.TestCase):
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
         self.calcParams.fmeMacroVals['SRC_SCHEMA'] =  'CWI_SPI_OPD'
         self.calcParams.fmeMacroVals['SRC_INSTANCE'] = 'ENVPROD1'
-        spass = self.calcParams.getSourcePasswordHeuristic('ETL_OPERATIONAL_DBLINKS')
+        self.calcParams.plugin.currentPMPResource = 'ETL_OPERATIONAL_DBLINKS'
+        spass = self.calcParams.getSourcePasswordHeuristic()
         print 'pass is:', spass
    
 class Test_CalcParamsDevel(unittest.TestCase):
     def setUp(self):
-        self.fmeMacroValues_DBSrc = {     'DEST_DB_ENV_KEY': 'DEV',
+        self.fmeMacroValues_DBSrc = {     
+                                    'DEST_DB_ENV_KEY': 'DEV',
                                     'DEST_FEATURE_1': 'AEI_2000_AIR_PERMIT_POINTS_SP',
                                     'DEST_INSTANCE': 'bcgw.bcgov',
                                     'DEST_SCHEMA': 'whse_environmental_monitoring',
@@ -197,11 +200,73 @@ class Test_CalcParamsDevel(unittest.TestCase):
                                     'SRC_FEATURE_1': 'I2K_PERMIT',
                                     'SRC_INSTANCE': 'airprod1.nrs.bcgov',
                                     'SRC_SCHEMA': 'inventory2000'}
+        
+        
         self.fmeMacroValues = self.fmeMacroValues_DBSrc
+        # for these tests going to change the FME_MF_DIR value for testing
+        self.fmeMacroValues['FME_MF_DIR'] = os.path.join(os.path.dirname(__file__), 'testData')
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues, True)
         
     def test_getSourcePassword(self):
-        self.calcParams.
+        expectedPassword = 'thisIsNotThePassword'
+        msg = 'The method {0} returned {1}, but the test expects it to return {2}'
+        
+        const = DataBCFMWTemplate.TemplateConstants()
+        calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues, True)
+
+        # Verify that changing the path to a config file that does not
+        # exist raises an error
+        origVal = self.fmeMacroValues[const.FMWMacroKey_FMWDirectory]
+        self.fmeMacroValues[const.FMWMacroKey_FMWDirectory] = os.path.dirname(self.fmeMacroValues[const.FMWMacroKey_FMWDirectory]) + 'randomText'
+        self.assertRaises(ValueError, lambda: DataBCFMWTemplate.CalcParams(self.fmeMacroValues, True))
+                
+        develSrcPass = calcParams.getSourcePassword()
+        msg = msg.format('getSourcePassword', develSrcPass, expectedPassword)
+        self.assertEqual(expectedPassword, develSrcPass, msg)
+        
+        develSrcPass = calcParams.getSourcePasswordHeuristic()
+        msg = msg.format('getSourcePasswordHeuristic', develSrcPass, expectedPassword)
+        self.assertEqual(expectedPassword, develSrcPass, msg)
+        
+        # should return nothing 
+        calcParams.fmeMacroVals['SRC_INSTANCE'] = 'airprod1'
+        #develSrcPasswd = calcParams.getSourcePassword()
+        #msg = 'Trying to retrieve the password for {0}, but there is only ' + \
+        #      'There is no specific entry for that source database so should ' + \
+        #      'return \'None\' but intead its returning {1}'
+        #msg = msg.format(calcParams.fmeMacroVals['SRC_INSTANCE'], develSrcPasswd)
+        self.assertRaises(ValueError, lambda:  calcParams.getSourcePassword())
+        develSrcPass = calcParams.getSourcePasswordHeuristic()
+        msg = msg.format('getSourcePasswordHeuristic', develSrcPass, expectedPassword)
+        self.assertEqual(expectedPassword, develSrcPass, msg)
+                
+        calcParams.fmeMacroVals['SRC_INSTANCE'] = 'airprod99'
+        self.assertRaises(ValueError, lambda:  calcParams.getSourcePassword())
+        self.assertRaises(ValueError, lambda:  calcParams.getSourcePasswordHeuristic())
+
+    def test_getDestinationPassword(self):
+        expectedPassword = 'thisIsNotThePassword'
+        const = DataBCFMWTemplate.TemplateConstants()
+        calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues, True)
+        develDestPass = calcParams.getDestinationPassword()
+        print 'develDestPass', develDestPass
+        msg = 'Retrieving the password for the user {0} and the ' +\
+              'instance {1}.  Expecting {2}, but returned {3}'
+        msg = msg.format(calcParams.fmeMacroVals[const.FMWParams_DestSchema],
+                         calcParams.fmeMacroVals[const.FMWParams_DestInstance],
+                         expectedPassword,
+                         develDestPass)
+        self.assertEqual(develDestPass, expectedPassword, msg)
+        
+        origSchema = calcParams.fmeMacroVals[const.FMWParams_DestSchema]
+        calcParams.fmeMacroVals[const.FMWParams_DestSchema] = 'NOTSCHEMA'
+        self.assertRaises(ValueError, lambda: calcParams.getDestinationPassword())
+        
+        # test file doesn't have passwords for the test instance so 
+        # should raise an error.
+        self.fmeMacroValues['DEST_DB_ENV_KEY'] = 'TEST'
+        calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues, True)
+        self.assertRaises(ValueError, lambda: calcParams.getDestinationPassword())
     
 class Test_TemplateConfigFileReader(unittest.TestCase):
     
@@ -264,15 +329,21 @@ class Test_TemplateConfigFileReader(unittest.TestCase):
     def test_validateKey(self):
         self.confFileReader.validateKey('dlv')
         self.assertRaises(ValueError, lambda: self.confFileReader.validateKey('dlvv'))
+        self.confFileReader.validateKey('deliv')
         #self.confFileReader.validateKey('dlvv')
 
 if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
-    #unittest.main()
+    import sys
+    #sys.argv = ['', 'Test_TemplateConfigFileReader.test_getDestinationDatabaseKey', 
+    #                       'Test_TemplateConfigFileReader.test_validateKey']
+    sys.argv = ['', 'Test_CalcParams.test_getDestinationPassword']
+    unittest.main()
     
-    suite = unittest.TestSuite()
-    suite.addTest(Test_CalcParams('test_getSourcePasswordHeuristic'))
+    #suite = unittest.TestSuite()
+    #suite.addTest(Test_CalcParams('test_getSourcePasswordHeuristic'))
     #suite.addTest(Test_TemplateConfigFileReader('test_validateKey'))
-    unittest.TextTestRunner().run(suite)
+    #suite.addTest(Test_CalcParamsDevel('test_getDestinationPassword'))
+    
+    #unittest.TextTestRunner().run(suite)
     
     

@@ -42,6 +42,7 @@ import pprint
 import ConfigParser
 import json
 import warnings
+import copy
 import PMP.PMPRestConnect
 
 class TemplateConstants():
@@ -49,6 +50,8 @@ class TemplateConstants():
     AppConfigFileName = 'templateDefaults.config'
     AppConfigConfigDir = 'config'
     AppConfigOutputsDir = 'outputs'
+    AppConfigLogFileExtension = '.log'
+    AppConfigLogDir = 'log'
     
     # parameters relating to template sections
     ConfFileSection_global = 'global'
@@ -87,6 +90,11 @@ class TemplateConstants():
     FMWParams_SrcFeatPrefix = 'SRC_FEATURE_'
     # TODO: define the source database parameters
     
+    # The fmw macrovalue used to retrieve the directory 
+    # that the fmw is in.
+    FMWMacroKey_FMWDirectory = 'FME_MF_DIR'
+    FMWMacroKey_FMWName = 'FME_MF_NAME'
+    
     # pmp config parameters
     ConfFileSection_pmpConfig = 'pmp_server_params'
     ConfFileSection_pmpConfig_baseurl = 'baseurl'
@@ -102,11 +110,17 @@ class TemplateConstants():
     DevelopmentDatabaseCredentialsFile_dbInst = 'instance'
     DevelopmentDatabaseCredentialsFile_dbPswd = 'password'
     
-
+    # TODO: once the distribution svn is known plug it into this 
+    # variable.  Then if a developer hasn't created a JSON file 
+    # the error message will include this url allowing them 
+    # to see an example of the format that should be used.
+    svn_DevelopmentJSONFile_Url = r'\\data.bcgov\work\scripts\python\DataBCFmeTemplate2\config\dbCreds.json'
+    
 class Start():
     
     def __init__(self, fme):
         self.fme = fme
+        print 'running the startup'
         self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
         self.logger.logMessageString('starting the startup object, writing to the log')
         self.const = TemplateConstants()
@@ -137,9 +151,11 @@ class TemplateConfigFileReader():
     
     def __init__(self, key, confFile=None):
         self.confFile = confFile
+        print 'self.confFile', self.confFile
         self.const = TemplateConstants()
         self.readConfigFile()
         self.setDestinationDatabaseEnvKey(key)
+        print 'key', key, self.key
         
     def readConfigFile(self):
         if not self.confFile:
@@ -171,7 +187,7 @@ class TemplateConfigFileReader():
     def setDestinationDatabaseEnvKey(self, key):
         self.validateKey(key)
         self.key = self.getDestinationDatabaseKey(key)
-        
+            
     def getValidKeys(self):
         '''returns a list of accepted values for keys'''
         items = self.parser.items(self.const.ConfFileSection_destKeywords)
@@ -196,8 +212,11 @@ class TemplateConfigFileReader():
         return srcPmpResourcesList
         
     def getDestinationPmpResource(self, dbEnvKey=None):
+        print 'dbEnvKey', dbEnvKey
         if not dbEnvKey:
             dbEnvKey = self.key
+        else:
+            dbEnvKey = self.getDestinationDatabaseKey(dbEnvKey)
         pmpRes = self.parser.get(dbEnvKey, self.const.ConfFileSection_pmpResKey)
         return pmpRes
     
@@ -259,6 +278,15 @@ class TemplateConfigFileReader():
         return retVal
     
     def getDevelopmentModeCredentialsFileName(self):
+        '''        
+        Returns the file name string of the .json credential file
+        that the script uses to retrieve database credentials from 
+        when its in development mode. 
+        
+        :returns: name of the json file that is used to store database
+                  credentials when the script is being developed.
+        :rtype: string
+        '''
         credsFileName = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_devCredsFile)
         return credsFileName
    
@@ -285,45 +313,6 @@ class TemplateConfigFileReader():
         print 'retVal', retVal
         return retVal
     
-class CalcParamsDevelopment():
-    def __init__(self, fmeMacroVals):
-        print 'constructing a CalcParamsDataBC'
-        
-    def getDestinationPassword(self):
-        # need to get the full path to the json file
-        # deal with appropriate error messages if the 
-        # file cannot be found
-        # if it is found read it and extract the 
-        # database password
-        #self.templateVals.getDatabaseCredentialsFilePath()
-        confDirName = self.templateVals.getConfigDirName()
-        credsFileName = self.templateVals.getDevelopmentModeCredentialsFileName()
-        credsFileFullPath = os.path.join(self.fmeMacroVals['FME_MF_DIR'], confDirName, credsFileName)
-        credsFileFullPath = os.path.realpath(credsFileFullPath)
-        # schema = 
-        schema = self.fmeMacroVals[self.const.FMWParams_DestSchema]
-        inst = self.getDestinationInstance()
-        with open(credsFileFullPath, 'r') as jsonFile:
-            data = json.load(jsonFile)
-        retVal = None
-        for dbParams in data[self.const.DevelopmentDatabaseCredentialsFile_DestCreds]:
-            dbUser = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbUser]
-            dbInst = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbInst]
-            dbPass = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbInst]
-            if dbInst.lower().strip() == inst.lower().strip() and \
-               dbUser.lower().strip() == schema.lower().strip():
-                retVal =  dbPass
-                break
-        if not retVal:
-            msg = 'DevMod: Was unable to find a password in the credential file {0} for ' + \
-                  'the schema: {1} and the instance {2}'
-            msg = msg.format(credsFileFullPath, schema, inst)
-            warnings.warn(msg)
-        return retVal
-    
-    def getSourcePassword(self):
-        pass
-    
 class PMPSourceAccountParser():
     
     def __init__(self, accntName):
@@ -340,8 +329,10 @@ class PMPSourceAccountParser():
         return self.accntList[1].strip()
     
     def getInstanceNoDomain(self):
-        accntList = self.accntList[1].strip().split('.')
-        return accntList[0].strip()
+        noDomain = Util.removeDomain(self.accntList[1])
+        #accntList = self.accntList[1].strip().split('.')
+        #return accntList[0].strip()
+        return noDomain
     
 class Util(object):
     @staticmethod
@@ -352,9 +343,232 @@ class Util(object):
             computerName = computerNameParsedList[0]
         return computerName
     
-class CalcParamsDataBC():
+    @staticmethod
+    def removeDomain(inString):
+        inString = inString.strip()
+        stringList = inString.split('.')
+        return stringList[0].strip()
     
+class CalcParamsBase( object ):
+    '''
+    This method contains the base functionality which 
+    consists of retrieval of parameters that come from 
+    the template config file.
+    
+    Password retrieval is defined in inherited classes.
+    functionality differs if the script is being developed
+    as oppose to if it is in production.
+        
+    Development mode assumes the following:
+        - PMP is unavailable therefor passwords 
+          will be retrieved from a hardcoded json file 
+    '''
     def __init__(self, fmeMacroVals):
+        print 'start with instatiation of CalcParamsBase'
+        self.fmeMacroVals = fmeMacroVals
+        self.const = TemplateConstants()
+        self.paramObj = TemplateConfigFileReader(self.fmeMacroVals[self.const.FMWParams_DestKey])
+        
+        # if the computer that script is being run is defined 
+        # as a "gov" machine, the app assumes that it can 
+        # communicate with pmp.  As a result it will retrieve
+        # database passwords from pmp.  If the script is 
+        # run on a "nongov" machine it will attempt to retrieve
+        # database credentials from a json file. (file path is 
+        # returned by the TemplateConfigFileReader class
+        # when necessary.   
+        
+        self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
+        print 'done with instatiation of CalcParamsBase'        
+        
+    def addPlugin(self, forceDevel=False):
+        if forceDevel:
+            #CalcParamsDevelopment.__init__(self, fmeMacroVals)
+            self.plugin = CalcParamsDevelopment(self)
+        elif self.paramObj.isDataBCNode():
+            # inheriting from CalcParamsDataBC which will 
+            # override various methods specific to password
+            # recovery
+            print 'inheriting the databc methods'
+            #CalcParamsDataBC.__init__(self, fmeMacroVals)
+            self.plugin = CalcParamsDataBC(self)
+        else:
+            #CalcParamsDevelopment.__init__(self, fmeMacroVals)
+            self.plugin = CalcParamsDevelopment(self)
+        
+    def getFMWLogFileRelativePath(self, create=True):
+        curDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        outDirFullPath = os.path.join(curDir, self.const.AppConfigOutputsDir)
+        if not os.path.exists(outDirFullPath) and create:
+            os.mkdir(outDirFullPath)
+        logDirFullPath = os.path.join(outDirFullPath, self.const.AppConfigLogDir)
+        if not os.path.exists(logDirFullPath) and create:
+            os.mkdir(logDirFullPath)
+        fmwFileNoExt, fileExt = os.path.splitext(self.fmeMacroVals[self.const.FMWMacroKey_FMWName])
+        fmwLogFile = fmwFileNoExt + self.const.AppConfigLogFileExtension
+        relativePath = os.path.join('.', self.const.AppConfigOutputsDir, self.const.AppConfigLogDir, fmwLogFile)
+        return relativePath
+        
+    def getDestinationServer(self):
+        self.logger.logMessageString('Setting the destination server')
+        server = self.paramObj.getDestinationServer()
+        return server
+    
+    def getDestinationInstance(self):
+        instance = self.paramObj.getDestinationInstance()
+        return instance
+    
+    def getDestinationSDEPort(self):
+        port = self.paramObj.getDestinationSDEPort()
+        return 'port:{0}'.format(port)
+    
+    def getDestinationOraclePort(self):
+        port = self.paramObj.getDestinationOraclePort()
+        return port 
+    
+    def getSourcePassword(self):
+        pswd = self.plugin.getSourcePassword()
+        print 'srcinst1', self.fmeMacroVals['SRC_INSTANCE']
+        return pswd
+        
+    def getDestinationPassword(self):
+        pswd = self.plugin.getDestinationPassword()
+        return pswd
+    
+    def getSourcePasswordHeuristic(self):
+        pswd = self.plugin.getSourcePasswordHeuristic()
+        return pswd
+
+
+        
+    
+
+class CalcParamsDevelopment(object):
+    
+    def __init__(self, parent):
+        #self.paramObj = paramObj
+        #self.fmeMacroVals = fmeMacroVals
+        #self.const = TemplateConstants()
+        self.parent = parent
+        self.const = self.parent.const
+        self.paramObj = self.parent.paramObj
+        print 'constructing a CalcParamsDevelopment'
+        confDirName = self.paramObj.getConfigDirName()
+        credsFileName = self.paramObj.getDevelopmentModeCredentialsFileName()        
+        # expects the creds file to be ./$(confDirName)/$(credsFileName)
+        credsFileFullPath = os.path.join(self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory], confDirName, credsFileName)
+        self.credsFileFullPath = os.path.realpath(credsFileFullPath)
+        print 'credsFileFullPath', credsFileFullPath
+        if not os.path.exists(self.credsFileFullPath):
+            # The creds file doesn't exist, so raise exception
+            # TODO: once the svn url used for distribution is known include it in 
+            #       this error message s
+            msg = 'Script is running in development mode.  In development mode ' + \
+                   'passwords are retrieved from a json file in same directory ' + \
+                   'as the fmw.  When searching for the file {0} no file was found ' + \
+                   'create this .json file.  Example of the syntax is available ' + \
+                   'here: {1}'
+            msg = msg.format(self.credsFileFullPath, self.const.svn_DevelopmentJSONFile_Url)
+            raise ValueError, msg
+        #self.destSchema = self.parent.fmeMacroVals[self.const.FMWParams_DestSchema]
+        #self.destInstance = self.parent.getDestinationInstance()
+        #self.srcSchema = self.parent.fmeMacroVals[self.const.FMWParams_SrcSchema]
+        #self.srcInstance = self.parent.fmeMacroVals[self.const.FMWParams_SrcInstance]
+        with open(credsFileFullPath, 'r') as jsonFile:
+            self.data = json.load(jsonFile)
+        
+    def getDestinationPassword(self):
+        retVal = None
+        destSchema = self.parent.fmeMacroVals[self.const.FMWParams_DestSchema]
+        destInstance = self.parent.getDestinationInstance()
+
+        print 'destSchema', destSchema.lower().strip()
+        print 'destInstance', destInstance.lower().strip()
+        for dbParams in self.data[self.const.DevelopmentDatabaseCredentialsFile_DestCreds]:
+            dbUser = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbUser]
+            dbInst = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbInst]
+            dbPass = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbPswd]
+            print 'dbUser', dbUser.lower().strip()
+            print 'dbInst', dbInst.lower().strip()
+            if dbInst.lower().strip() == destInstance.lower().strip() and \
+               dbUser.lower().strip() == destSchema.lower().strip():
+                print 'found it'
+                retVal =  dbPass
+                break
+        if not retVal:
+            msg = 'DevMod: Was unable to find a password in the credential file {0} for ' + \
+                  'the destSchema: {1} and the instance {2}'
+            msg = msg.format(self.credsFileFullPath, destSchema, destInstance)
+            raise ValueError, msg
+        return retVal
+    
+    def getSourcePassword(self):
+        print 'srcinst2', self.parent.fmeMacroVals['SRC_INSTANCE']
+        srcSchema = self.parent.fmeMacroVals[self.const.FMWParams_SrcSchema]
+        srcInstance = self.parent.fmeMacroVals[self.const.FMWParams_SrcInstance]
+        retVal = None
+        for dbParams in self.data[self.const.DevelopmentDatabaseCredentialsFile_SourceCreds]:
+            dbUser = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbUser]
+            dbInst = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbInst]
+            dbPass = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbPswd]
+            if dbInst.lower().strip() == srcInstance.lower().strip() and \
+               dbUser.lower().strip() == srcSchema.lower().strip():
+                retVal =  dbPass
+                break
+        if not retVal:
+            msg = 'Running in DevMod.  This means that the template is attempting ' +  \
+                  'to retrieve the password from the json credential file {4} Was unable to ' + \
+                  'retrieve the password for ' + \
+                  'the srcSchema: {1} and the source instance {2} in the section {3}'
+            msg = msg.format(self.credsFileFullPath, srcSchema, srcInstance, 
+                             self.const.DevelopmentDatabaseCredentialsFile_SourceCreds, 
+                             self.credsFileFullPath)
+            raise ValueError, msg
+        return retVal
+    
+    def getSourcePasswordHeuristic(self):
+        '''
+        For now just ignores the domain when searching for the password
+        '''
+        retVal = None
+        srcSchema = self.parent.fmeMacroVals[self.const.FMWParams_SrcSchema]
+        srcInstance = self.parent.fmeMacroVals[self.const.FMWParams_SrcInstance]
+
+        
+        srcInstance = Util.removeDomain(srcInstance)
+        
+        for dbParams in self.data[self.const.DevelopmentDatabaseCredentialsFile_SourceCreds]:
+            dbUser = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbUser]
+            dbInst = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbInst]
+            dbInstLst = dbInst.split('.')
+            dbInst = dbInstLst[0]
+            dbPass = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbPswd]
+            
+            if dbInst.lower().strip() == srcInstance.lower() and \
+               dbUser.lower().strip() == srcSchema.lower().strip():
+                retVal =  dbPass
+                break
+        if not retVal:
+            msg = 'Running in DevMod.  This means that the template is attempting ' +  \
+                  'to retrieve the password from the json credential file {4} Was unable to ' + \
+                  'retrieve the password for ' + \
+                  'the srcSchema: {1} and the source instance {2} in the section {3}'
+            msg = msg.format(self.credsFileFullPath, srcSchema, srcInstance, 
+                             self.const.DevelopmentDatabaseCredentialsFile_SourceCreds, 
+                             self.credsFileFullPath)
+            raise ValueError, msg
+        return retVal
+        
+class CalcParamsDataBC(object):
+    
+    def __init__(self, parent):
+        self.parent = parent
+        self.const = self.parent.const
+        self.paramObj = self.parent.paramObj
+        self.fmeMacroVals = self.parent.fmeMacroVals
+        self.currentPMPResource = None
+        #self.paramObj = paramObj
+        #self.fmeMacroVals = fmeMacroVals
         print 'constructing a CalcParamsDataBC'
         
     def getDestinationPassword(self, destKey=None):
@@ -362,7 +576,7 @@ class CalcParamsDataBC():
             destKey = self.fmeMacroVals[self.const.FMWParams_DestKey]
         else: 
             self.paramObj.validateKey(destKey)
-
+            destKey = self.paramObj.getDestinationDatabaseKey(destKey)
         pmpRes = self.paramObj.getDestinationPmpResource(destKey)
         computerName = Util.getComputerName()
         pmpDict = {'token': self.paramObj.getPmpToken(computerName),
@@ -372,11 +586,7 @@ class CalcParamsDataBC():
         accntName = self.fmeMacroVals[self.const.FMWParams_DestSchema]
         passwrd = pmp.getAccountPassword(accntName, pmpRes)
         return passwrd
-    
-    def getBCGWPassword(self, destKey=None):
-        pswd = self.getDestinationPassword(destKey)
-        return pswd
-    
+        
     def getPmpDict(self):
         computerName = Util.getComputerName()
         pmpDict = {'token': self.paramObj.getPmpToken(computerName),
@@ -397,8 +607,9 @@ class CalcParamsDataBC():
         
         for pmpResource in srcResources:
             print 'pmpResource', pmpResource
+            self.currentPMPResource = pmpResource
             # start by trying to just retrieve the account using 
-            # schema@instance as the "User Account" parameter
+            # destSchema@instance as the "User Account" parameter
             try:
                 accntATInstance = accntName.strip() + '@' + instance.strip()
                 print 'trying to retrieve ', accntATInstance
@@ -409,24 +620,24 @@ class CalcParamsDataBC():
                 msg = 'There is no account {0} in pmp for the resource {1} using the token {2} from the machine {3}'
                 msg = msg.format(accntName, pmpResource, pmp.token, platform.node())
                 # Going to do a search for accounts that might match the user
-                self.getSourcePasswordHeuristic(pmpResource)
+                self.getSourcePasswordHeuristic()
                 print msg
             if pswd:
                 break
             # add some more warnings
         return pswd
     
-    def getSourcePasswordHeuristic(self, pmpResource):
+    def getSourcePasswordHeuristic(self):
         '''
         Gets a list of accounts for the pmp resource.  Iterates through 
-        the list looking for an account that is similar to the schema 
+        the list looking for an account that is similar to the destSchema 
         instance combination defined in the FMW.  PMP stores the account 
-        names for pmp in the format schema@instance.  This method will parse 
-        that into schema and instance then look for schemas that match then 
+        names for pmp in the format destSchema@instance.  This method will parse 
+        that into destSchema and instance then look for schemas that match then 
         for instance it will look for matchs independent of any domain.  
         Thus envprod1.nrs.bcgov will match envprod1.env.gov.bc.ca.  
         
-        If more than one schema / instance is discovered, The method will 
+        If more than one destSchema / instance is discovered, The method will 
         check to see if they are duplicates by testing to see if both 
         the accounts have the same password.  if they do not the method will
         thow an exception.
@@ -436,33 +647,40 @@ class CalcParamsDataBC():
         :type pmpResource: string
         
         :returns: The source password from pmp that matches the the current
-                  fmws schema / instance combination
+                  fmws destSchema / instance combination
         :rtype: str
         '''
+        pmpResource = self.currentPMPResource
+        if not pmpResource:
+            srcResources = self.paramObj.getSourcePmpResources()
+        else:
+            srcResources = [self.currentPMPResource]
         pswd = None
         pmpDict = self.getPmpDict()
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
-        # resource id for the pmp resource.
-        resId = pmp.getResourceId(pmpResource)
-        # list of accounts attached to the resource
-        accounts = pmp.getAccountsForResourceID(resId)
-        instList = []
-        # source instance, and the source instance less the domain portion
-        srcInst = self.fmeMacroVals[self.const.FMWParams_SrcInstance]
-        srcInstList = srcInst.split('.')
-        srcInstNoDomain = srcInstList[0]
-        for accntDict in accounts:
-            accntName = PMPSourceAccountParser(accntDict['ACCOUNT NAME'])
-            schema = accntName.getSchema()
-            if schema.lower() == self.fmeMacroVals[self.const.FMWParams_SrcSchema].lower():
-                # found the srcSchema
-                # now check see if the instance matches
-                #print 'schemas {0} : {1}'.format(schema, self.fmeMacroVals[self.const.FMWParams_SrcSchema])
-                inst = accntName.getInstanceNoDomain()
-                #print 'instance', inst, srcInstNoDomain
-                if inst.lower() == srcInstNoDomain.lower():
-                    instList.append([accntDict['ACCOUNT NAME'], accntDict['ACCOUNT ID']])
-            #print 'accntName', schema
+        
+        for pmpResource in srcResources:
+            # resource id for the pmp resource.
+            resId = pmp.getResourceId(pmpResource)
+            # list of accounts attached to the resource
+            accounts = pmp.getAccountsForResourceID(resId)
+            instList = []
+            # source instance, and the source instance less the domain portion
+            srcInst = self.fmeMacroVals[self.const.FMWParams_SrcInstance]
+            srcInstList = srcInst.split('.')
+            srcInstNoDomain = srcInstList[0]
+            for accntDict in accounts:
+                accntName = PMPSourceAccountParser(accntDict['ACCOUNT NAME'])
+                schema = accntName.getSchema()
+                if schema.lower() == self.fmeMacroVals[self.const.FMWParams_SrcSchema].lower():
+                    # found the srcSchema
+                    # now check see if the instance matches
+                    #print 'schemas {0} : {1}'.format(destSchema, self.fmeMacroVals[self.const.FMWParams_SrcSchema])
+                    inst = accntName.getInstanceNoDomain()
+                    #print 'instance', destInstance, srcInstNoDomain
+                    if inst.lower() == srcInstNoDomain.lower():
+                        instList.append([accntDict['ACCOUNT NAME'], accntDict['ACCOUNT ID']])
+                #print 'accntName', destSchema
         if instList:
             if len(instList) > 1:
                 # get the passwords, if they are the same then return
@@ -473,7 +691,7 @@ class CalcParamsDataBC():
                     pswdList.append(pmp.getAccountPasswordWithAccountId(accnts[1], resId))
                 pswdList = list(set(pswdList))
                 if len(pswdList) > 1:
-                    msg = 'Looking for the password for the schema {0}, and instance {1}' +\
+                    msg = 'Looking for the password for the destSchema {0}, and instance {1}' +\
                           'Found the following accounts that roughly match that combination {2}' + \
                           'pmp has different passwords for each of these.  Unable to proceed as ' + \
                           'not sure which password to use.  Fix this by changing the parameter {3} ' + \
@@ -489,75 +707,6 @@ class CalcParamsDataBC():
                 pswd = pmp.getAccountPasswordWithAccountId(instList[0][1], resId)
         return pswd
             
-class CalcParamsBase( CalcParamsDataBC ):
-    '''
-    This method contains the base functionality which is the 
-    development mode base functionality
-    
-    Development mode assumes the following:
-        - PMP is unavailable therefor passwords 
-          will be retrieved from the json file 
-          defined in t
-    
-    '''
-    def __init__(self, fmeMacroVals, forceDevel=False):
-        self.fmeMacroVals = fmeMacroVals
-        self.const = TemplateConstants()
-        self.templateVals = TemplateConfigFileReader(self.fmeMacroVals[self.const.FMWParams_DestKey])
-        # if the computer that script is being run is defined 
-        # as a "gov" machine, the app assumes that it can 
-        # communicate with pmp.  As a result it will retrieve
-        # database passwords from pmp.  If the script is 
-        # run on a "nongov" machine it will attempt to retrieve
-        # database credentials from a json file. (file path is 
-        # returned by the TemplateConfigFileReader class
-        # when necessary.   
-        if forceDevel:
-            CalcParamsDevelopment.__init__(self, fmeMacroVals)
-        elif self.templateVals.isDataBCNode():
-            # inheriting from CalcParamsDataBC which will 
-            # override various methods specific to password
-            # recovery
-            print 'inheriting the databc methods'
-            CalcParamsDataBC.__init__(self, fmeMacroVals)
-        else:
-            CalcParamsDevelopment.__init__(self, fmeMacroVals)
-        self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
-        dbEnv = self.fmeMacroVals[self.const.FMWParams_DestKey]
-        self.paramObj = TemplateConfigFileReader(dbEnv)
-        
-    def getFMWLogFileFullPath(self, create=True):
-        curDir = os.path.dirname(__file__)
-        outputsDirName = self.const.AppConfigOutputsDir
-        fmwDir, fileExt = os.path.splitext(self.fmeMacroVals['FME_MF_NAME'])
-        del fileExt
-        logFileDirPath = os.path.join(curDir, 
-                                   outputsDirName, 
-                                   fmwDir)
-        if create:
-            if not os.path.exists(logFileDirPath):
-                os.makedirs(logFileDirPath)
-        logFilePath = os.path.join(logFileDirPath,
-                                   fmwDir + '.log')
-        return logFilePath
-        
-    def getDestinationServer(self):
-        self.logger.logMessageString('Setting the destination server')
-        server = self.paramObj.getDestinationServer()
-        return server
-    
-    def getDestinationInstance(self):
-        instance = self.paramObj.getDestinationInstance()
-        return instance
-    
-    def getDestinationSDEPort(self):
-        port = self.paramObj.getDestinationSDEPort()
-        return 'port:{0}'.format(port)
-    
-    def getDestinationOraclePort(self):
-        port = self.paramObj.getDestinationOraclePort()
-        return port 
-           
 class CalcParams(CalcParamsBase):
     '''
     This class is used to populate the scripted parameters
@@ -574,11 +723,10 @@ class CalcParams(CalcParamsBase):
     return params.getDestinationPassword()
     '''
     
-    def __init__(self, fmeMacroVals):
+    def __init__(self, fmeMacroVals, forceDevelMode=False):
         CalcParamsBase.__init__(self, fmeMacroVals)
+        self.addPlugin(forceDevelMode)
         print 'self', self
         print 'type(self)', type(self)
         #print getattr(self, '__bases__')
         
-
-    
