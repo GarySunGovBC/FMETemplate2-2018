@@ -1,7 +1,4 @@
 '''
-
-
-
 --------------------------------------------------
 --- THIS IS THE CODE THAT HAS BEEN EXTRACTED FROM
 --- THE FMW
@@ -28,6 +25,7 @@ template.startup()
 '''
 # for some reason this has to manually added
 import sys
+import importlib
 sys.path.insert(0, r'E:\sw_nt\FME2014\fmeobjects\python27')
 sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
 import os
@@ -36,13 +34,12 @@ import os
 pathList = os.environ['PATH'].split(';')
 pathList.insert(0, r'E:\sw_nt\FME2014')
 os.environ['PATH'] = ';'.join(pathList)
+import site
 import fmeobjects
 import platform
 import pprint
 import ConfigParser
 import json
-import warnings
-import copy
 import PMP.PMPRestConnect
 
 class TemplateConstants():
@@ -60,6 +57,7 @@ class TemplateConstants():
     ConfFileSection_global_key_govComputers = 'gov_computers'
     ConfFileSection_global_configDirName = 'configdirname'
     ConfFileSection_global_devCredsFile = 'development_credentials_file'
+    ConfFileSection_global_customScriptDir = 'customizescriptdir'
     
     ConfFileSection_destKeywords = 'dest_param_keywords'
     
@@ -119,6 +117,7 @@ class TemplateConstants():
 class Start():
     
     def __init__(self, fme):
+        # 
         self.fme = fme
         print 'running the startup'
         self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
@@ -126,14 +125,52 @@ class Start():
         self.const = TemplateConstants()
         # TODO: add functionality that searches for overrides, ie a file
         #        with the same name as 
+        # check to see if there is a custom startup method defined for
+        # the current fmw.  If there is import it and populate as
+        # the startup plugin.  otherwise use the default.
+        
+        # Reading the global paramater config file
+        self.paramObj = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
+        # Extract the custom script directory from config file
+        customScriptDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
+        # Assemble the name of a the custom script
+        justScript, ext = os.path.splitext(self.fme.macroValues[self.const.FMWMacroKey_FMWName])
+        customScriptFullPath = os.path.join(customScriptDir, justScript + '.py')
+        
+        customScriptLocal = os.path.join(self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory], justScript + '.py')
+        
+        # test to see if the custom script exists, if it does import it, and 
+        # set the plugin parameter = to the Start() object.
+        if os.path.exists(customScriptFullPath) or os.path.exists(customScriptLocal):
+            print 'customScriptFullPath',customScriptFullPath
+            site.addsitedir(customScriptLocal)
+            site.addsitedir(customScriptFullPath)
+            startupModule = importlib.import_module(justScript)
+            self.startupObj = startupModule.Start(self.fme)
+        else:
+            self.startupObj = DefaultStart(self.fme)
+
+    def startup(self):
+        # default startup routine
+        #self.fme.macroValues[self.const.FMWParams_DestKey]
+        # debugging / develeopment - printing the macrovalues.
+        # useful for setting up test cases.
+        self.startupObj.startup()
+        
+class DefaultStart():
+    def __init__(self, fme):
+        self.fme = fme
         
     def startup(self):
         # default startup routine
         #self.fme.macroValues[self.const.FMWParams_DestKey]
         # debugging / develeopment - printing the macrovalues.
         # useful for setting up test cases.
-        for key in self.fme.macroValues.keys():
-            print '{0}  {1}'.format(key, self.fme.macroValues[key])
+        #for key in self.fme.macroValues.keys():
+        #    print '{0}  {1}'.format(key, self.fme.macroValues[key])
+        
+        # currently there is no startup code.
+        pass
         
 class Shutdown():
     
@@ -438,10 +475,6 @@ class CalcParamsBase( object ):
     def getSourcePasswordHeuristic(self):
         pswd = self.plugin.getSourcePasswordHeuristic()
         return pswd
-
-
-        
-    
 
 class CalcParamsDevelopment(object):
     
