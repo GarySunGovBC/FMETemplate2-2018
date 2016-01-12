@@ -40,7 +40,9 @@ import platform
 import pprint
 import ConfigParser
 import json
+import logging
 import PMP.PMPRestConnect
+import FMELogger
 
 class TemplateConstants():
     # configfile name
@@ -120,15 +122,10 @@ class Start():
         # 
         self.fme = fme
         print 'running the startup'
-        self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
-        self.logger.logMessageString('starting the startup object, writing to the log')
-        self.const = TemplateConstants()
-        # TODO: add functionality that searches for overrides, ie a file
-        #        with the same name as 
-        # check to see if there is a custom startup method defined for
-        # the current fmw.  If there is import it and populate as
-        # the startup plugin.  otherwise use the default.
         
+        #self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
+        #self.logger.logMessageString('starting the startup object, writing to the log')
+        self.const = TemplateConstants()        
         # Reading the global paramater config file
         self.paramObj = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
         # Extract the custom script directory from config file
@@ -150,6 +147,36 @@ class Start():
         else:
             self.startupObj = DefaultStart(self.fme)
 
+    def initLogging(self):
+        rootLogger = logging.getLogger()
+        
+        # Step 2 - create a handler object, in this case a filehandler
+        # put some code in here for a file handler for development
+        #hndlr = logging.FileHandler(logFile) 
+        hndlr = FMELogger.FMELogHandler()
+        
+        # Step 3 - create a formatter along with a format string
+        formatString = '%(asctime)s %(name)s.%(funcName)s.%(lineno)d %(levelname)s: %(message)s'
+        formatr = logging.Formatter( formatString )
+        formatr.datefmt = '%m-%d-%Y %H:%M:%S' # set up the date format for log messages
+        
+        # Step 4 - tell the hanlder to use the formatter we just set up
+        hndlr.setFormatter(formatr)
+        
+        # Step 5 - tell the log object to use the handler
+        rootLogger.addHandler(hndlr)  
+        
+        # Step 6 - set the log level
+        rootLogger.setLevel(logging.DEBUG)
+        
+        # Step 7 - create a logging object that this module will use to write its log messages to
+        #             the name of the log object will be moduleName.className
+        logName = os.path.splitext(os.path.basename(__file__))[0] + '.' + self.__class__.__name__
+        self.logger = logging.getLogger( logName ) 
+        
+        # Step 8 on, write some log messages
+        self.logger.debug('this is my first log message!')
+        
     def startup(self):
         # default startup routine
         #self.fme.macroValues[self.const.FMWParams_DestKey]
