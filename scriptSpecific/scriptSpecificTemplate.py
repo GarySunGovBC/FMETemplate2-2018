@@ -12,11 +12,16 @@ c) put the customized steps for your startup in the
    Shutdown.shutdown() method.
  
 '''
+import inspect
+import sys
+import os
+import logging
 
 class Start():
     
     def __init__(self, fme):
         self.fme = fme
+        self.__initLogging()
         # put any specific class instantiation here.
         pass
         
@@ -25,11 +30,29 @@ class Start():
         # routine for this script
         pass
     
+    def __initLogging(self):
+        curFile = inspect.getfile(inspect.currentframe())  
+        if curFile == '<string>':
+            curFile = sys.argv[0]
+        logName = os.path.splitext(os.path.basename(curFile))[0] + '.' + self.__class__.__name__
+        # and this line creates a log message
+        logger = logging.getLogger(logName)
+        logger.debug("new debug message from dependant module")
+          
 class Shutdown():
     
     def __init__(self, fme):
         self.fme = fme
         pass
+    
+    def __initLogging(self):
+        curFile = inspect.getfile(inspect.currentframe())  
+        if curFile == '<string>':
+            curFile = sys.argv[0]
+        logName = os.path.splitext(os.path.basename(curFile))[0] + '.' + self.__class__.__name__
+        # and this line creates a log message
+        logger = logging.getLogger(logName)
+        logger.debug("new debug message from dependant module")
     
     def shutdown(self):
         pass

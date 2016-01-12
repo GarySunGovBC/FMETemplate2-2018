@@ -122,24 +122,21 @@ class Start():
         # 
         self.fme = fme
         print 'running the startup'
-        
-        #self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
-        #self.logger.logMessageString('starting the startup object, writing to the log')
-        self.const = TemplateConstants()        
+        self.const = TemplateConstants()
         # Reading the global paramater config file
         self.paramObj = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
+        self.initLogging()
         # Extract the custom script directory from config file
         customScriptDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
         # Assemble the name of a the custom script
         justScript, ext = os.path.splitext(self.fme.macroValues[self.const.FMWMacroKey_FMWName])
         customScriptFullPath = os.path.join(customScriptDir, justScript + '.py')
-        
         customScriptLocal = os.path.join(self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory], justScript + '.py')
         
         # test to see if the custom script exists, if it does import it, and 
         # set the plugin parameter = to the Start() object.
         if os.path.exists(customScriptFullPath) or os.path.exists(customScriptLocal):
-            print 'customScriptFullPath',customScriptFullPath
+            self.logger.info('Using a custom startup script {0}'.format(customScriptFullPath))
             site.addsitedir(customScriptLocal)
             site.addsitedir(customScriptFullPath)
             startupModule = importlib.import_module(justScript)
@@ -148,10 +145,11 @@ class Start():
             self.startupObj = DefaultStart(self.fme)
 
     def initLogging(self):
-        rootLogger = logging.getLogger()
+        logName = os.path.splitext(os.path.basename(__file__))[0] + '.' + self.__class__.__name__
+        self.logger = logging.getLogger( logName )         
         
-        # Step 2 - create a handler object, in this case a filehandler
-        # put some code in here for a file handler for development
+        #rootLogger = logging.getLogger()
+        
         #hndlr = logging.FileHandler(logFile) 
         hndlr = FMELogger.FMELogHandler()
         
@@ -159,29 +157,17 @@ class Start():
         formatString = '%(asctime)s %(name)s.%(funcName)s.%(lineno)d %(levelname)s: %(message)s'
         formatr = logging.Formatter( formatString )
         formatr.datefmt = '%m-%d-%Y %H:%M:%S' # set up the date format for log messages
-        
-        # Step 4 - tell the hanlder to use the formatter we just set up
-        hndlr.setFormatter(formatr)
-        
-        # Step 5 - tell the log object to use the handler
-        rootLogger.addHandler(hndlr)  
-        
-        # Step 6 - set the log level
-        rootLogger.setLevel(logging.DEBUG)
-        
-        # Step 7 - create a logging object that this module will use to write its log messages to
-        #             the name of the log object will be moduleName.className
-        logName = os.path.splitext(os.path.basename(__file__))[0] + '.' + self.__class__.__name__
-        self.logger = logging.getLogger( logName ) 
-        
-        # Step 8 on, write some log messages
-        self.logger.debug('this is my first log message!')
+        hndlr.setFormatter(formatr)        
+        self.logger.addHandler(hndlr)          
+        self.logger.setLevel(logging.DEBUG)        
+        self.logger.debug('Logger should be setup!')
         
     def startup(self):
         # default startup routine
         #self.fme.macroValues[self.const.FMWParams_DestKey]
         # debugging / develeopment - printing the macrovalues.
         # useful for setting up test cases.
+        self.logger.debug("calling the startup method..")
         self.startupObj.startup()
         
 class DefaultStart():
@@ -444,6 +430,24 @@ class CalcParamsBase( object ):
         
         self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
         print 'done with instatiation of CalcParamsBase'        
+        
+    def __initlogger(self):
+        logName = os.path.splitext(os.path.basename(__file__))[0] + '.' + self.__class__.__name__
+        self.logger = logging.getLogger( logName )         
+        
+        #rootLogger = logging.getLogger()
+        
+        #hndlr = logging.FileHandler(logFile) 
+        hndlr = FMELogger.FMELogHandler()
+        
+        # Step 3 - create a formatter along with a format string
+        formatString = '%(asctime)s %(name)s.%(funcName)s.%(lineno)d %(levelname)s: %(message)s'
+        formatr = logging.Formatter( formatString )
+        formatr.datefmt = '%m-%d-%Y %H:%M:%S' # set up the date format for log messages
+        hndlr.setFormatter(formatr)        
+        self.logger.addHandler(hndlr)          
+        self.logger.setLevel(logging.DEBUG)        
+        self.logger.debug('Logger should be setup!')
         
     def addPlugin(self, forceDevel=False):
         if forceDevel:
