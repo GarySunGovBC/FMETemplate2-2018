@@ -390,7 +390,6 @@ class Test_Startup(unittest.TestCase):
         start = DataBCFMWTemplate.Start(self.fme)
         start.startup()
         
-        
 if __name__ == "__main__":
     import sys
     #sys.argv = ['', 'Test_TemplateConfigFileReader.test_getDestinationDatabaseKey', 

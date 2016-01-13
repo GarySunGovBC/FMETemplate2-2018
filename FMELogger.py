@@ -6,6 +6,10 @@ logger api, so that log calls that use standard
 python loggin methods will appear in the fme 
 log.
 
+follows is a couple links on custom loggers:
+http://pantburk.info/?blog=77
+
+
 @author: kjnether
 '''
 import logging
@@ -24,11 +28,35 @@ class FMELogHandler(logging.Handler):
     
     def emit(self, record):
         try:
-            msg = self.format(record)
-            self.fmeLogger.logMessageString(record.message)
+            #msg = self.format(record)
+            logMessage = record.getMessage()
+            self.fmeLogger.logMessageString(logMessage)
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
             self.handleError(record)
             
+class FMEShutdownLogger(logging.Handler):
+    
+    def __init__(self, logFileName):
+        logging.Handler.__init__(self)
+        self.logFileName = logFileName
+        self.logFH = open(self.logFileName,'a')
+        
+    def emit(self, record):
+        try:
+            #msg = self.format(record.message)
+            #self.fmeLogger.logMessageString(record.message)
+            logMessage = record.getMessage()
+
+            self.logFH.write(logMessage)
+            #logger.close()
+
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)
             
+    def close(self):
+        self.logFH.close()
+        

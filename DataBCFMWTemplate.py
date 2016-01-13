@@ -43,6 +43,7 @@ import json
 import logging
 import PMP.PMPRestConnect
 import FMELogger
+import inspect
 
 class TemplateConstants():
     # configfile name
@@ -119,7 +120,6 @@ class TemplateConstants():
 class Start():
     
     def __init__(self, fme):
-        # 
         self.fme = fme
         print 'running the startup'
         self.const = TemplateConstants()
@@ -135,25 +135,32 @@ class Start():
         
         # test to see if the custom script exists, if it does import it, and 
         # set the plugin parameter = to the Start() object.
-        if os.path.exists(customScriptFullPath) or os.path.exists(customScriptLocal):
-            self.logger.info('Using a custom startup script {0}'.format(customScriptFullPath))
-            site.addsitedir(customScriptLocal)
-            site.addsitedir(customScriptFullPath)
+        startupScriptDirPath = None
+        if os.path.exists(customScriptLocal):
+            startupScriptDirPath = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
+        elif os.path.exists(customScriptFullPath):
+            startupScriptDirPath = customScriptDir
+        
+        if startupScriptDirPath:
+            print 'loading custom startup', startupScriptDirPath
+            site.addsitedir(startupScriptDirPath)
+            print 'added path', startupScriptDirPath
+            print 'module ', justScript
+            print 'sys.path', sys.path
             startupModule = importlib.import_module(justScript)
+            print 'import of the module success'
             self.startupObj = startupModule.Start(self.fme)
+            print 'object created'
         else:
+            print 'using generic startup'
             self.startupObj = DefaultStart(self.fme)
 
     def initLogging(self):
         logName = os.path.splitext(os.path.basename(__file__))[0] + '.' + self.__class__.__name__
         self.logger = logging.getLogger( logName )         
-        
         #rootLogger = logging.getLogger()
-        
         #hndlr = logging.FileHandler(logFile) 
-        hndlr = FMELogger.FMELogHandler()
-        
-        # Step 3 - create a formatter along with a format string
+        hndlr = FMELogger.FMELogHandler()        
         formatString = '%(asctime)s %(name)s.%(funcName)s.%(lineno)d %(levelname)s: %(message)s'
         formatr = logging.Formatter( formatString )
         formatr.datefmt = '%m-%d-%Y %H:%M:%S' # set up the date format for log messages
@@ -174,6 +181,7 @@ class DefaultStart():
     def __init__(self, fme):
         self.fme = fme
         
+        
     def startup(self):
         # default startup routine
         #self.fme.macroValues[self.const.FMWParams_DestKey]
@@ -187,11 +195,38 @@ class DefaultStart():
         
 class Shutdown():
     
-    def __init__(self, fmeMacroVals):
-        pass
+    def __init__(self, fme):
+        # shutdown logging works differently
+        self.fme = fme
+        self.const = TemplateConstants()
+        self.__initLogging()
+        self.logger.debug("Shutdown has been called...")
+        self.logger.debug("log file name: {0}".format(self.fme.logFileName))
+        print 'shtudown log file', self.fme.logFileName
+        
+    
+    def __initLogging(self):
+        # full path will be self.fme.
+        path2FmwDir = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
+        logFileFullPath = os.path.join(path2FmwDir, self.fme.logFileName)
+        
+        logName = os.path.splitext(os.path.basename(__file__))[0] + '.' + self.__class__.__name__
+        self.logger = logging.getLogger( logName )
+        #rootLogger = logging.getLogger()
+        #hndlr = logging.FileHandler(logFile) 
+        hndlr = FMELogger.FMEShutdownLogger(logFileFullPath)        
+        formatString = '%(asctime)s %(name)s.%(funcName)s.%(lineno)d %(levelname)s: %(message)s'
+        formatr = logging.Formatter( formatString )
+        formatr.datefmt = '%m-%d-%Y %H:%M:%S' # set up the date format for log messages
+        hndlr.setFormatter(formatr)        
+        self.logger.addHandler(hndlr)          
+        self.logger.setLevel(logging.DEBUG)        
+        self.logger.debug('Logger should be setup!')
+
     
     def shutdown(self):
         # what needs to be written can go here.
+        self.logger.debug("shutdown has been called")
         pass
    
 class TemplateConfigFileReader():
