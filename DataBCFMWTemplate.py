@@ -61,6 +61,8 @@ class TemplateConstants():
     ConfFileSection_global_configDirName = 'configdirname'
     ConfFileSection_global_devCredsFile = 'development_credentials_file'
     ConfFileSection_global_customScriptDir = 'customizescriptdir'
+    ConfFileSection_global_changeLogDir = 'changelogsdir'
+    ConfFileSection_global_changeLogFileName = 'changelogsfilename'
     
     ConfFileSection_destKeywords = 'dest_param_keywords'
     
@@ -84,11 +86,14 @@ class TemplateConstants():
     FMWParams_DestPassword = 'DEST_PASSWORD'
     
     # published parameters - source
-    FMWParams_SrcFGDBPrefix = 'SRC_FGDB_'
+    FMWParams_srcDataSet = 'SRC_DATASET_' # prefix for any file based source dataset
+    FMWParams_SrcFGDBPrefix = 'SRC_DATASET_FGDB_'
+    FMWParams_SrcXLSPrefix = 'SRC_DATASET_XLS_'
     FMWParams_SrcFeaturePrefix = 'SRC_FEATURE_'
     FMWParams_SrcSchema = 'SRC_SCHEMA'
     FMWParams_SrcInstance = 'SRC_INSTANCE'
     FMWParams_SrcFeatPrefix = 'SRC_FEATURE_'
+    
     # TODO: define the source database parameters
     
     # The fmw macrovalue used to retrieve the directory 
@@ -117,15 +122,22 @@ class TemplateConstants():
     # to see an example of the format that should be used.
     svn_DevelopmentJSONFile_Url = r'\\data.bcgov\work\scripts\python\DataBCFmeTemplate2\config\dbCreds.json'
     
+    # log format strings
+    FMELogShutdownFormatString = '%(asctime)s|   ?.?|  0.0|PYTHON SHUTDOWN| %(levelname)s: %(message)s'
+    FMELogStartupFormatString = '%(levelname)s: %(message)s'
+    FMELogDateFormatString = '%Y-%m-%d %H:%M:%S'
+    
 class Start():
     
     def __init__(self, fme):
+        # This method will always be called regardless of any customizations.
         self.fme = fme
         print 'running the startup'
         self.const = TemplateConstants()
         # Reading the global paramater config file
         self.paramObj = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
         self.initLogging()
+        self.logger.warning("testing writing a warning message")
         # Extract the custom script directory from config file
         customScriptDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
         # Assemble the name of a the custom script
@@ -160,10 +172,10 @@ class Start():
         self.logger = logging.getLogger( logName )         
         #rootLogger = logging.getLogger()
         #hndlr = logging.FileHandler(logFile) 
-        hndlr = FMELogger.FMELogHandler()        
-        formatString = '%(asctime)s %(name)s.%(funcName)s.%(lineno)d %(levelname)s: %(message)s'
+        hndlr = FMELogger.FMELogHandler()
+        formatString = self.const.FMELogStartupFormatString
         formatr = logging.Formatter( formatString )
-        formatr.datefmt = '%m-%d-%Y %H:%M:%S' # set up the date format for log messages
+        formatr.datefmt = self.const.FMELogDateFormatString
         hndlr.setFormatter(formatr)        
         self.logger.addHandler(hndlr)          
         self.logger.setLevel(logging.DEBUG)        
@@ -174,6 +186,8 @@ class Start():
         #self.fme.macroValues[self.const.FMWParams_DestKey]
         # debugging / develeopment - printing the macrovalues.
         # useful for setting up test cases.
+        # --------------------------------------------------------
+        # will either call the default startup or a customized one
         self.logger.debug("calling the startup method..")
         self.startupObj.startup()
         
@@ -203,7 +217,6 @@ class Shutdown():
         self.logger.debug("Shutdown has been called...")
         self.logger.debug("log file name: {0}".format(self.fme.logFileName))
         print 'shtudown log file', self.fme.logFileName
-        
     
     def __initLogging(self):
         # full path will be self.fme.
@@ -215,14 +228,13 @@ class Shutdown():
         #rootLogger = logging.getLogger()
         #hndlr = logging.FileHandler(logFile) 
         hndlr = FMELogger.FMEShutdownLogger(logFileFullPath)        
-        formatString = '%(asctime)s %(name)s.%(funcName)s.%(lineno)d %(levelname)s: %(message)s'
-        formatr = logging.Formatter( formatString )
-        formatr.datefmt = '%m-%d-%Y %H:%M:%S' # set up the date format for log messages
-        hndlr.setFormatter(formatr)        
+        #formatString = '%(asctime)s %(name)s.%(funcName)s.%(lineno)d %(levelname)s: %(message)s'
+        formatr = logging.Formatter( self.const.FMELogShutdownFormatString )
+        formatr.datefmt = self.const.FMELogDateFormatString
+        hndlr.setFormatter(formatr)
         self.logger.addHandler(hndlr)          
         self.logger.setLevel(logging.DEBUG)        
         self.logger.debug('Logger should be setup!')
-
     
     def shutdown(self):
         # what needs to be written can go here.
