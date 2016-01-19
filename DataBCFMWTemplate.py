@@ -26,6 +26,7 @@ template.startup()
 # for some reason this has to manually added
 import sys
 import importlib
+from test.test_deque import TestVariousIteratorArgs
 sys.path.insert(0, r'E:\sw_nt\FME2014\fmeobjects\python27')
 sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
 import os
