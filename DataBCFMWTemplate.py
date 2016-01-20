@@ -47,7 +47,7 @@ import FMELogger
 import inspect
 
 class TemplateConstants():
-    # configfile name
+    # Maps to sections in the config file
     AppConfigFileName = 'templateDefaults.config'
     AppConfigConfigDir = 'config'
     AppConfigOutputsDir = 'outputs'
@@ -127,6 +127,10 @@ class TemplateConstants():
     FMELogShutdownFormatString = '%(asctime)s|   ?.?|  0.0|PYTHON SHUTDOWN| %(levelname)s: %(message)s'
     FMELogStartupFormatString = '%(levelname)s: %(message)s'
     FMELogDateFormatString = '%Y-%m-%d %H:%M:%S'
+    
+    # Local time zone, when dates are converted to strings in the 
+    # log file the strings will be in this time zone
+    LocalTimeZone = 'US/Pacific'
     
 class Start():
     
