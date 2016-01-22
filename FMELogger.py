@@ -18,7 +18,7 @@ import fmeobjects
 
 class FMELogHandler(logging.Handler):
     
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         logging.Handler.__init__(self)
         self.fmeLogger = fmeobjects.FMELogFile()  # @UndefinedVariable
         #self.fmeLogger.logMessageString('starting the startup object, writing to the log')

@@ -127,6 +127,7 @@ class TemplateConstants():
     FMELogShutdownFormatString = '%(asctime)s|   ?.?|  0.0|PYTHON SHUTDOWN| %(levelname)s: %(message)s'
     FMELogStartupFormatString = '%(levelname)s: %(message)s'
     FMELogDateFormatString = '%Y-%m-%d %H:%M:%S'
+    FMELogFileSuffix = '.logconfig'
     
     # Local time zone, when dates are converted to strings in the 
     # log file the strings will be in this time zone
