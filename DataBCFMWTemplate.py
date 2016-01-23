@@ -229,13 +229,27 @@ class DefaultStart():
 class Shutdown():
     
     def __init__(self, fme):
+
+        
         # shutdown logging works differently
+        # This method will always be called regardless of any customizations.
         self.fme = fme
         self.const = TemplateConstants()
-        self.__initLogging()
+        
+        path2FmwDir = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
+        logFileFullPath = os.path.join(path2FmwDir, self.fme.logFileName)
+        logFileName = os.path.splitext(os.path.basename(__file__))[0] + '.' + self.__class__.__name__
+        logging.logFileName = logFileName
+        print 'logFileName', logFileFullPath
+        ModuleLogConfig(logFileFullPath)
+        
+        # logging configuration
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+        #self.__initLogging()
         self.logger.debug("Shutdown has been called...")
         self.logger.debug("log file name: {0}".format(self.fme.logFileName))
-        print 'shtudown log file', self.fme.logFileName
+        #print 'shtudown log file', self.fme.logFileName
     
     def __initLogging(self):
         # full path will be self.fme.
@@ -266,7 +280,7 @@ class TemplateConfigFileReader():
     key = None
     
     def __init__(self, key, confFile=None):
-        ModuleLogConfig()
+        #ModuleLogConfig()
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
 
@@ -885,10 +899,13 @@ class CalcParams(CalcParamsBase):
         #print getattr(self, '__bases__')
         
 class ModuleLogConfig():
-    def __init__(self):
+    def __init__(self, logFileName=None):
         tmpLog = logging.getLogger(__name__)
         
         if not tmpLog.handlers:
+            if logFileName:
+                logging.logFileName = logFileName
+                print 'logFileName', logFileName
             print 'Loading log configs from log config file'
             const = TemplateConstants()
             confFile = TemplateConfigFileReader('DEV')

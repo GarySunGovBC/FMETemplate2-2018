@@ -65,8 +65,9 @@ class FMELogHandler(logging.Handler):
             
 class FMEShutdownLogger(logging.Handler):
     
-    def __init__(self, logFileName):
+    def __init__(self, logFileName, *args, **kwargs):
         logging.Handler.__init__(self)
+        print 'logFileName in logger', logFileName
         self.logFileName = logFileName
         self.logFH = open(self.logFileName,'a')
         
