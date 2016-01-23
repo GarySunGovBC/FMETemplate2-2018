@@ -26,15 +26,16 @@ template.startup()
 # for some reason this has to manually added
 import sys
 import importlib
-from test.test_deque import TestVariousIteratorArgs
-sys.path.insert(0, r'E:\sw_nt\FME2014\fmeobjects\python27')
-sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
 import os
+
 # for fmeobjects to import properly the fme dir has 
 # to be closer to the front of the pathlist
 pathList = os.environ['PATH'].split(';')
 pathList.insert(0, r'E:\sw_nt\FME2014')
+sys.path.insert(0, r'E:\sw_nt\FME2014\fmeobjects\python27')
+sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
 os.environ['PATH'] = ';'.join(pathList)
+
 import site
 import fmeobjects
 import platform
@@ -42,17 +43,23 @@ import pprint
 import ConfigParser
 import json
 import logging
+import logging.config
 import PMP.PMPRestConnect
 import FMELogger
 import inspect
 
+
 class TemplateConstants():
+    # no need for a logger in this class as its just
+    # a list of properties
+    #
     # Maps to sections in the config file
     AppConfigFileName = 'templateDefaults.config'
     AppConfigConfigDir = 'config'
     AppConfigOutputsDir = 'outputs'
     AppConfigLogFileExtension = '.log'
     AppConfigLogDir = 'log'
+    AppConfigAppLogFileName = 'applogconfigfilename'
     
     # parameters relating to template sections
     ConfFileSection_global = 'global'
@@ -136,13 +143,19 @@ class TemplateConstants():
 class Start():
     
     def __init__(self, fme):
+        ModuleLogConfig()
         # This method will always be called regardless of any customizations.
+        
+        # logging configuration
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+
         self.fme = fme
         print 'running the startup'
         self.const = TemplateConstants()
         # Reading the global paramater config file
         self.paramObj = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
-        self.initLogging()
+        #self.initLogging()
         self.logger.warning("testing writing a warning message")
         # Extract the custom script directory from config file
         customScriptDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
@@ -253,6 +266,10 @@ class TemplateConfigFileReader():
     key = None
     
     def __init__(self, key, confFile=None):
+        ModuleLogConfig()
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+
         self.confFile = confFile
         print 'self.confFile', self.confFile
         self.const = TemplateConstants()
@@ -419,6 +436,10 @@ class TemplateConfigFileReader():
 class PMPSourceAccountParser():
     
     def __init__(self, accntName):
+        ModuleLogConfig()
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+
         self.accntName = accntName
         self.accntList = self.accntName.split('@')
         if len(self.accntList) == 1:
@@ -467,6 +488,10 @@ class CalcParamsBase( object ):
           will be retrieved from a hardcoded json file 
     '''
     def __init__(self, fmeMacroVals):
+        ModuleLogConfig()
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+
         print 'start with instatiation of CalcParamsBase'
         self.fmeMacroVals = fmeMacroVals
         self.const = TemplateConstants()
@@ -563,6 +588,10 @@ class CalcParamsBase( object ):
 class CalcParamsDevelopment(object):
     
     def __init__(self, parent):
+        ModuleLogConfig()
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+
         #self.paramObj = paramObj
         #self.fmeMacroVals = fmeMacroVals
         #self.const = TemplateConstants()
@@ -679,6 +708,9 @@ class CalcParamsDevelopment(object):
 class CalcParamsDataBC(object):
     
     def __init__(self, parent):
+        ModuleLogConfig()
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
         self.parent = parent
         self.const = self.parent.const
         self.paramObj = self.parent.paramObj
@@ -841,9 +873,33 @@ class CalcParams(CalcParamsBase):
     '''
     
     def __init__(self, fmeMacroVals, forceDevelMode=False):
+        ModuleLogConfig()
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+
+        
         CalcParamsBase.__init__(self, fmeMacroVals)
         self.addPlugin(forceDevelMode)
         print 'self', self
         print 'type(self)', type(self)
         #print getattr(self, '__bases__')
         
+class ModuleLogConfig():
+    def __init__(self):
+        tmpLog = logging.getLogger(__name__)
+        
+        if not tmpLog.handlers:
+            print 'Loading log configs from log config file'
+            const = TemplateConstants()
+            confFile = TemplateConfigFileReader('DEV')
+            # Get the log config file name from the app config file
+            logConfFileName = confFile.parser.get(const.ConfFileSection_global, const.AppConfigAppLogFileName)
+            # get the name of the conf dir
+            configDir = const.AppConfigConfigDir
+            dirname = os.path.dirname(__file__)
+            logConfFileFullPath = os.path.join(dirname,configDir,logConfFileName )
+            print 'logconfig full path:', logConfFileFullPath
+            logging.config.fileConfig(logConfFileFullPath)
+            logger = logging.getLogger(__name__)
+            logger.debug("logger should be configured")
+            

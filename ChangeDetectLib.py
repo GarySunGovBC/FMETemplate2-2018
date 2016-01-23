@@ -41,7 +41,6 @@ import os.path
 import stat
 import datetime
 import re
-import inspect
 import time
 import sys
 import logging
@@ -320,7 +319,9 @@ class ChangeDetect(object):
 class ChangeCache():
     
     def __init__(self, changeObj, changeDict):
-        #self.__initself.logger()
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+
         self.changeObj = changeObj
         
         # saving some typing and creating pointers to objects that 
@@ -434,42 +435,34 @@ class ChangeCache():
             # into data struct
             # features changed should be the same as the features that went in.
             elems = []
-            
-            if self.featureCounts[featPath][0] == self.featureCounts[featPath][1]:
-                
-                # convert last modified to utc time stamp
-                modificationUTCTimeStamp = int(time.mktime(self.lastModifiedDateTimes[featPath].timetuple()))
-                # convert last modified to datetime in local time zone
-                modificationLocalDateTime = self.lastModifiedDateTimes[featPath].astimezone(pytz.timezone(self.const.LocalTimeZone))
-                # convert local datetime object to string representation
-                modificationLocalDateTimeStr = modificationLocalDateTime.strftime(self.const.FMELogDateFormatString)
+            # convert last modified to utc time stamp
+            modificationUTCTimeStamp = int(time.mktime(self.lastModifiedDateTimes[featPath].timetuple()))
+            # convert last modified to datetime in local time zone
+            modificationLocalDateTime = self.lastModifiedDateTimes[featPath].astimezone(pytz.timezone(self.const.LocalTimeZone))
+            # convert local datetime object to string representation
+            modificationLocalDateTimeStr = modificationLocalDateTime.strftime(self.const.FMELogDateFormatString)
 
-                destinationKeyWord = self.changeObj.fmeMacroValues[self.const.FMWParams_DestKey]
-                                 
-                elems.append(currentLocalDateTimeStr)
-                elems.append(str(currentUTCDateTimeStamp))
-                elems.append(fmwName)
-                elems.append(featPath)
-                elems.append(str(modificationUTCTimeStamp))
-                elems.append(modificationLocalDateTimeStr)
-                elems.append(destinationKeyWord)
+            destinationKeyWord = self.changeObj.fmeMacroValues[self.const.FMWParams_DestKey]
+            
+            elems.append(currentLocalDateTimeStr)
+            elems.append(str(currentUTCDateTimeStamp))
+            elems.append(fmwName)
+            elems.append(featPath)
+            elems.append(str(modificationUTCTimeStamp))
+            elems.append(modificationLocalDateTimeStr)
+            elems.append(destinationKeyWord)
+
+            if self.featureCounts[featPath][0] == self.featureCounts[featPath][1]:
                 elems.append(str(self.changeCache[featPath]))
                 
-                # convert list to string and write to log file
-                # TODO: might want write this to memory then if the fmw completes successfully it gets written
-                LineToAdd = ','.join(elems) + '\n'
-                fh.write(LineToAdd)
             else:
                 msg = 'input features is nto the same as the change ' +\
                       'features.  input: {0}, change {1}'
                 msg = msg.format(self.featureCounts[featPath][0], self.featureCounts[featPath][1])
                 self.logger.warning(msg)
+                elems.append(str(False))
+            # TODO: might want write this to memory then if the fmw completes successfully it gets written
+            LineToAdd = ','.join(elems) + '\n'
+            fh.write(LineToAdd)
         fh.close()
             
-
-                
-                
-                
-            
-        
-    
