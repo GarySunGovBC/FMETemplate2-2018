@@ -1,0 +1,77 @@
+[loggers]
+keys=root,
+	 fileChangeLogger, 
+	 changeDetectLibLogger, 
+	 changeCache, 
+	 dataBCTemplate, 
+	 dbcTemp_Start
+
+[handlers]
+keys=consoleHandler,FMELogHandler
+
+[formatters]
+keys=consoleFormatter,fmeFormatter 
+
+# -------- LOG DEFS --------
+
+[logger_root]
+level=DEBUG
+handlers=consoleHandler
+#handlers=FMELogHandler
+
+[logger_fileChangeLogger]
+level = DEBUG
+handlers=FMELogHandler
+qualname=File_Change_DetectorV2.ChangeFlagFetcher
+propagate=0
+
+[logger_changeDetectLibLogger]
+level = DEBUG
+qualname=ChangeDetectLib.ChangeDetect
+handlers=FMELogHandler
+propagate=0
+
+[logger_changeCache]
+level = DEBUG
+handlers=FMELogHandler
+qualname=ChangeDetectLib.changeCache
+propagate=0
+
+[logger_dataBCTemplate]
+level = DEBUG
+handlers=FMELogHandler
+qualname=DataBCFMWTemplate
+propagate=0
+
+[logger_dbcTemp_Start]
+level = DEBUG
+handlers=FMELogHandler
+qualname=DataBCFMWTemplate
+propagate=0
+
+
+
+
+# -------- HANDLER DEFS --------
+
+[handler_consoleHandler]
+class=StreamHandler
+formatter=consoleFormatter
+args=(sys.stdout,)
+
+[handler_FMELogHandler]
+class=FMELogger.FMELogHandler
+formatter=fmeFormatter
+args=(sys.stdout,)
+
+# -------- FORMATTER DEFS --------
+
+[formatter_consoleFormatter]
+format=%(asctime)s - %(name)s - %(levelname)s - %(message)s
+datefmt=%Y-%m-%d %H:%M:%S
+
+
+[formatter_fmeFormatter]
+format=%(levelname)s: %(message)s
+#format=%(asctime)s|   ?.?|  0.0|PYTHON SHUTDOWN| %(levelname)s: %(message)s
+datefmt=%Y-%m-%d %H:%M:%S
