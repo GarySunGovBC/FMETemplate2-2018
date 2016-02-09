@@ -27,12 +27,15 @@ template.startup()
 import sys
 import importlib
 import os
+from pprint import PrettyPrinter
 
 # for fmeobjects to import properly the fme dir has 
 # to be closer to the front of the pathlist
+# TODO: have a autodetect for 2015 and send an error if
+# not running under fme2015
 pathList = os.environ['PATH'].split(';')
-pathList.insert(0, r'E:\sw_nt\FME2014')
-sys.path.insert(0, r'E:\sw_nt\FME2014\fmeobjects\python27')
+pathList.insert(0, r'E:\sw_nt\FME2015')
+sys.path.insert(0, r'E:\sw_nt\FME2015\fmeobjects\python27')
 sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
 os.environ['PATH'] = ';'.join(pathList)
 
@@ -49,7 +52,7 @@ import FMELogger
 import inspect
 
 
-class TemplateConstants():
+class TemplateConstants(object):
     # no need for a logger in this class as its just
     # a list of properties
     #
@@ -82,6 +85,11 @@ class TemplateConstants():
     ConfFileSection_instanceKey = 'instance'
     
     ConfFileSection_pmpTokens = 'pmptokens'
+    
+    ConfFileDestKey_Prod = 'prod'
+    ConfFileDestKey_Test = 'test'
+    ConfFileDestKey_Deliv = 'dlv'
+    ConfFileDestKey_Devel = 'dev'
     
     # published parameters - destination
     FMWParams_DestKey = 'DEST_DB_ENV_KEY'
@@ -140,10 +148,14 @@ class TemplateConstants():
     # log file the strings will be in this time zone
     LocalTimeZone = 'US/Pacific'
     
-class Start():
+class Start(object):
     
     def __init__(self, fme):
-        ModuleLogConfig()
+        self.const = TemplateConstants()
+        fmwDir = fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
+        fmwName = fme.macroValues[self.const.FMWMacroKey_FMWName]
+        ModuleLogConfig(fmwDir, fmwName)
+        #ModuleLogConfig(fme.macroValues[self.const.FMWMacroKey_FMWDirectory])
         # This method will always be called regardless of any customizations.
         
         # logging configuration
@@ -152,7 +164,6 @@ class Start():
 
         self.fme = fme
         print 'running the startup'
-        self.const = TemplateConstants()
         # Reading the global paramater config file
         self.paramObj = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
         #self.initLogging()
@@ -210,7 +221,7 @@ class Start():
         self.logger.debug("calling the startup method..")
         self.startupObj.startup()
         
-class DefaultStart():
+class DefaultStart(object):
     def __init__(self, fme):
         self.fme = fme
         
@@ -226,7 +237,7 @@ class DefaultStart():
         # currently there is no startup code.
         pass
         
-class Shutdown():
+class Shutdown(object):
     
     def __init__(self, fme):
 
@@ -236,16 +247,22 @@ class Shutdown():
         self.fme = fme
         self.const = TemplateConstants()
         
-        path2FmwDir = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
-        logFileFullPath = os.path.join(path2FmwDir, self.fme.logFileName)
-        logFileName = os.path.splitext(os.path.basename(__file__))[0] + '.' + self.__class__.__name__
-        logging.logFileName = logFileName
-        print 'logFileName', logFileFullPath
-        ModuleLogConfig(logFileFullPath)
+        self.params = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
+        
+        #path2FmwDir = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
+        #logFileFullPath = os.path.join(path2FmwDir, self.fme.logFileName)
+        #logFileName = os.path.splitext(os.path.basename(__file__))[0] + '.' + self.__class__.__name__
+        #logging.logFileName = logFileName
+        #print 'logFileName', logFileFullPath
+        fmwDir = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
+        fmwName = self.fme.macroValues[self.const.FMWMacroKey_FMWName]
+        ModuleLogConfig(fmwDir, fmwName)
         
         # logging configuration
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        print 'shutdown modDotClass', modDotClass
         self.logger = logging.getLogger(modDotClass)
+        print 'logger is', self.logger
         #self.__initLogging()
         self.logger.debug("Shutdown has been called...")
         self.logger.debug("log file name: {0}".format(self.fme.logFileName))
@@ -271,10 +288,17 @@ class Shutdown():
     
     def shutdown(self):
         # what needs to be written can go here.
-        self.logger.debug("shutdown has been called")
-        pass
+        self.logger.debug("SHUTDOWN has been called")
+        #if self.params.isDestProd():
+        # TODO: debugging has this always set to true. Once the DWM writer is working need to switch this if wiht the if statement above
+        if True:
+            # if we are writing to prod then write to dwm table
+            self.logger.info("FMW is set up to write to PROD")
+            self.logger.info("Enabling the DWMWriter")
+            dwmWriter = DWMWriter(self.fme)
+            dwmWriter.printParams()
    
-class TemplateConfigFileReader():
+class TemplateConfigFileReader(object):
     
     parser = None
     key = None
@@ -321,6 +345,7 @@ class TemplateConfigFileReader():
     def setDestinationDatabaseEnvKey(self, key):
         self.validateKey(key)
         self.key = self.getDestinationDatabaseKey(key)
+        
             
     def getValidKeys(self):
         '''returns a list of accepted values for keys'''
@@ -429,6 +454,18 @@ class TemplateConfigFileReader():
         nodeList = nodeString.split(',')
         return nodeList
     
+    def isDestProd(self):
+        '''
+        checks the currently set destination keyword, and 
+        returns true or false if it corresponds with a 
+        prod destination.
+        
+        key is in self.key
+        '''
+        retVal = False 
+        if self.key == self.const.ConfFileDestKey_Prod:
+            retVal = True
+                
     def isDataBCNode(self):
         nodeList = self.getDataBCNodes()
         for indx in range(0, len(nodeList)):
@@ -447,10 +484,10 @@ class TemplateConfigFileReader():
         print 'retVal', retVal
         return retVal
     
-class PMPSourceAccountParser():
+class PMPSourceAccountParser(object):
     
     def __init__(self, accntName):
-        ModuleLogConfig()
+        #ModuleLogConfig()
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
 
@@ -487,6 +524,63 @@ class Util(object):
         stringList = inString.split('.')
         return stringList[0].strip()
     
+    @staticmethod
+    def calcLogFilePath(fmwDir, fmwName, returnPathList=False):
+        '''
+        This method will recieve the full path to where the current 
+        fmw that is being processed is located, and the name of the fmw
+        that is being processed.  It will then calculate:
+          - the full path to the outputs director
+          - the full path to the fmw directore (sub dir of outputs)
+          - from these paths it will then calculate the relative directory
+            from the fmw directory to the output log file and returns 
+            this value.
+            
+        example if the inputs are:
+          fmwDir = 'C:\somedir\myFmws'
+          fmwName = 'CopyData.fmw'
+          
+          Then:
+           - outputs directory will be: C:\somedir\myFmws\outputs
+               (depending on what the value const.AppConfigOutputsDir 
+                is set to)
+           - log dir path will be: C:\somedir\myFmws\outputs\CopyData
+           - and the relative log directory will be:
+             ./outputs/CopyData/CopyData.log
+               (Which is the relative path for the fmw but not 
+                for the python code that is doing the calcuating)
+        
+         If returnPathList is set to True then the method will 
+         return a list with all these paths, the order will be:
+           [0] relative path (./outputs/CopyData/CopyData.log)
+           [1] full path to log file (C:\somedir\myFmws\outputs\CopyData\CopyData.log)
+           [2] log dir (C:\somedir\myFmws\outputs\CopyData)
+           [3] outputs (C:\somedir\myFmws\outputs)
+           
+        '''
+        const = TemplateConstants()
+        # fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName])
+        # fmwDir = fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        #curDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        outDirFullPath = os.path.join(fmwDir, const.AppConfigOutputsDir)
+        logDirFullPath = os.path.join(outDirFullPath, const.AppConfigLogDir)
+        fmwFileNoExt, fileExt = os.path.splitext(fmwName)
+        fmwLogFile = fmwFileNoExt + const.AppConfigLogFileExtension
+        absFullPath = os.path.join( logDirFullPath, fmwLogFile)
+        relativePath = os.path.join('.', const.AppConfigOutputsDir, const.AppConfigLogDir, fmwLogFile)
+        # making sure all output paths are properly formatted
+        relativePath = os.path.realpath(relativePath)
+        absFullPath = os.path.realpath(absFullPath)
+        logDirFullPath = os.path.realpath(logDirFullPath)
+        outDirFullPath = os.path.realpath(outDirFullPath)
+        
+        retVal = None
+        if returnPathList:
+            retVal = [relativePath,absFullPath, logDirFullPath, outDirFullPath]
+        else:
+            retVal = relativePath
+        return retVal
+    
 class CalcParamsBase( object ):
     '''
     This method contains the base functionality which 
@@ -502,13 +596,18 @@ class CalcParamsBase( object ):
           will be retrieved from a hardcoded json file 
     '''
     def __init__(self, fmeMacroVals):
-        ModuleLogConfig()
+        self.fmeMacroVals = fmeMacroVals
+        self.const = TemplateConstants()
+
+        fmwDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
+        ModuleLogConfig(fmwDir, fmwName)
+
+        #ModuleLogConfig()
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
 
-        print 'start with instatiation of CalcParamsBase'
-        self.fmeMacroVals = fmeMacroVals
-        self.const = TemplateConstants()
+        print 'start with instantiation of CalcParamsBase'
         self.paramObj = TemplateConfigFileReader(self.fmeMacroVals[self.const.FMWParams_DestKey])
         
         # if the computer that script is being run is defined 
@@ -557,17 +656,28 @@ class CalcParamsBase( object ):
             self.plugin = CalcParamsDevelopment(self)
         
     def getFMWLogFileRelativePath(self, create=True):
-        curDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
-        outDirFullPath = os.path.join(curDir, self.const.AppConfigOutputsDir)
-        if not os.path.exists(outDirFullPath) and create:
-            os.mkdir(outDirFullPath)
-        logDirFullPath = os.path.join(outDirFullPath, self.const.AppConfigLogDir)
-        if not os.path.exists(logDirFullPath) and create:
-            os.mkdir(logDirFullPath)
-        fmwFileNoExt, fileExt = os.path.splitext(self.fmeMacroVals[self.const.FMWMacroKey_FMWName])
-        fmwLogFile = fmwFileNoExt + self.const.AppConfigLogFileExtension
-        relativePath = os.path.join('.', self.const.AppConfigOutputsDir, self.const.AppConfigLogDir, fmwLogFile)
-        return relativePath
+        pathList = Util.calcLogFilePath(self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory], 
+                             self.fmeMacroVals[self.const.FMWMacroKey_FMWName], 
+                             True)
+        # retVal = [relativePath,absFullPath, logDirFullPath, outDirFullPath]
+        outDir = pathList.pop()
+        fmwDir = pathList.pop()
+        if not os.path.exists(outDir) and create:
+            os.mkdir(outDir)
+        if not os.path.exists(fmwDir) and create:
+            os.mkdir(fmwDir)
+            
+        #curDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        #outDirFullPath = os.path.join(curDir, self.const.AppConfigOutputsDir)
+        #if not os.path.exists(outDirFullPath) and create:
+        #    os.mkdir(outDirFullPath)
+        #logDirFullPath = os.path.join(outDirFullPath, self.const.AppConfigLogDir)
+        #if not os.path.exists(logDirFullPath) and create:
+        #    os.mkdir(logDirFullPath)
+        #fmwFileNoExt, fileExt = os.path.splitext(self.fmeMacroVals[self.const.FMWMacroKey_FMWName])
+        #fmwLogFile = fmwFileNoExt + self.const.AppConfigLogFileExtension
+        #relativePath = os.path.join('.', self.const.AppConfigOutputsDir, self.const.AppConfigLogDir, fmwLogFile)
+        return pathList[0]
         
     def getDestinationServer(self):
         self.logger.logMessageString('Setting the destination server')
@@ -602,16 +712,21 @@ class CalcParamsBase( object ):
 class CalcParamsDevelopment(object):
     
     def __init__(self, parent):
-        ModuleLogConfig()
+        self.parent = parent
+        self.const = self.parent.const
+        self.paramObj = self.parent.paramObj
+        
+        fmwDir = self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        fmwName = self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWName]
+        ModuleLogConfig(fmwDir, fmwName)
+        
+        #ModuleLogConfig()
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
 
         #self.paramObj = paramObj
         #self.fmeMacroVals = fmeMacroVals
         #self.const = TemplateConstants()
-        self.parent = parent
-        self.const = self.parent.const
-        self.paramObj = self.parent.paramObj
         print 'constructing a CalcParamsDevelopment'
         confDirName = self.paramObj.getConfigDirName()
         credsFileName = self.paramObj.getDevelopmentModeCredentialsFileName()        
@@ -722,12 +837,17 @@ class CalcParamsDevelopment(object):
 class CalcParamsDataBC(object):
     
     def __init__(self, parent):
-        ModuleLogConfig()
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
-        self.logger = logging.getLogger(modDotClass)
         self.parent = parent
         self.const = self.parent.const
         self.paramObj = self.parent.paramObj
+        
+        fmwDir = self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        fmwName = self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWName]
+        ModuleLogConfig(fmwDir, fmwName)
+        
+        #ModuleLogConfig()
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
         self.fmeMacroVals = self.parent.fmeMacroVals
         self.currentPMPResource = None
         #self.paramObj = paramObj
@@ -887,10 +1007,14 @@ class CalcParams(CalcParamsBase):
     '''
     
     def __init__(self, fmeMacroVals, forceDevelMode=False):
-        ModuleLogConfig()
+        self.const = TemplateConstants()
+        fmwDir = fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        fmwName = fmeMacroVals[self.const.FMWMacroKey_FMWName]
+        ModuleLogConfig(fmwDir, fmwName)
+        
+        #ModuleLogConfig()
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
-
         
         CalcParamsBase.__init__(self, fmeMacroVals)
         self.addPlugin(forceDevelMode)
@@ -898,25 +1022,179 @@ class CalcParams(CalcParamsBase):
         print 'type(self)', type(self)
         #print getattr(self, '__bases__')
         
-class ModuleLogConfig():
-    def __init__(self, logFileName=None):
+class ModuleLogConfig(object):
+    def __init__(self, fmwDir, fmwName):
+        pathList = Util.calcLogFilePath(fmwDir, fmwName, True)
+        print 'pathList', pathList
+        # get the tmpLog to test to see if the logger has been 
+        # initialized yet or not
         tmpLog = logging.getLogger(__name__)
-        
+        print 'tmpLog', tmpLog
+        print 'logFileName', pathList[1]
         if not tmpLog.handlers:
-            if logFileName:
-                logging.logFileName = logFileName
-                print 'logFileName', logFileName
+            print 'no handlers found'
+            logging.logFileName = pathList[1]
+            print 'logFileName', logging.logFileName  # @UndefinedVariable
             print 'Loading log configs from log config file'
             const = TemplateConstants()
+            print 'created the constants'
             confFile = TemplateConfigFileReader('DEV')
             # Get the log config file name from the app config file
+            print 'confFile is', confFile
             logConfFileName = confFile.parser.get(const.ConfFileSection_global, const.AppConfigAppLogFileName)
+            print 'logConfFileName', logConfFileName
+            
             # get the name of the conf dir
             configDir = const.AppConfigConfigDir
             dirname = os.path.dirname(__file__)
+            print 'dirname', dirname
             logConfFileFullPath = os.path.join(dirname,configDir,logConfFileName )
             print 'logconfig full path:', logConfFileFullPath
+            # logFileName
+            #logging.logFileName = logFileName
             logging.config.fileConfig(logConfFileFullPath)
+            print 'got here'
             logger = logging.getLogger(__name__)
+            print 'and here'
             logger.debug("logger should be configured")
+        else:
+            print 'logger already loaded'
             
+class DWMWriter(object ):
+    '''
+    Things that were logged by the other logger:
+      a) mappingFileID
+      b) startTime -  reads the log file and strips out 
+                      the start time.  Looks for it in 
+                      the log file.  Strips it from the 
+                      first line
+                      
+                      might be able to calc using the elapsed
+                      time
+                      
+      c) endTime - The last line in the file, end time will 
+                   be the time that DWM writer was started.
+                   
+      d) exitStatus - set to 'OK | Error'
+      
+      e) totalFeaturesWritten - from self.fme.totalFeaturesWritten
+      
+      f) features rejected - This is the logic found in the lib, 
+                             info is being parsed from the log file
+                             
+            featuresRejectedCount = '-99'
+            if os.path.isfile(logFile):
+                    for line in fileinput.input(logFile):
+                        if re.search('Stored ', line):
+                            if re.search(r"(?<=Stored )\d+", line):
+                                m = re.search(r"(?<=Stored )\d+", line)
+                                featuresRejectedcount = m.group(0)
+      
+      g) notification Email. - Not sure why we need this.  Thinking 
+                            notifications should be set up with the 
+                            
+      h) logfile - Thinking this should be the restapi link through fme
+                   server
+                   
+      i) Destination instance - Get from the published parameters
+      
+      j) destSchema - Get from published parameters
+      
+      k) dest_table - Get from published parameters (what about multiple
+                      destinations?)
+                      
+                      could do a read of the actual fmw's xml and 
+                      from there draw lines between sources and destinations
+                      but this would require more work.  Other idea, maybe
+                      from log.
+                      
+      l) data source - retrieved from fme.featuresRead
+                       if not from there then try the workbench macros?
+                       Need to be able to relate back features read, written
+                       etc
+                    
+      m) duration - elapsedRunTime
+      
+        params = {}
+        params['FME_WORKBENCH'] = str(mappingFileID)
+        params['COMMENTS'] = str(exitStatus)
+        params['TOTAL_FEATURES_READ'] = str(featuresReadCount)
+        params["TOTAL_FEATURES_READ"] = str(featuresReadCount)
+        params["TOTAL_FEATURES_WRITTEN"] = str(featuresWrittenCount)
+        params["DEST_INSTANCE"] = str(destInstance)
+        params["DEST_SCHEMA"] = str(destSchema)
+        params['DEST_LAYER'] = str(destTable)
+        params["SOURCE_FEAT"] = str(dataSource)
+        params["SECONDS_ELAPSED"] = str(duration)
+            
+    # - try to capture source data type - fgdb or sde30 etc.
+    # - 
+    
+    - logger writes features to IDWPROD APP_UTILITY
+    
+    '''
+    def __init__(self, fme, const=None):
+        self.const = const
+        if not self.const:
+            self.const = TemplateConstants()
+        self.fme = fme
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+        
+    def writeRecord(self):
+        '''
+        '''
+        insertStatement = 'INSERT INTO '
+        self.printParams()
+    
+    def getMapFileId(self):
+        '''
+        
+        '''
+        mapFileId = self.fme.mappingFileId
+        if not mapFileId:
+            # in case its not there then try to get it from the 
+            # macroValues
+            mapFileId = self.fme.macroValues[self.const.FMWMacroKey_FMWName]
+            mapFileId, extension = os.path.splitext(mapFileId)
+            # could also get from WORKSPACE_NAME
+        return mapFileId
+        
+    def printParams(self):
+        titleLine = '----  {0} -----'
+        print titleLine.format('elapsedRunTime')
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(self.fme.elapsedRunTime)
+        print titleLine.format('featuresRead')
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(self.fme.featuresRead)
+        print titleLine.format('featuresWritten')
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(self.fme.featuresWritten)
+        print titleLine.format('logFileName')
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(self.fme.logFileName)
+        print titleLine.format('macroValues')
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(self.fme.macroValues)
+        print titleLine.format('mappingFileId')
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(self.fme.mappingFileId)
+        print titleLine.format('numFeaturesLogged')
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(self.fme.numFeaturesLogged)
+        print titleLine.format('status')
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(self.fme.status)
+        print titleLine.format('totalFeaturesRead')
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(self.fme.totalFeaturesRead)
+        print titleLine.format('totalFeaturesWritten')
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(self.fme.totalFeaturesWritten)
+        
+        
+
+        
+        
+

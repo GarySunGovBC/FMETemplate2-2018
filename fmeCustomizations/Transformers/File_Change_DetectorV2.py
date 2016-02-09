@@ -80,14 +80,13 @@ class ChangeFlagFetcher(object):
         directory = os.path.dirname(__file__)
 
         #logfileName = self.fmeMacroValues[self.chng.const.FMWMacroKey_FMWName]
-        logfileName = os.path.basename(__file__)
-        logSuffix = self.chng.const.FMELogFileSuffix
-        logfileNoSuffix, suffix = os.path.splitext(logfileName)
+        #logfileName = os.path.basename(__file__)
+        #logSuffix = self.chng.const.FMELogFileSuffix
+        #logfileNoSuffix, suffix = os.path.splitext(logfileName)
         
-        logconfigFile = os.path.join(directory, logfileNoSuffix + logSuffix)
-        # TODO: add a if exists
-        print 'logconfigFile', logconfigFile
-        logging.config.fileConfig(logconfigFile)
+        #logconfigFile = os.path.join(directory, logfileNoSuffix + logSuffix)
+        # TODO: add a if exists handler
+        #print 'logconfigFile', logconfigFile
         
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
@@ -101,7 +100,10 @@ class ChangeFlagFetcher(object):
         # the feature attributes
         # fme_feature_type --:-- CLAB_INDIAN_RESERVES 
         # fme_dataset --:-- \\data.bcgov\data_staging_ro\BCGW\administrative_boundaries\Federal_IRs.gdb
-        # probably a better way of doing it! 
+        # probably a better way of doing it!
+        #print 'type of feature', type(feature)
+        #print 'feature', feature
+        atribNames = feature.getAllAttributeNames()
         fmeDataset = feature.getAttribute('fme_dataset')
         self.changeCache.addFeatureIn(fmeDataset)
         if self.changeCache.hasChanged(fmeDataset):
