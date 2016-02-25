@@ -485,7 +485,7 @@ if __name__ == "__main__":
     #sys.argv = ['', 'Test_TemplateConfigFileReader.test_getDestinationDatabaseKey', 
     #                       'Test_TemplateConfigFileReader.test_validateKey']
     #sys.argv = ['', 'Test_Shutdown.test_dbConn']
-    sys.argv = ['', 'Test_CalcParams.test_getDatabaseConnectionFilePath']
+    sys.argv = ['', 'Test_Shutdown.test_shutdown']
 
     unittest.main()
     

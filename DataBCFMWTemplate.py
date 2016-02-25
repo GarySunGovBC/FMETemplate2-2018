@@ -205,7 +205,6 @@ class Start(object):
             startupModule = importlib.import_module(justScript)
             self.logger.debug("{0} module loaded successfully".format(justScript))
             self.startupObj = startupModule.Start(self.fme)
-            print 'object created'
         else:
             self.logger.debug('using the generic template startup')
             self.startupObj = DefaultStart(self.fme)
@@ -297,36 +296,11 @@ class Shutdown(object):
         self.logger.debug('Logger should be setup!')
     
     def shutdown(self):
-        # A) need to get the schema to be used for writing to the 
-        #    DWM table from the config file.
-        dwmUser = self.params.getDWMDbUser()
-        dbEnvKey = self.fme.macroValues[self.const.FMWParams_DestKey]
-        dwmPmpResource = self.params.getDestinationPmpResource(dbEnvKey)
-        computerName = Util.getComputerName()
-        pmpDict = {'token': self.paramObj.getPmpToken(computerName),
-                   'baseurl': self.paramObj.getPmpBaseUrl(), 
-                   'restdir': self.paramObj.getPmpRestDir()}
-        pmp = PMP.PMPRestConnect.PMP(pmpDict)
-        dwmPass = pmp.getAccountPassword(dwmUser, dwmPmpResource)
-        dbInst = self.params.getDestinationInstance()
+        self.logger.info("Enabling the DWMWriter")
+        dwmWriter = DWMWriter(self.fme)
+        #dwmWriter.printParams()
+        dwmWriter.writeRecord()
         
-        # B) now we have the user password and instance, can now
-        #    create a connection and write the record
-        # what needs to be written can go here.
-        self.logger.debug("SHUTDOWN has been called")
-        # should be a pmp call here to get these creds
-        #conn = cx_Oracle.connect('whse_etl_admin', 'torkeetock', 'bcgwdlv.bcgov')
-        conn = cx_Oracle.connect(dwmUser, dwmPass, dbInst)
-        #if self.params.isDestProd():
-        # TODO: debugging has this always set to true. Once the DWM writer is working need to switch this if wiht the if statement above
-        if True:
-            # if we are writing to prod then write to dwm table
-            self.logger.info("FMW is set up to write to PROD")
-            self.logger.info("Enabling the DWMWriter")
-            dwmWriter = DWMWriter(self.fme)
-            #dwmWriter.printParams()
-            dwmWriter.writeRecord()
-            
 class TemplateConfigFileReader(object):
     
     parser = None
@@ -338,11 +312,14 @@ class TemplateConfigFileReader(object):
         self.logger = logging.getLogger(modDotClass)
 
         self.confFile = confFile
-        print 'self.confFile', self.confFile
+        self.logger.debug("Reading the config file: {0}".format(self.confFile))
         self.const = TemplateConstants()
         self.readConfigFile()
         self.setDestinationDatabaseEnvKey(key)
-        print 'key', key, self.key
+        msg = "Destination database environment key has been set to ({0}) " + \
+              " the raw input key is ({1})"
+        msg = msg.format(self.key, key)
+        self.logger.debug(msg)
         
     def readConfigFile(self):
         if not self.confFile:
@@ -354,11 +331,11 @@ class TemplateConfigFileReader(object):
                 msg = 'Can\'t find the application config file: {0} '
                 msg = msg.format(self.confFile)
                 raise ValueError, msg
-            print 'self.confFile', self.confFile
+            self.logger.debug("config file path that has been calculated is {0}".format(self.confFile))
         if not self.parser:
             self.parser = ConfigParser.ConfigParser()
             self.parser.read(self.confFile)
-            print 'sections', self.parser.sections()
+            self.logger.debug("sections in the config file are: {0}".format(self.parser.sections()))
             
     def validateKey(self, key):
         key = self.getDestinationDatabaseKey(key)
@@ -399,7 +376,7 @@ class TemplateConfigFileReader(object):
         return srcPmpResourcesList
         
     def getDestinationPmpResource(self, dbEnvKey=None):
-        print 'dbEnvKey', dbEnvKey
+        self.logger.debug("raw input dbEnv Key is {0}".format(dbEnvKey))
         if not dbEnvKey:
             dbEnvKey = self.key
         else:
@@ -562,11 +539,12 @@ class TemplateConfigFileReader(object):
             curMachine = curMachineList[0]
         curMachine = curMachine.lower()
         retVal = False
-        print 'curMachine', curMachine
-        print 'nodeList', nodeList
+        msg = 'current machine is {0} and node list is {1}'
+        msg = msg.format(curMachine, nodeList)
+        self.logger.debug(msg)
         if curMachine in nodeList:
             retVal = True
-        print 'retVal', retVal
+        self.logger.debug("isDataBCNode return val: {0}".format(retVal))
         return retVal
     
 class PMPSourceAccountParser(object):
@@ -693,18 +671,8 @@ class CalcParamsBase( object ):
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
 
-        print 'start with instantiation of CalcParamsBase'
         self.paramObj = TemplateConfigFileReader(self.fmeMacroVals[self.const.FMWParams_DestKey])
-        
-        # if the computer that script is being run is defined 
-        # as a "gov" machine, the app assumes that it can 
-        # communicate with pmp.  As a result it will retrieve
-        # database passwords from pmp.  If the script is 
-        # run on a "nongov" machine it will attempt to retrieve
-        # database credentials from a json file. (file path is 
-        # returned by the TemplateConfigFileReader class
-        # when necessary.   
-        
+                
         self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
         print 'done with instatiation of CalcParamsBase'        
         
@@ -1250,27 +1218,30 @@ class DWMWriter(object ):
         # TODO: modify the logging config file so that it captures both the pmp and the database log parameters
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
         accntName = self.config.getDWMDbUser()
-        instance = self.config.getDWMDbInstance()
-        pmpResource = self.config.getDWMDbPmpResource()
+        instance = self.config.getDestinationInstance()
+        pmpResource = self.config.getDestinationPmpResource()
         passwrd = pmp.getAccountPassword(accntName, pmpResource)
         self.logger.debug("accntName: {0}".format(accntName))
         self.logger.debug("instance: {0}".format(instance))
         self.db = DB.DbLib.DbMethods()
         try:
             self.db.connectParams(accntName, passwrd, instance)
-        except:
+        except Exception, e:
             try:
-                server = self.config.getDWMDbServer()
+                self.logger.warning(str(e))
+                server = self.config.getDestinationServer()
                 msg = 'unable to create a connection to the schema: {0}, instance {1} ' + \
                       'going to try to connect directly to the server: {2}'
                 msg = msg.format(accntName, instance, server)
                 self.logger.warning(msg)
-                port = self.config.getDWMDbPort()
+                port = self.config.getDestinationOraclePort()
                 self.logger.debug("port: {0}".format(port))
                 self.logger.debug("server: {0}".format(server))
                 self.db.connectNoDSN(accntName, passwrd, instance, server, port)
                 self.logger.debug("successfully connected to database using direct connect")
-            except:
+                # TODO: Should really capture the specific error type here
+            except Exception, e:
+                self.logger.error(str(e))
                 self.logger.info(msg)
                 msg = 'database connection used to write to DWM has failed, ' + \
                       'dwm record for this replication will not be written'
@@ -1290,6 +1261,7 @@ class DWMWriter(object ):
         try:
             self.db.executeOracleSql(insertState, dwmRecord)
             self.db.commit()
+            self.logger.info("DWM Record sucessfully written")
         except Exception, e:
             msg = 'unable to write the DWM record to the database'
             self.logger.error(msg)
