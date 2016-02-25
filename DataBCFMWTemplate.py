@@ -673,26 +673,7 @@ class CalcParamsBase( object ):
 
         self.paramObj = TemplateConfigFileReader(self.fmeMacroVals[self.const.FMWParams_DestKey])
                 
-        self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
-        print 'done with instatiation of CalcParamsBase'        
-        
-    def __initlogger(self):
-        logName = os.path.splitext(os.path.basename(__file__))[0] + '.' + self.__class__.__name__
-        self.logger = logging.getLogger( logName )         
-        
-        #rootLogger = logging.getLogger()
-        
-        #hndlr = logging.FileHandler(logFile) 
-        hndlr = FMELogger.FMELogHandler()
-        
-        # Step 3 - create a formatter along with a format string
-        formatString = '%(asctime)s %(name)s.%(funcName)s.%(lineno)d %(levelname)s: %(message)s'
-        formatr = logging.Formatter( formatString )
-        formatr.datefmt = '%m-%d-%Y %H:%M:%S' # set up the date format for log messages
-        hndlr.setFormatter(formatr)        
-        self.logger.addHandler(hndlr)          
-        self.logger.setLevel(logging.DEBUG)        
-        self.logger.debug('Logger should be setup!')
+        #self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable       
         
     def addPlugin(self, forceDevel=False):
         if forceDevel:
@@ -704,6 +685,7 @@ class CalcParamsBase( object ):
             # recovery
             print 'inheriting the databc methods'
             #CalcParamsDataBC.__init__(self, fmeMacroVals)
+            # TODO: Should implement an abstract class to ensure that all plugins impement the required methods.
             self.plugin = CalcParamsDataBC(self)
         else:
             #CalcParamsDevelopment.__init__(self, fmeMacroVals)
@@ -1057,18 +1039,41 @@ class CalcParamsDataBC(object):
             
 class CalcParams(CalcParamsBase):
     '''
-    This class is used to populate the scripted parameters
-    defined in the fmw.  The following table describes the 
-    relationship between these methods and the properties
-    that they populate
-        getDestinationServer       - DEST_SERVER
-        getDestinationInstance     - DEST_INSTANCE
-        getDestinationPort         - DEST_PORT
-        getDestinationPassword     - DEST_PASSWORD
+    This class exists to populate scripted parameters
+    defined in the fmw.
     
-    import DataBCFMWTemplate
-    params = DataBCFMWTemplate.calcParams(FME_MacroValues)
-    return params.getDestinationPassword()
+    No real functionality exists in this module.  Functionality
+    exists in two other classes:
+      - CalcParamsBase
+      - or via a plugin.
+      
+    The module is set up this way to enable us to have 
+    base functionality that applies in all cases, and then 
+    plugin functionality that works differently depending on 
+    whether we are working in a development mode and/or 
+    environment, vs a databc environment.
+    
+    In development mode you may be connecting to your own 
+    database, pmp will be unavailable, etc.  
+    
+    In production environment, the assumption is you 
+    can connect to databc servers, and databases, pmp etc
+      
+    Room for improvement on how this is impelmented.
+    Initially tried to set it up with conditional 
+    inheritance but found that it didn't work with 
+    the way I wanted it to.  The plugin approach was
+    the next best thing.
+    
+    To implement new functionality as a plugin it needs
+    to be implmeneted in both of the plugin classes, but 
+    should also be implmeneted in the base module.  Good 
+    example is the getDestinationPassword() method.  Includes
+    versions in both the plugins, as well the base class.
+    
+    Base class calls plugin.getDestinationPassword().  This 
+    works cause plugin is set when the class is instantiated, 
+    and then points to either the dev module or the prod one.
     '''
     
     def __init__(self, fmeMacroVals, forceDevelMode=False):
@@ -1077,15 +1082,12 @@ class CalcParams(CalcParamsBase):
         fmwName = fmeMacroVals[self.const.FMWMacroKey_FMWName]
         ModuleLogConfig(fmwDir, fmwName)
         
-        #ModuleLogConfig()
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
-        
+        self.logger.info("inheriting the CalcParamsBase class")
         CalcParamsBase.__init__(self, fmeMacroVals)
+        self.logger.debug("adding plugin functionality")
         self.addPlugin(forceDevelMode)
-        print 'self', self
-        print 'type(self)', type(self)
-        #print getattr(self, '__bases__')
         
 class ModuleLogConfig(object):
     def __init__(self, fmwDir, fmwName):
