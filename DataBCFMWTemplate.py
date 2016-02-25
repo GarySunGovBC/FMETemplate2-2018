@@ -299,13 +299,24 @@ class Shutdown(object):
     def shutdown(self):
         # A) need to get the schema to be used for writing to the 
         #    DWM table from the config file.
-        self.params.getDWMDbUser()
+        dwmUser = self.params.getDWMDbUser()
+        dbEnvKey = self.fme.macroValues[self.const.FMWParams_DestKey]
+        dwmPmpResource = self.params.getDestinationPmpResource(dbEnvKey)
+        computerName = Util.getComputerName()
+        pmpDict = {'token': self.paramObj.getPmpToken(computerName),
+                   'baseurl': self.paramObj.getPmpBaseUrl(), 
+                   'restdir': self.paramObj.getPmpRestDir()}
+        pmp = PMP.PMPRestConnect.PMP(pmpDict)
+        dwmPass = pmp.getAccountPassword(dwmUser, dwmPmpResource)
+        dbInst = self.params.getDestinationInstance()
         
-        
+        # B) now we have the user password and instance, can now
+        #    create a connection and write the record
         # what needs to be written can go here.
         self.logger.debug("SHUTDOWN has been called")
         # should be a pmp call here to get these creds
-        conn = cx_Oracle.connect('whse_etl_admin', 'torkeetock', 'bcgwdlv.bcgov')
+        #conn = cx_Oracle.connect('whse_etl_admin', 'torkeetock', 'bcgwdlv.bcgov')
+        conn = cx_Oracle.connect(dwmUser, dwmPass, dbInst)
         #if self.params.isDestProd():
         # TODO: debugging has this always set to true. Once the DWM writer is working need to switch this if wiht the if statement above
         if True:
@@ -316,23 +327,6 @@ class Shutdown(object):
             #dwmWriter.printParams()
             dwmWriter.writeRecord()
             
-    def junk(self):
-        if not destKey:
-            destKey = self.fmeMacroVals[self.const.FMWParams_DestKey]
-        else: 
-            self.paramObj.validateKey(destKey)
-            destKey = self.paramObj.getDestinationDatabaseKey(destKey)
-        pmpRes = self.paramObj.getDestinationPmpResource(destKey)
-        computerName = Util.getComputerName()
-        pmpDict = {'token': self.paramObj.getPmpToken(computerName),
-                   'baseurl': self.paramObj.getPmpBaseUrl(), 
-                   'restdir': self.paramObj.getPmpRestDir()}
-        pmp = PMP.PMPRestConnect.PMP(pmpDict)
-        accntName = self.fmeMacroVals[self.const.FMWParams_DestSchema]
-        passwrd = pmp.getAccountPassword(accntName, pmpRes)
-        return passwrd
-
-
 class TemplateConfigFileReader(object):
     
     parser = None
