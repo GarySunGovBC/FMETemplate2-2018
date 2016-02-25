@@ -63,8 +63,8 @@ class ChangeDetect(object):
             self.changeLogFilePath = self.getChangeLogFilePath(True)
         msg = "Change control file is: {0}".format(self.changeLogFilePath)
         self.logger.debug(msg)
-        print 'printing this in case the self.logger setup is not working'
-        print msg
+        #print 'printing this in case the self.logger setup is not working'
+        #print msg
             
 #     def createChangeLogFilePath(self):
 #         self.logger.warning("The change log {0} does not exist, creating it now")
@@ -379,8 +379,10 @@ class ChangeCache():
                 fileModDate = self.truncDateTime(fileModDate)
                 
                 self.changeDict[currentDataSet] = self.truncDateTime(self.changeDict[currentDataSet])
-                print 'fileModDate', fileModDate
-                print 'self.changeDict[currentDataSet]', self.changeDict[currentDataSet]
+                #print 'fileModDate', fileModDate
+                self.logger.debug("fileModDate: {0}".format(fileModDate))
+                #print 'self.changeDict[currentDataSet]', self.changeDict[currentDataSet]
+                self.logger.debug("current data set: {0}".format(self.changeDict[currentDataSet]))
                 if fileModDate > self.changeDict[currentDataSet]:
                     self.changeCache[currentDataSet] = True
                     self.lastModifiedDateTimes[currentDataSet] = fileModDate
@@ -390,7 +392,8 @@ class ChangeCache():
                     self.lastModifiedDateTimes[currentDataSet] =  self.changeDict[currentDataSet]
                     retVal = False
             else:
-                print 'no key for ', currentDataSet
+                #print 'no key for ', currentDataSet
+                self.logger.debug("no key for {0}".format(currentDataSet))
                 self.changeCache[currentDataSet] = True
                 fileModDate = self.changeObj.getFileModificationUTCDateTime(currentDataSet)
                 fileModDate = self.truncDateTime(fileModDate)

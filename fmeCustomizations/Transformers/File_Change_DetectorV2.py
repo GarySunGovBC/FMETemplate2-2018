@@ -68,12 +68,13 @@ class ChangeFlagFetcher(object):
         #if FME_MacroValues:
         #    self.fmeMacroValues = FME_MacroValues  # @UndefinedVariable
         #else:
-
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+        self.logger.debug("Logging set up in the module: " + str(os.path.basename(__file__)))
+        
         self.fmeMacroValues = fme.macroValues
-
-        print 'got fme macro values'
         self.chng = ChangeDetectLib.ChangeDetect(self.fmeMacroValues)
-        print 'change object created'
+        self.logger.debug("changelib ojbect created")
         self.changeCache = self.chng.readChangeLog()
         self.featuresIn = 0
         #directory = self.fmeMacroValues[self.chng.const.FMWMacroKey_FMWDirectory]
@@ -88,8 +89,6 @@ class ChangeFlagFetcher(object):
         # TODO: add a if exists handler
         #print 'logconfigFile', logconfigFile
         
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
-        self.logger = logging.getLogger(modDotClass)
         self.logger.debug("completed the init of the ChangFlagFetcher")
     
     def input(self, feature):

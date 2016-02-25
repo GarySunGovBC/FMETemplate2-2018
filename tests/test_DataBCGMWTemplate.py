@@ -147,6 +147,13 @@ class Test_CalcParams(unittest.TestCase):
         self.calcParams.plugin.currentPMPResource = 'ETL_OPERATIONAL_DBLINKS'
         spass = self.calcParams.getSourcePasswordHeuristic()
         print 'pass is:', spass
+        
+    def test_getDatabaseConnectionFilePath(self):
+        self.fmeMacroValues = self.fmeMacroValues_DBSrc
+        self.fmeMacroValues['DEST_DB_ENV_KEY'] = 'DLV'
+        self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
+        connFile = self.calcParams.getDatabaseConnectionFilePath()
+        print 'connFile', connFile
    
 class Test_CalcParamsDevel(unittest.TestCase):
     def setUp(self):
@@ -392,14 +399,26 @@ class Test_Startup(unittest.TestCase):
        
 class Test_Shutdown(unittest.TestCase):
     def setUp(self):
-        
         class fme(object):
             def __init__(self):
-                self.macroValues =  {  'DEST_DB_ENV_KEY': 'DELIV',
+                pass
+        self.fme = fme()
+        self.fme.macroValues =  {  'DEST_DB_ENV_KEY': 'DELIV',
                                 'DEST_FEATURE_1': 'CLAB_INDIAN_RESERVES',
                                 'DEST_SCHEMA': 'WHSE_ADMIN_BOUNDARIES',
                                 'DEST_TYPE': 'SDE30',
+                                'DATASET_KEYWORD_FILEGDB_1': 'FILEGDB_1',
+                                'DATASET_KEYWORD_SDE30_1': 'SDE30_1',
+                                'DEST_DB_ENV_KEY': 'DELIV',
                                 'FME_BASE': 'no',
+                                'DEST_INSTANCE': 'bcgwldv.bcgov',
+                                'DEST_PASSWORD': 'lat#49',
+                                'DEST_PORT': 'port:5156',
+                                'DEST_SCHEMA': 'WHSE_ADMIN_BOUNDARIES',
+                                'DEST_SERVER': 'gis.bcgov',
+                                'DEST_TYPE': 'SDE30',
+                                'DestDataset': '',
+                                'DestDataset_SDE30_1': 'bcgw.bcgov',
                                 'FME_BUILD_DATE': '20141210',
                                 'FME_BUILD_DATE_ENCODED': '20141210',
                                 'FME_BUILD_NUM': '14440',
@@ -441,20 +460,32 @@ class Test_Shutdown(unittest.TestCase):
                                 'FME_PRODUCT_NAME_ENCODED': 'FME<openparen>R<closeparen><space>2014<space>SP5',
                                 'SRC_FEATURE_1': 'CLAB_INDIAN_RESERVES',
                                 'SRC_FILEGDB_1': '\\\\data.bcgov\\data_staging_ro\\BCGW\\administrative_boundaries\\Federal_IRs.gdb'}
-        self.fme = fme()
+        self.fme.elapsedRunTime = 5.1848905
+        self.fme.featuresRead = {   'CLAB_INDIAN_RESERVES': 1588L}
+        self.fme.featuresWritten = {}
+        self.fme.logFileName = 'Z:\\Workspace\\kjnether\\proj\\FMETemplateRevision\\wrk\\newTemplate\\fmws\\outputs\\log\\clab_indian_reserves_staging_fgdb_bcgwdlv_Development.log'
+        self.fme.mappingFileId = 'clab_indian_reserves_staging_fgdb_bcgw'
+        self.fme.numFeaturesLogged = 0L
+        self.fme.status = True
+        self.fme.totalFeaturesRead = 1588L
+        self.fme.totalFeaturesWritten = 0L
             
-    def test_Shutdown(self):
+    def test_shutdown(self):
         print 'present!'
         self.fme.logFileName = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\wrk\newTemplate\fmws\outputs\log\clab_indian_reserves_staging_fgdb_bcgwdlv_Development.log'
         shutdown = DataBCFMWTemplate.Shutdown(self.fme)
         shutdown.shutdown()
+        
+    def test_dbConn(self):
+        shutdown = DataBCFMWTemplate.Shutdown(self.fme)
+        dwmWriter = DataBCFMWTemplate.DWMWriter(self.fme)
  
 if __name__ == "__main__":
     import sys
     #sys.argv = ['', 'Test_TemplateConfigFileReader.test_getDestinationDatabaseKey', 
     #                       'Test_TemplateConfigFileReader.test_validateKey']
-    #sys.argv = ['', 'Test_CalcParams.test_getDestinationPassword']
-    sys.argv = ['', 'Test_Startup']
+    #sys.argv = ['', 'Test_Shutdown.test_dbConn']
+    sys.argv = ['', 'Test_CalcParams.test_getDatabaseConnectionFilePath']
 
     unittest.main()
     

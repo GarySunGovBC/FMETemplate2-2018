@@ -27,7 +27,7 @@ template.startup()
 import sys
 import importlib
 import os
-from pprint import PrettyPrinter
+import pprint
 
 # for fmeobjects to import properly the fme dir has 
 # to be closer to the front of the pathlist
@@ -42,15 +42,16 @@ os.environ['PATH'] = ';'.join(pathList)
 import site
 import fmeobjects
 import platform
-import pprint
 import ConfigParser
 import json
-import logging
 import logging.config
 import PMP.PMPRestConnect
+import DB.DbLib
 import FMELogger
-import inspect
-
+import datetime
+import urllib
+import re
+import cx_Oracle
 
 class TemplateConstants(object):
     # no need for a logger in this class as its just
@@ -61,6 +62,7 @@ class TemplateConstants(object):
     AppConfigConfigDir = 'config'
     AppConfigOutputsDir = 'outputs'
     AppConfigLogFileExtension = '.log'
+    AppConfigSdeConnFileExtension = '.sde'
     AppConfigLogDir = 'log'
     AppConfigAppLogFileName = 'applogconfigfilename'
     
@@ -74,7 +76,8 @@ class TemplateConstants(object):
     ConfFileSection_global_customScriptDir = 'customizescriptdir'
     ConfFileSection_global_changeLogDir = 'changelogsdir'
     ConfFileSection_global_changeLogFileName = 'changelogsfilename'
-    
+    ConfFileSection_global_sdeConnFileDir = 'sdeConnectionDir'
+
     ConfFileSection_destKeywords = 'dest_param_keywords'
     
     # properties from the config file.
@@ -91,6 +94,14 @@ class TemplateConstants(object):
     ConfFileDestKey_Deliv = 'dlv'
     ConfFileDestKey_Devel = 'dev'
     
+    ConfFile_dwm = 'dwm_config'
+    ConfFile_dwm_pmpresource = 'pmp_resource'
+    ConfFile_dwm_dbuser = 'db_user'
+    ConfFile_dwm_dbinstance = 'db_instance'
+    ConfFile_dwm_dbserver = 'db_server'
+    ConfFile_dwm_dbport = 'db_port'
+    ConfFile_dwm_table = 'dwmtable'
+    
     # published parameters - destination
     FMWParams_DestKey = 'DEST_DB_ENV_KEY'
     FMWParams_DestSchema = 'DEST_SCHEMA'
@@ -106,8 +117,8 @@ class TemplateConstants(object):
     FMWParams_SrcFGDBPrefix = 'SRC_DATASET_FGDB_'
     FMWParams_SrcXLSPrefix = 'SRC_DATASET_XLS_'
     FMWParams_SrcFeaturePrefix = 'SRC_FEATURE_'
-    FMWParams_SrcSchema = 'SRC_SCHEMA'
-    FMWParams_SrcInstance = 'SRC_INSTANCE'
+    FMWParams_SrcSchema = 'SRC_ORA_SCHEMA'
+    FMWParams_SrcInstance = 'SRC_ORA_INSTANCE'
     FMWParams_SrcFeatPrefix = 'SRC_FEATURE_'
     
     # TODO: define the source database parameters
@@ -163,7 +174,7 @@ class Start(object):
         self.logger = logging.getLogger(modDotClass)
 
         self.fme = fme
-        print 'running the startup'
+        self.logger.debug('running the template startup')
         # Reading the global paramater config file
         self.paramObj = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
         #self.initLogging()
@@ -172,6 +183,7 @@ class Start(object):
         customScriptDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
         # Assemble the name of a the custom script
         justScript, ext = os.path.splitext(self.fme.macroValues[self.const.FMWMacroKey_FMWName])
+        del ext
         customScriptFullPath = os.path.join(customScriptDir, justScript + '.py')
         customScriptLocal = os.path.join(self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory], justScript + '.py')
         
@@ -184,17 +196,18 @@ class Start(object):
             startupScriptDirPath = customScriptDir
         
         if startupScriptDirPath:
-            print 'loading custom startup', startupScriptDirPath
+            # looking for custom module to load.  If one is found that startup will
+            # take precidence
+            self.logger.debug("adding to pythonpath {0}".format( startupScriptDirPath))
             site.addsitedir(startupScriptDirPath)
-            print 'added path', startupScriptDirPath
-            print 'module ', justScript
-            print 'sys.path', sys.path
+            self.logger.debug("python path has been appended successfully")
+            self.logger.debug("trying to load the module {0}".format(justScript))
             startupModule = importlib.import_module(justScript)
-            print 'import of the module success'
+            self.logger.debug("{0} module loaded successfully".format(justScript))
             self.startupObj = startupModule.Start(self.fme)
             print 'object created'
         else:
-            print 'using generic startup'
+            self.logger.debug('using the generic template startup')
             self.startupObj = DefaultStart(self.fme)
 
     def initLogging(self):
@@ -260,13 +273,10 @@ class Shutdown(object):
         
         # logging configuration
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
-        print 'shutdown modDotClass', modDotClass
         self.logger = logging.getLogger(modDotClass)
-        print 'logger is', self.logger
         #self.__initLogging()
         self.logger.debug("Shutdown has been called...")
         self.logger.debug("log file name: {0}".format(self.fme.logFileName))
-        #print 'shtudown log file', self.fme.logFileName
     
     def __initLogging(self):
         # full path will be self.fme.
@@ -287,8 +297,15 @@ class Shutdown(object):
         self.logger.debug('Logger should be setup!')
     
     def shutdown(self):
+        # A) need to get the schema to be used for writing to the 
+        #    DWM table from the config file.
+        self.params.getDWMDbUser()
+        
+        
         # what needs to be written can go here.
         self.logger.debug("SHUTDOWN has been called")
+        # should be a pmp call here to get these creds
+        conn = cx_Oracle.connect('whse_etl_admin', 'torkeetock', 'bcgwdlv.bcgov')
         #if self.params.isDestProd():
         # TODO: debugging has this always set to true. Once the DWM writer is working need to switch this if wiht the if statement above
         if True:
@@ -296,8 +313,26 @@ class Shutdown(object):
             self.logger.info("FMW is set up to write to PROD")
             self.logger.info("Enabling the DWMWriter")
             dwmWriter = DWMWriter(self.fme)
-            dwmWriter.printParams()
-   
+            #dwmWriter.printParams()
+            dwmWriter.writeRecord()
+            
+    def junk(self):
+        if not destKey:
+            destKey = self.fmeMacroVals[self.const.FMWParams_DestKey]
+        else: 
+            self.paramObj.validateKey(destKey)
+            destKey = self.paramObj.getDestinationDatabaseKey(destKey)
+        pmpRes = self.paramObj.getDestinationPmpResource(destKey)
+        computerName = Util.getComputerName()
+        pmpDict = {'token': self.paramObj.getPmpToken(computerName),
+                   'baseurl': self.paramObj.getPmpBaseUrl(), 
+                   'restdir': self.paramObj.getPmpRestDir()}
+        pmp = PMP.PMPRestConnect.PMP(pmpDict)
+        accntName = self.fmeMacroVals[self.const.FMWParams_DestSchema]
+        passwrd = pmp.getAccountPassword(accntName, pmpRes)
+        return passwrd
+
+
 class TemplateConfigFileReader(object):
     
     parser = None
@@ -346,7 +381,6 @@ class TemplateConfigFileReader(object):
         self.validateKey(key)
         self.key = self.getDestinationDatabaseKey(key)
         
-            
     def getValidKeys(self):
         '''returns a list of accepted values for keys'''
         items = self.parser.items(self.const.ConfFileSection_destKeywords)
@@ -395,9 +429,11 @@ class TemplateConfigFileReader(object):
         try:
             token = self.parser.get(self.const.ConfFileSection_pmpTokens, computerName)
         except ConfigParser.NoOptionError:
-            msg = 'The config file does not have a pmp token for the ' + \
-                  'computer name {0}'
-            msg = msg.format(computerName)
+            msg = 'Trying to get a PMP token for the computer {0} but ' + \
+                  'there are no pmp tokens defined for that machine in ' + \
+                  'the app. config file: {1}.'
+            msg = msg.format(computerName, self.confFile)
+            self.logger.error(msg)
             raise ValueError, msg
         return token
     
@@ -453,7 +489,61 @@ class TemplateConfigFileReader(object):
         nodeString = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_govComputers)
         nodeList = nodeString.split(',')
         return nodeList
+        
+    def getDWMTable(self):
+        dwmTab = self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_table )
+        return dwmTab
     
+    def getDWMDbUser(self):
+        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbuser)
+    
+    def getDWMDbInstance(self):
+        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbinstance)
+    
+    def getDWMDbServer(self):
+        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbserver)
+    
+    def getDWMDbPort(self):
+        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbport)
+
+    def getSdeConnFilePath(self):
+        # getting the name of the sde conn file directory from template config file
+        customScriptDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_sdeConnFileDir)
+        self.logger.debug("customScriptDir: {0}".format(customScriptDir))
+        curDir = os.path.dirname(__file__)
+        self.logger.debug("curDir: {0}".format(curDir))
+        # calcuting the name of the 
+        if self.const.AppConfigSdeConnFileExtension[0] <> '.':
+            sdeConnFile = '{0}.{1}'.format(self.key, self.const.AppConfigSdeConnFileExtension)
+        else:
+            sdeConnFile = '{0}{1}'.format(self.key, self.const.AppConfigSdeConnFileExtension)
+        
+        sdeDir = os.path.join(curDir, customScriptDir)
+        sdeConnFileFullPath = os.path.join(sdeDir, sdeConnFile)
+        # creating a list of the sde files that should exist
+        dbEnvKeys = self.parser.items(self.const.ConfFileSection_destKeywords)
+        sdeConnFiles = []
+        for elems in dbEnvKeys:
+            sdeConnFiles.append(elems[0] + self.const.AppConfigSdeConnFileExtension)
+        
+        if not os.path.exists(sdeDir):
+            msg = 'Expect the directory {0} to exist ' + \
+                  'but it does not!  This directory ' + \
+                  'should contain .sde connection files. ' + \
+                  'For example: {1}. '
+            msg = msg.format(sdeDir, ','.join(sdeConnFiles))
+            self.logger.error(msg)
+            raise IOError, msg
+        if not os.path.exists(sdeConnFileFullPath):
+            msg = 'Require the SDE connection file to create an SDE ' + \
+                  'connection, however the file we are looking for ({0})'  + \
+                  'does not exist.  Create the connection file using ' + \
+                  'arc catalog and re-run'
+            msg = msg.format(sdeConnFileFullPath)
+            self.logger.error(msg)
+            raise IOError, msg
+        return sdeConnFileFullPath
+
     def isDestProd(self):
         '''
         checks the currently set destination keyword, and 
@@ -465,6 +555,7 @@ class TemplateConfigFileReader(object):
         retVal = False 
         if self.key == self.const.ConfFileDestKey_Prod:
             retVal = True
+        return retVal
                 
     def isDataBCNode(self):
         nodeList = self.getDataBCNodes()
@@ -565,6 +656,7 @@ class Util(object):
         outDirFullPath = os.path.join(fmwDir, const.AppConfigOutputsDir)
         logDirFullPath = os.path.join(outDirFullPath, const.AppConfigLogDir)
         fmwFileNoExt, fileExt = os.path.splitext(fmwName)
+        del fileExt
         fmwLogFile = fmwFileNoExt + const.AppConfigLogFileExtension
         absFullPath = os.path.join( logDirFullPath, fmwLogFile)
         relativePath = os.path.join('.', const.AppConfigOutputsDir, const.AppConfigLogDir, fmwLogFile)
@@ -698,7 +790,7 @@ class CalcParamsBase( object ):
     
     def getSourcePassword(self):
         pswd = self.plugin.getSourcePassword()
-        print 'srcinst1', self.fmeMacroVals['SRC_INSTANCE']
+        print 'srcinst1', self.fmeMacroVals[self.const.FMWParams_SrcInstance]
         return pswd
         
     def getDestinationPassword(self):
@@ -708,6 +800,15 @@ class CalcParamsBase( object ):
     def getSourcePasswordHeuristic(self):
         pswd = self.plugin.getSourcePasswordHeuristic()
         return pswd
+    
+    def getDatabaseConnectionFilePath(self):
+        '''
+        returns the database connection file path, this is a
+        relative path to the location of this script
+        '''
+        customScriptDir = self.paramObj.getSdeConnFilePath()
+        return customScriptDir
+        
 
 class CalcParamsDevelopment(object):
     
@@ -778,7 +879,9 @@ class CalcParamsDevelopment(object):
         return retVal
     
     def getSourcePassword(self):
-        print 'srcinst2', self.parent.fmeMacroVals['SRC_INSTANCE']
+        #print 'srcinst2', self.parent.fmeMacroVals['SRC_INSTANCE']
+        print 'srcinst2', self.parent.fmeMacroVals[self.const.FMWParams_SrcFeatPrefix]
+        
         srcSchema = self.parent.fmeMacroVals[self.const.FMWParams_SrcSchema]
         srcInstance = self.parent.fmeMacroVals[self.const.FMWParams_SrcInstance]
         retVal = None
@@ -1133,6 +1236,7 @@ class DWMWriter(object ):
     - logger writes features to IDWPROD APP_UTILITY
     
     '''
+    #TemplateConfigFileReader
     def __init__(self, fme, const=None):
         self.const = const
         if not self.const:
@@ -1140,12 +1244,116 @@ class DWMWriter(object ):
         self.fme = fme
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
+        destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
+        self.config = TemplateConfigFileReader(destKey)
+        self.getDatabaseConnection()
         
+    def getDatabaseConnection(self):
+        computerName = Util.getComputerName()
+        pmpDict = {'token': self.config.getPmpToken(computerName),
+                   'baseurl': self.config.getPmpBaseUrl(), 
+                   'restdir': self.config.getPmpRestDir()}
+        # TODO: modify the logging config file so that it captures both the pmp and the database log parameters
+        pmp = PMP.PMPRestConnect.PMP(pmpDict)
+        accntName = self.config.getDWMDbUser()
+        instance = self.config.getDWMDbInstance()
+        pmpResource = self.config.getDWMDbPmpResource()
+        passwrd = pmp.getAccountPassword(accntName, pmpResource)
+        self.logger.debug("accntName: {0}".format(accntName))
+        self.logger.debug("instance: {0}".format(instance))
+        self.db = DB.DbLib.DbMethods()
+        try:
+            self.db.connectParams(accntName, passwrd, instance)
+        except:
+            try:
+                server = self.config.getDWMDbServer()
+                msg = 'unable to create a connection to the schema: {0}, instance {1} ' + \
+                      'going to try to connect directly to the server: {2}'
+                msg = msg.format(accntName, instance, server)
+                self.logger.warning(msg)
+                port = self.config.getDWMDbPort()
+                self.logger.debug("port: {0}".format(port))
+                self.logger.debug("server: {0}".format(server))
+                self.db.connectNoDSN(accntName, passwrd, instance, server, port)
+                self.logger.debug("successfully connected to database using direct connect")
+            except:
+                self.logger.info(msg)
+                msg = 'database connection used to write to DWM has failed, ' + \
+                      'dwm record for this replication will not be written'
+                self.logger.error(msg)
+                raise
+        msg = 'successfully connected to the database {0} with the user {1}'
+        msg = msg.format(instance, accntName)
+        self.logger.info(msg)
+                        
     def writeRecord(self):
         '''
+        Original logger would only report on a single feature.  For the short
+        term am going to change things around so that if there are more 
         '''
-        insertStatement = 'INSERT INTO '
-        self.printParams()
+        dwmRecord = self.collectData()
+        insertState = self.getInsertStatement()
+        try:
+            self.db.executeOracleSql(insertState, dwmRecord)
+            self.db.commit()
+        except Exception, e:
+            msg = 'unable to write the DWM record to the database'
+            self.logger.error(msg)
+            self.logger.error(str(e))
+            raise
+        
+    def collectData(self):
+        returnDict = {}
+        returnDict['mapping_file_id'] = self.getMapFileId()
+        returnDict['start_time'] = self.getStartTime()
+        returnDict['end_time'] = self.getEndTime()
+        returnDict['exit_status'] = self.getExitStatus()
+        returnDict['features_read_count'] = self.getTotalFeaturesReadCount()
+        returnDict['features_written_count'] = self.getTotalFeaturesWrittenCount()
+        returnDict['features_rejected_count'] = self.getTotalFeaturesRejectedCount()
+        returnDict['notification_email'] = self.getNotificationEmail()
+        returnDict['log_filename'] = self.getLogFileName()
+        returnDict['datasource'] = self.getDataSource()
+        returnDict['duration'] = self.getDuration()
+        returnDict['dest_instance'] = self.getDestInstance()
+        returnDict['dest_schema'] = self.getDestSchema()
+        returnDict['dest_table'] = self.getDestTable()
+        return returnDict
+        
+    def getInsertStatement(self):
+        tableName = self.config.getDWMTable()
+        insertStatement = 'INSERT INTO {0} ( ' + \
+                          ' MAPPING_FILE_ID, ' + \
+                          ' START_TIME, ' + \
+                          ' END_TIME, ' + \
+                          ' EXIT_STATUS, ' + \
+                          ' FEATURES_READ_COUNT, ' + \
+                          ' FEATURES_WRITTEN_COUNT, ' + \
+                          ' FEATURES_REJECTED_COUNT, ' + \
+                          ' NOTIFICATION_EMAIL, ' + \
+                          ' LOG_FILENAME, ' + \
+                          ' DATASOURCE, ' + \
+                          ' DURATION, ' + \
+                          ' DEST_INSTANCE, ' + \
+                          ' DEST_SCHEMA, ' + \
+                          ' DEST_TABLE ) ' + \
+                          ' VALUES ( ' + \
+                          ' :mapping_file_id, ' + \
+                          ' :start_time, ' + \
+                          ' :end_time,  ' + \
+                          ' :exit_status, ' + \
+                          ' :features_read_count, ' + \
+                          ' :features_written_count, ' + \
+                          ' :features_rejected_count, ' + \
+                          ' :notification_email, ' + \
+                          ' :log_filename, ' + \
+                          ' :datasource, ' + \
+                          ' :duration, ' + \
+                          ' :dest_instance, ' + \
+                          ' :dest_schema, ' + \
+                          ' :dest_table )'
+        insertStatement = insertStatement.format(tableName)
+        return insertStatement
     
     def getMapFileId(self):
         '''
@@ -1157,10 +1365,104 @@ class DWMWriter(object ):
             # macroValues
             mapFileId = self.fme.macroValues[self.const.FMWMacroKey_FMWName]
             mapFileId, extension = os.path.splitext(mapFileId)
+            del extension
             # could also get from WORKSPACE_NAME
         return mapFileId
+    
+    def getStartTime(self):
+        '''
+        going to calculate this using the elapsed time, 
+        less the current time.
+        '''
+        startTime = datetime.datetime.now()
+        if self.fme.elapsedRunTime:
+            currentDateTime = datetime.datetime.now()
+            elapsedTime = datetime.timedelta(seconds=float(self.fme.elapsedRunTime))
+            startTime = currentDateTime - elapsedTime
+        return startTime
+    
+    def getEndTime(self):
+        return datetime.datetime.now()
+       
+    def getExitStatus(self):
+        '''
+        self.fme.elapsedRunTime
+        '''
+        exitStatus = 'Error'
+        if self.fme.status:
+            exitStatus = 'OK'
+        return exitStatus
+    
+    def getTotalFeaturesReadCount(self):
+        return self.fme.totalFeaturesRead
+    
+    def getTotalFeaturesWrittenCount(self):
+        return self.fme.totalFeaturesWritten
+     
+    def getTotalFeaturesRejectedCount(self):
+        return None
+    
+    def getNotificationEmail(self):
+        return None
+    
+    def getLogFileName(self):
+        '''
+        How it was done: 
         
+        logFilename = os.path.abspath(logFile)
+        logFilename = logFilename.replace('\\','%5C')
+        logFilename = logFilename.replace(' ','+')
+        '''
+        # TODO: figure out how fme server fills in the logfilename, might require using the fmeserver published parameters that are part of the new fmeserver to retrieve the log file url.
+        logFile = self.fme.logFileName
+        #if logFile:
+        #    logFile = os.path.abspath(logFile)
+        #    logFile = urllib.quote(logFile)
+        return logFile
+    
+    def getDataSource(self):
+        '''
+        OMG!  its another cludge, just appending 
+        datasources together with ,+ as the delimiter!
+        '''
+        dataSrcStr = 'Python_shutdown_can_not_get_DataSource'
+        dataSourceList = self.fme.featuresRead.keys()
+        if dataSourceList:
+            dataSrcStr = ',+'.join(dataSourceList)
+        return dataSrcStr
+            
+    def getDuration(self):
+        return self.fme.elapsedRunTime
+        
+    def getDestInstance(self):
+        # retrieve from the published parameters:
+        destInst = None
+        if self.fme.macroValues.has_key(self.const.FMWParams_DestInstance):
+            destInst = self.fme.macroValues[self.const.FMWParams_DestInstance]
+        else:
+            for macroKey in self.fme.macroValues:
+                if macroKey.upper() == self.fme.macroValues[macroKey].upper():
+                    destInst = self.fme.macroValues[macroKey]
+                    break
+        return destInst    
+     
+    def getDestSchema(self):
+        return self.fme.macroValues[self.const.FMWParams_DestSchema]
+    
+    def getDestTable(self):
+        # again only captures the first feature class
+        destTable = None
+        matchExpr = '^{0}.*$'
+        matchExpr = matchExpr.format(self.const.FMWParams_DestFeatPrefix)
+        for macroKey in self.fme.macroValues.keys():
+            if re.match(matchExpr, macroKey, re.IGNORECASE):
+                destTable = self.fme.macroValues[macroKey]
+                # TODO: Ideally should modify things so that we can report on more than one destination
+                break
+        return destTable
+     
     def printParams(self):
+        
         titleLine = '----  {0} -----'
         print titleLine.format('elapsedRunTime')
         pp = pprint.PrettyPrinter(indent=4)
@@ -1193,8 +1495,3 @@ class DWMWriter(object ):
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(self.fme.totalFeaturesWritten)
         
-        
-
-        
-        
-
