@@ -16,24 +16,36 @@ will take precedence.
 @author: kjnether
 '''
 import DataBCFMWTemplate
+import logging
 
 
 # 
 class Start(DataBCFMWTemplate.DefaultStart):
     
     def __init__(self, fme):
+        # inheriting from the default startup
         DataBCFMWTemplate.DefaultStart.__init__(self, fme)
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+
         # line above inherits the functionality of the default startup.
         # this way if you don't implement a required method it will 
         # default to the default version.
-        print 'using this script', __file__
+        self.logger.debug("using the custom startup for the module {0}".format(__file__))
         
     # override default startup
     def startup(self):
         '''
-        This is where the custom startup code would go
+        This is where the custom startup code would go, 
+        
         '''
-        print 'using this startup!'
+        # this method is currently overriding the default class
+        
+        # if you wanted to call the default startup routine 
+        # you could do that with the following line:
+        # super(Start, self).startup()
+        self.logger.debug("Runing a custom startup for {0}".format(__file__))
+
         
         
         

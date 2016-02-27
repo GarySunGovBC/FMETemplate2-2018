@@ -52,6 +52,7 @@ import datetime
 import urllib
 import re
 import cx_Oracle
+import inspect
 
 class TemplateConstants(object):
     # no need for a logger in this class as its just
@@ -162,23 +163,19 @@ class TemplateConstants(object):
 class Start(object):
     
     def __init__(self, fme):
+        # getting the app constants
         self.const = TemplateConstants()
         fmwDir = fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
         fmwName = fme.macroValues[self.const.FMWMacroKey_FMWName]
-        ModuleLogConfig(fmwDir, fmwName)
-        #ModuleLogConfig(fme.macroValues[self.const.FMWMacroKey_FMWDirectory])
-        # This method will always be called regardless of any customizations.
-        
-        # logging configuration
+        # set up logging
+        ModuleLogConfig(fmwDir, fmwName)        
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
 
         self.fme = fme
-        self.logger.debug('running the template startup')
+        self.logger.info('running the template startup')
         # Reading the global paramater config file
         self.paramObj = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
-        #self.initLogging()
-        self.logger.warning("testing writing a warning message")
         # Extract the custom script directory from config file
         customScriptDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
         # Assemble the name of a the custom script
@@ -203,25 +200,17 @@ class Start(object):
             self.logger.debug("python path has been appended successfully")
             self.logger.debug("trying to load the module {0}".format(justScript))
             startupModule = importlib.import_module(justScript)
-            self.logger.debug("{0} module loaded successfully".format(justScript))
-            self.startupObj = startupModule.Start(self.fme)
+            
+            # is there a start class defined in the startup module
+            if Util.isClassInModule(startupModule, 'Start'):
+                self.logger.debug("{0} module loaded successfully".format(justScript))
+                self.startupObj = startupModule.Start(self.fme)
+            else:
+                self.logger.debug('using the generic template startup')
+                self.startupObj = DefaultStart(self.fme)
         else:
             self.logger.debug('using the generic template startup')
             self.startupObj = DefaultStart(self.fme)
-
-    def initLogging(self):
-        logName = os.path.splitext(os.path.basename(__file__))[0] + '.' + self.__class__.__name__
-        self.logger = logging.getLogger( logName )         
-        #rootLogger = logging.getLogger()
-        #hndlr = logging.FileHandler(logFile) 
-        hndlr = FMELogger.FMELogHandler()
-        formatString = self.const.FMELogStartupFormatString
-        formatr = logging.Formatter( formatString )
-        formatr.datefmt = self.const.FMELogDateFormatString
-        hndlr.setFormatter(formatr)        
-        self.logger.addHandler(hndlr)          
-        self.logger.setLevel(logging.DEBUG)        
-        self.logger.debug('Logger should be setup!')
         
     def startup(self):
         # default startup routine
@@ -230,71 +219,72 @@ class Start(object):
         # useful for setting up test cases.
         # --------------------------------------------------------
         # will either call the default startup or a customized one
-        self.logger.debug("calling the startup method..")
+        self.logger.debug("calling the startup method...")
         self.startupObj.startup()
         
 class DefaultStart(object):
     def __init__(self, fme):
         self.fme = fme
         
-        
     def startup(self):
-        # default startup routine
-        #self.fme.macroValues[self.const.FMWParams_DestKey]
-        # debugging / develeopment - printing the macrovalues.
-        # useful for setting up test cases.
-        #for key in self.fme.macroValues.keys():
-        #    print '{0}  {1}'.format(key, self.fme.macroValues[key])
-        
-        # currently there is no startup code.
+        # currently there is no default startup code.
+        # if there was it would go here
         pass
         
 class Shutdown(object):
     
     def __init__(self, fme):
-
-        
-        # shutdown logging works differently
         # This method will always be called regardless of any customizations.
         self.fme = fme
         self.const = TemplateConstants()
         
         self.params = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
         
-        #path2FmwDir = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
-        #logFileFullPath = os.path.join(path2FmwDir, self.fme.logFileName)
-        #logFileName = os.path.splitext(os.path.basename(__file__))[0] + '.' + self.__class__.__name__
-        #logging.logFileName = logFileName
-        #print 'logFileName', logFileFullPath
+        # logging configuration
         fmwDir = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
         fmwName = self.fme.macroValues[self.const.FMWMacroKey_FMWName]
         ModuleLogConfig(fmwDir, fmwName)
-        
-        # logging configuration
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
-        #self.__initLogging()
         self.logger.debug("Shutdown has been called...")
         self.logger.debug("log file name: {0}".format(self.fme.logFileName))
-    
-    def __initLogging(self):
-        # full path will be self.fme.
-        path2FmwDir = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
-        logFileFullPath = os.path.join(path2FmwDir, self.fme.logFileName)
         
-        logName = os.path.splitext(os.path.basename(__file__))[0] + '.' + self.__class__.__name__
-        self.logger = logging.getLogger( logName )
-        #rootLogger = logging.getLogger()
-        #hndlr = logging.FileHandler(logFile) 
-        hndlr = FMELogger.FMEShutdownLogger(logFileFullPath)        
-        #formatString = '%(asctime)s %(name)s.%(funcName)s.%(lineno)d %(levelname)s: %(message)s'
-        formatr = logging.Formatter( self.const.FMELogShutdownFormatString )
-        formatr.datefmt = self.const.FMELogDateFormatString
-        hndlr.setFormatter(formatr)
-        self.logger.addHandler(hndlr)          
-        self.logger.setLevel(logging.DEBUG)        
-        self.logger.debug('Logger should be setup!')
-    
+        # looking for custom script for shutdown
+        customScriptDir = self.params.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
+        justScript, ext = os.path.splitext(self.fme.macroValues[self.const.FMWMacroKey_FMWName])
+        del ext
+        customScriptFullPath = os.path.join(customScriptDir, justScript + '.py')
+        customScriptLocal = os.path.join(self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory], justScript + '.py')
+        
+        # test to see if the custom script exists, if it does import it, and 
+        # set the plugin parameter = to the Start() object.
+        shutdownScriptDirPath = None
+        if os.path.exists(customScriptLocal):
+            shutdownScriptDirPath = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
+        elif os.path.exists(customScriptFullPath):
+            shutdownScriptDirPath = customScriptDir
+            site.addsitedir(shutdownScriptDirPath)
+            shutdownModule = importlib.import_module(justScript)
+            if Util.isClassInModule(shutdownModule, 'Shutdown'):
+                # use the custom shutdown
+                self.logger.debug("{0} module loaded successfully".format(justScript))
+                self.shutdownObj = shutdownModule.Shutdown(self.fme)
+            else:
+                self.logger.debug('using the generic template shutdown')
+                self.shutdownObj = DefaultShutdown(self.fme)
+        else:
+            self.logger.debug('using the generic template shutdown')
+            self.shutdownObj = DefaultShutdown(self.fme)
+        
+    def shutdown(self):
+        self.shutdownObj.shutdown()
+     
+class DefaultShutdown(object):
+    def __init__(self, fme):
+        self.fme = fme
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+        
     def shutdown(self):
         self.logger.info("Enabling the DWMWriter")
         dwmWriter = DWMWriter(self.fme)
@@ -645,6 +635,15 @@ class Util(object):
             retVal = relativePath
         return retVal
     
+    @staticmethod
+    def isClassInModule(module, classname):
+        retVal = False
+        for name, obj in inspect.getmembers(module):
+            if inspect.isclass(obj):
+                if name == classname:
+                    retVal = True
+        return retVal
+
 class CalcParamsBase( object ):
     '''
     This method contains the base functionality which 
@@ -677,18 +676,13 @@ class CalcParamsBase( object ):
         
     def addPlugin(self, forceDevel=False):
         if forceDevel:
-            #CalcParamsDevelopment.__init__(self, fmeMacroVals)
             self.plugin = CalcParamsDevelopment(self)
         elif self.paramObj.isDataBCNode():
-            # inheriting from CalcParamsDataBC which will 
-            # override various methods specific to password
-            # recovery
-            print 'inheriting the databc methods'
-            #CalcParamsDataBC.__init__(self, fmeMacroVals)
+            self.logger.debug("Template is operating in Production mode.")
             # TODO: Should implement an abstract class to ensure that all plugins impement the required methods.
             self.plugin = CalcParamsDataBC(self)
         else:
-            #CalcParamsDevelopment.__init__(self, fmeMacroVals)
+            self.logger.debug("Template is operating in Development mode.")
             self.plugin = CalcParamsDevelopment(self)
         
     def getFMWLogFileRelativePath(self, create=True):
@@ -716,7 +710,8 @@ class CalcParamsBase( object ):
         return pathList[0]
         
     def getDestinationServer(self):
-        self.logger.logMessageString('Setting the destination server')
+        #self.logger.logMessageString('Setting the destination server')
+        self.logger.debug("getting the destination server")
         server = self.paramObj.getDestinationServer()
         return server
     
@@ -734,7 +729,9 @@ class CalcParamsBase( object ):
     
     def getSourcePassword(self):
         pswd = self.plugin.getSourcePassword()
-        print 'srcinst1', self.fmeMacroVals[self.const.FMWParams_SrcInstance]
+        msg = "retriving password for the instance {0}"
+        msg = msg.format( self.fmeMacroVals[self.const.FMWParams_SrcInstance] )
+        self.logger.info(msg)
         return pswd
         
     def getDestinationPassword(self):
@@ -768,17 +765,14 @@ class CalcParamsDevelopment(object):
         #ModuleLogConfig()
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
-
-        #self.paramObj = paramObj
-        #self.fmeMacroVals = fmeMacroVals
-        #self.const = TemplateConstants()
-        print 'constructing a CalcParamsDevelopment'
+        
+        self.logger.debug("constructing a CalcParamsDevelopment object")
         confDirName = self.paramObj.getConfigDirName()
         credsFileName = self.paramObj.getDevelopmentModeCredentialsFileName()        
         # expects the creds file to be ./$(confDirName)/$(credsFileName)
         credsFileFullPath = os.path.join(self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory], confDirName, credsFileName)
         self.credsFileFullPath = os.path.realpath(credsFileFullPath)
-        print 'credsFileFullPath', credsFileFullPath
+        self.logger.info("using the credentials file: {0}".format(credsFileFullPath))
         if not os.path.exists(self.credsFileFullPath):
             # The creds file doesn't exist, so raise exception
             # TODO: once the svn url used for distribution is known include it in 
@@ -789,45 +783,51 @@ class CalcParamsDevelopment(object):
                    'create this .json file.  Example of the syntax is available ' + \
                    'here: {1}'
             msg = msg.format(self.credsFileFullPath, self.const.svn_DevelopmentJSONFile_Url)
+            self.logger.error(msg)
             raise ValueError, msg
-        #self.destSchema = self.parent.fmeMacroVals[self.const.FMWParams_DestSchema]
-        #self.destInstance = self.parent.getDestinationInstance()
-        #self.srcSchema = self.parent.fmeMacroVals[self.const.FMWParams_SrcSchema]
-        #self.srcInstance = self.parent.fmeMacroVals[self.const.FMWParams_SrcInstance]
         with open(credsFileFullPath, 'r') as jsonFile:
             self.data = json.load(jsonFile)
         
     def getDestinationPassword(self):
         retVal = None
+        
         destSchema = self.parent.fmeMacroVals[self.const.FMWParams_DestSchema]
         destInstance = self.parent.getDestinationInstance()
-
-        print 'destSchema', destSchema.lower().strip()
-        print 'destInstance', destInstance.lower().strip()
+        
+        msg = 'getting password for the schema ({0}) / instance ({1})'
+        msg = msg.format(destSchema, destInstance)
+        self.logger.info(msg)
         for dbParams in self.data[self.const.DevelopmentDatabaseCredentialsFile_DestCreds]:
             dbUser = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbUser]
             dbInst = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbInst]
             dbPass = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbPswd]
-            print 'dbUser', dbUser.lower().strip()
-            print 'dbInst', dbInst.lower().strip()
+            
+            msg = 'dbuser from credentials file: {0}, dbInstance {1}'
+            msg = msg.format(dbUser.lower().strip(), dbInst.lower().strip())
+            self.logger.debug(msg)
             if dbInst.lower().strip() == destInstance.lower().strip() and \
                dbUser.lower().strip() == destSchema.lower().strip():
-                print 'found it'
+                msg = "Found password in creds file for user ({0}) instance ({1})"
+                msg = msg.format(dbUser.lower().strip(), dbInst.lower().strip())
+                self.logger.info(msg)
                 retVal =  dbPass
                 break
         if not retVal:
             msg = 'DevMod: Was unable to find a password in the credential file {0} for ' + \
                   'the destSchema: {1} and the instance {2}'
             msg = msg.format(self.credsFileFullPath, destSchema, destInstance)
+            self.logger.error(msg)
             raise ValueError, msg
         return retVal
     
     def getSourcePassword(self):
-        #print 'srcinst2', self.parent.fmeMacroVals['SRC_INSTANCE']
-        print 'srcinst2', self.parent.fmeMacroVals[self.const.FMWParams_SrcFeatPrefix]
         
         srcSchema = self.parent.fmeMacroVals[self.const.FMWParams_SrcSchema]
         srcInstance = self.parent.fmeMacroVals[self.const.FMWParams_SrcInstance]
+        msg = 'Getting source password for user ({0}) and instance ({1})'
+        msg = msg.format(srcSchema, srcInstance)
+        self.logger.info(msg)
+        
         retVal = None
         for dbParams in self.data[self.const.DevelopmentDatabaseCredentialsFile_SourceCreds]:
             dbUser = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbUser]
@@ -897,9 +897,6 @@ class CalcParamsDataBC(object):
         self.logger = logging.getLogger(modDotClass)
         self.fmeMacroVals = self.parent.fmeMacroVals
         self.currentPMPResource = None
-        #self.paramObj = paramObj
-        #self.fmeMacroVals = fmeMacroVals
-        print 'constructing a CalcParamsDataBC'
         
     def getDestinationPassword(self, destKey=None):
         if not destKey:
@@ -914,6 +911,11 @@ class CalcParamsDataBC(object):
                    'restdir': self.paramObj.getPmpRestDir()}
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
         accntName = self.fmeMacroVals[self.const.FMWParams_DestSchema]
+
+        msg = 'retrieving the destination password for schame: ({0}) db env key: ({1})'
+        msg = msg.format(accntName, destKey)
+        self.logger.debug(msg)
+        
         passwrd = pmp.getAccountPassword(accntName, pmpRes)
         return passwrd
         
@@ -930,28 +932,28 @@ class CalcParamsDataBC(object):
         accntName = self.fmeMacroVals[self.const.FMWParams_SrcSchema]
         accntName = accntName
         instance = self.fmeMacroVals[self.const.FMWParams_SrcInstance]
-        print 'accntName', accntName
-        print 'instance', instance
+        msg = 'retreiving source password from pmp for schema: ({0}), instance: ({1})'
+        msg = msg.format(accntName, instance)
         srcResources = self.paramObj.getSourcePmpResources()
         pswd = None
         
         for pmpResource in srcResources:
-            print 'pmpResource', pmpResource
+            self.logger.debug("searching for password in the pmp resource {0}".format(pmpResource))
             self.currentPMPResource = pmpResource
             # start by trying to just retrieve the account using 
             # destSchema@instance as the "User Account" parameter
             try:
                 accntATInstance = accntName.strip() + '@' + instance.strip()
-                print 'trying to retrieve ', accntATInstance
+                self.logger.debug("account@instance search string: {0}".format(accntATInstance))
                 pswd = pmp.getAccountPassword(accntATInstance, pmpResource)
                 
             except ValueError:
                 # TODO: Add a proper FME log message here
                 msg = 'There is no account {0} in pmp for the resource {1} using the token {2} from the machine {3}'
                 msg = msg.format(accntName, pmpResource, pmp.token, platform.node())
+                self.logger.warning(msg)
                 # Going to do a search for accounts that might match the user
                 self.getSourcePasswordHeuristic()
-                print msg
             if pswd:
                 break
             # add some more warnings
@@ -980,6 +982,16 @@ class CalcParamsDataBC(object):
                   fmws destSchema / instance combination
         :rtype: str
         '''
+        srcInstanceInFMW = self.fmeMacroVals[self.const.FMWParams_SrcInstance].lower().strip()
+        srcSchemaInFMW = self.fmeMacroVals[self.const.FMWParams_SrcSchema].lower().strip()
+        # sometimes the source instance includes the domain so making sure this 
+        # is stripped out, example idwprod1.env.gov.bc.ca becomes just idwprod1
+        srcInstanceInFMWLst = srcInstanceInFMW.split('.')
+        srcInstanceInFMW = srcInstanceInFMWLst[0]
+
+        msg = "Using a heuristic to try to find the password for schema/instance: {0}/{1}"
+        msg = msg.format(srcSchemaInFMW, srcInstanceInFMW)
+        self.logger.debug(msg)
         pmpResource = self.currentPMPResource
         if not pmpResource:
             srcResources = self.paramObj.getSourcePmpResources()
@@ -996,27 +1008,27 @@ class CalcParamsDataBC(object):
             accounts = pmp.getAccountsForResourceID(resId)
             instList = []
             # source instance, and the source instance less the domain portion
-            srcInst = self.fmeMacroVals[self.const.FMWParams_SrcInstance]
-            srcInstList = srcInst.split('.')
-            srcInstNoDomain = srcInstList[0]
             for accntDict in accounts:
                 accntName = PMPSourceAccountParser(accntDict['ACCOUNT NAME'])
                 schema = accntName.getSchema()
-                if schema.lower() == self.fmeMacroVals[self.const.FMWParams_SrcSchema].lower():
+                if schema.lower().strip() == srcSchemaInFMW:
                     # found the srcSchema
                     # now check see if the instance matches
                     #print 'schemas {0} : {1}'.format(destSchema, self.fmeMacroVals[self.const.FMWParams_SrcSchema])
                     inst = accntName.getInstanceNoDomain()
-                    #print 'instance', destInstance, srcInstNoDomain
-                    if inst.lower() == srcInstNoDomain.lower():
+                    if inst.lower().strip() == srcInstanceInFMW:
                         instList.append([accntDict['ACCOUNT NAME'], accntDict['ACCOUNT ID']])
-                #print 'accntName', destSchema
         if instList:
             if len(instList) > 1:
                 # get the passwords, if they are the same then return
                 # the password
-                print 'found more than one match', instList
+                msg = 'found more than one possible source password match for the instance{0}'
+                msg = msg.format(srcInstanceInFMW)
+                self.logger.warning(msg)
+                msg = 'instances that match include {0}'.format(','.join(instList))
+                self.logger.debug(msg)
                 pswdList = []
+                # eliminating any possible duplicates then 
                 for accnts in instList:
                     pswdList.append(pmp.getAccountPasswordWithAccountId(accnts[1], resId))
                 pswdList = list(set(pswdList))
@@ -1033,7 +1045,6 @@ class CalcParamsDataBC(object):
                     raise ValueError, msg
             else:
                 # get the password and return it
-                print 'getting the password'
                 pswd = pmp.getAccountPasswordWithAccountId(instList[0][1], resId)
         return pswd
             
@@ -1092,40 +1103,38 @@ class CalcParams(CalcParamsBase):
 class ModuleLogConfig(object):
     def __init__(self, fmwDir, fmwName):
         pathList = Util.calcLogFilePath(fmwDir, fmwName, True)
-        print 'pathList', pathList
         # get the tmpLog to test to see if the logger has been 
         # initialized yet or not
         tmpLog = logging.getLogger(__name__)
-        print 'tmpLog', tmpLog
-        print 'logFileName', pathList[1]
         if not tmpLog.handlers:
-            print 'no handlers found'
+            #print 'no handlers found'
             logging.logFileName = pathList[1]
-            print 'logFileName', logging.logFileName  # @UndefinedVariable
-            print 'Loading log configs from log config file'
+            #print 'logFileName', logging.logFileName  # @UndefinedVariable
+            #print 'Loading log configs from log config file'
             const = TemplateConstants()
-            print 'created the constants'
+            #print 'created the constants'
             confFile = TemplateConfigFileReader('DEV')
             # Get the log config file name from the app config file
-            print 'confFile is', confFile
+            #print 'confFile is', confFile
             logConfFileName = confFile.parser.get(const.ConfFileSection_global, const.AppConfigAppLogFileName)
-            print 'logConfFileName', logConfFileName
+            #print 'logConfFileName', logConfFileName
             
             # get the name of the conf dir
             configDir = const.AppConfigConfigDir
             dirname = os.path.dirname(__file__)
-            print 'dirname', dirname
+            #print 'dirname', dirname
             logConfFileFullPath = os.path.join(dirname,configDir,logConfFileName )
-            print 'logconfig full path:', logConfFileFullPath
+            #print 'logconfig full path:', logConfFileFullPath
             # logFileName
             #logging.logFileName = logFileName
             logging.config.fileConfig(logConfFileFullPath)
-            print 'got here'
+            #print 'got here'
             logger = logging.getLogger(__name__)
-            print 'and here'
+            #print 'and here'
             logger.debug("logger should be configured")
         else:
-            print 'logger already loaded'
+            #print 'logger already loaded'
+            pass
             
 class DWMWriter(object ):
     '''
@@ -1430,7 +1439,6 @@ class DWMWriter(object ):
         return destTable
      
     def printParams(self):
-        
         titleLine = '----  {0} -----'
         print titleLine.format('elapsedRunTime')
         pp = pprint.PrettyPrinter(indent=4)
