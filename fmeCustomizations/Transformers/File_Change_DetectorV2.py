@@ -74,7 +74,7 @@ class ChangeFlagFetcher(object):
         
         self.fmeMacroValues = fme.macroValues
         self.chng = ChangeDetectLib.ChangeDetect(self.fmeMacroValues)
-        self.logger.debug("changelib ojbect created")
+        self.logger.debug("changelib object created")
         self.changeCache = self.chng.readChangeLog()
         self.featuresIn = 0
         #directory = self.fmeMacroValues[self.chng.const.FMWMacroKey_FMWDirectory]
@@ -102,10 +102,20 @@ class ChangeFlagFetcher(object):
         # probably a better way of doing it!
         #print 'type of feature', type(feature)
         #print 'feature', feature
+        fileChngKey = self.changeCache.const.FMWParams_FileChangeEnabledParam
+        changeDetectionEnabledParam = self.fmeMacroValues[fileChngKey]
+        
+        #self.logger.debug("changeDetectionEnabledParam: {0}".format(changeDetectionEnabledParam))
+        
         atribNames = feature.getAllAttributeNames()
         fmeDataset = feature.getAttribute('fme_dataset')
         self.changeCache.addFeatureIn(fmeDataset)
-        if self.changeCache.hasChanged(fmeDataset):
+        
+        # indicates that change detection has been disabled
+        if changeDetectionEnabledParam.upper() == 'FALSE':
+            feature.setAttribute('CHANGE_DETECTED', 'TRUE')
+            self.changeCache.addFeatureChange(fmeDataset)
+        elif self.changeCache.hasChanged(fmeDataset):
             feature.setAttribute('CHANGE_DETECTED', 'TRUE')
             self.changeCache.addFeatureChange(fmeDataset)
         else:
@@ -113,6 +123,9 @@ class ChangeFlagFetcher(object):
         self.pyoutput(feature)
         
     def close(self):
+        fileChngKey = self.changeCache.const.FMWParams_FileChangeEnabledParam
+        changeDetectionEnabledParam = self.fmeMacroValues[fileChngKey]
+
         # for each input feature, check the
         self.logger.debug("closing the file change detector")
-        self.changeCache.updateFileChangeLog()
+        self.changeCache.updateFileChangeLog(changeDetectionEnabledParam)

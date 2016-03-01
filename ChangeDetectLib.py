@@ -413,16 +413,27 @@ class ChangeCache():
     def addFeatureChange(self, dataPath):
         dataPath = os.path.normcase(dataPath)
         dataPath = os.path.normpath(dataPath)
+        #self.logger.debug("feature key: {0}".format(dataPath))
         if not self.featureCounts.has_key(dataPath):
             self.featureCounts[dataPath] = [0, 1]
         else:
             self.featureCounts[dataPath][1] += 1
         
-    def updateFileChangeLog(self):
+    def updateFileChangeLog(self, fileChangeDetectionEnabled='TRUE'):
         # for each feature make sure that the features in 
         # is the same as the features changed
         # 06/25/2015 02:45:11,acdf_ownership_codes_staging_csv_bcgw,\\data.bcgov\data_staging\BCGW\physical_infrastructure\Diagnostic_Facilities_Data_Structure.csv,1428967194,True
-
+        
+        # fileChangeDetectionEnabled is the value that comes from the 
+        # published parameter FILE_CHANGE_DETECTION.  This parameter
+        # is used to disable the file change routine.
+        # the lines below convert the string to a boolean
+        if fileChangeDetectionEnabled.upper().strip() == 'FALSE':
+            fileChangeDetectionEnabled = False
+        else:
+            fileChangeDetectionEnabled = True
+            
+        # getting a template constants object
         self.const.FMWMacroKey_FMWName
 
         fh = open(self.changeObj.changeLogFilePath, 'a')
@@ -437,14 +448,36 @@ class ChangeCache():
             # don't need to normalize featPath as it was normalized when entered
             # into data struct
             # features changed should be the same as the features that went in.
-            elems = []
-            # convert last modified to utc time stamp
-            modificationUTCTimeStamp = int(time.mktime(self.lastModifiedDateTimes[featPath].timetuple()))
-            # convert last modified to datetime in local time zone
-            modificationLocalDateTime = self.lastModifiedDateTimes[featPath].astimezone(pytz.timezone(self.const.LocalTimeZone))
-            # convert local datetime object to string representation
-            modificationLocalDateTimeStr = modificationLocalDateTime.strftime(self.const.FMELogDateFormatString)
+            featPath = os.path.normcase(featPath)
+            self.logger.debug("feat path: {0}".format(featPath))
 
+            elems = []
+            if not fileChangeDetectionEnabled:
+                # if fileChangeDetectionEnabled was set to false (disable file change)
+                # then the feature was not checked for its modification date and 
+                # therefor does not exist in the self.lastModifiedDateTimes dictionary.
+                # the lines below get the file mod date for the current feature
+                # and add it to that dictionary so the file modification date can 
+                # be added to the change log.
+                fileModDate = self.changeObj.getFileModificationUTCDateTime(featPath)
+                fileModDate = self.truncDateTime(fileModDate)
+                self.lastModifiedDateTimes[featPath] = fileModDate
+                # indicating that a replication has taken place on the dataset in 'featPath'
+                self.changeCache[featPath] = True           
+            try:
+                # convert last modified to utc time stamp
+                modificationUTCTimeStamp = int(time.mktime(self.lastModifiedDateTimes[featPath].timetuple()))
+                # convert last modified to datetime in local time zone
+                modificationLocalDateTime = self.lastModifiedDateTimes[featPath].astimezone(pytz.timezone(self.const.LocalTimeZone))
+                # convert local datetime object to string representation
+                modificationLocalDateTimeStr = modificationLocalDateTime.strftime(self.const.FMELogDateFormatString)
+            except KeyError, e:
+                lastModKeys = self.lastModifiedDateTimes.keys()
+                msg = "The key: {0} was not found in the lastModifiedDateTimes dictionary, valid keys include {1}"
+                msg = msg.format(featPath, ','.join(lastModKeys))
+                self.logger.error(msg)
+                raise
+                
             destinationKeyWord = self.changeObj.fmeMacroValues[self.const.FMWParams_DestKey]
             
             elems.append(currentLocalDateTimeStr)

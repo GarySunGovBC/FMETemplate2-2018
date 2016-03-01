@@ -122,6 +122,8 @@ class TemplateConstants(object):
     FMWParams_SrcInstance = 'SRC_ORA_INSTANCE'
     FMWParams_SrcFeatPrefix = 'SRC_FEATURE_'
     
+    FMWParams_FileChangeEnabledParam = 'FILE_CHANGE_DETECTION'
+    
     # TODO: define the source database parameters
     
     # The fmw macrovalue used to retrieve the directory 
