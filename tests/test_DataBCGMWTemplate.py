@@ -129,15 +129,29 @@ class Test_CalcParams(unittest.TestCase):
         print 'passw', passw
         
     def test_getSourcePassword(self):
+        
+        msg = "unable to retrieve the password for schema {0} and " + \
+              'instance {1} using source password retrieval methods'
+
         self.fmeMacroValues = self.fmeMacroValues_DBSrc
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
         #spass = self.calcParams.getSourcePassword()
         #print 'src pass', spass
         # CWI_SPI_OPD@ENVPROD1.NRS.BCGOV
-        self.calcParams.fmeMacroVals['SRC_SCHEMA'] =  'CWI_SPI_OPD'
-        self.calcParams.fmeMacroVals['SRC_INSTANCE'] = 'ENVPROD1'
+        self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] =  'CWI_SPI_OPD'
+        self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'ENVPROD1'
         spass = self.calcParams.getSourcePassword()
-        print 'src pass', spass
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE']))
+
+        self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] =  'WHSE_CORP'
+        self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'IDWPROD1.BCGOV'
+        spass = self.calcParams.getSourcePassword()
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE']))
+
+        self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] =  'WHSE_CORP'
+        self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'BCGW.BCGOV'
+        spass = self.calcParams.getSourcePassword()
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE']))
         
     def test_getSourcePasswordHeuristic(self):
         self.fmeMacroValues = self.fmeMacroValues_DBSrc
@@ -485,8 +499,8 @@ if __name__ == "__main__":
     #sys.argv = ['', 'Test_TemplateConfigFileReader.test_getDestinationDatabaseKey', 
     #                       'Test_TemplateConfigFileReader.test_validateKey']
     #sys.argv = ['', 'Test_Shutdown.test_dbConn']
-    sys.argv = ['', 'Test_Shutdown.test_shutdown']
-
+    #sys.argv = ['', 'Test_Shutdown.test_shutdown']
+    sys.argv = ['', 'Test_CalcParams.test_getSourcePassword']
     unittest.main()
     
     #suite = unittest.TestSuite()

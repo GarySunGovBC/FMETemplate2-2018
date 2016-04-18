@@ -33,6 +33,8 @@ import pprint
 # to be closer to the front of the pathlist
 # TODO: have a autodetect for 2015 and send an error if
 # not running under fme2015
+# These lines are only necessary for unit tests as they 
+# enable the use of the fmeobjects code
 pathList = os.environ['PATH'].split(';')
 pathList.insert(0, r'E:\sw_nt\FME2015')
 sys.path.insert(0, r'E:\sw_nt\FME2015\fmeobjects\python27')
@@ -40,7 +42,7 @@ sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
 os.environ['PATH'] = ';'.join(pathList)
 
 import site
-import fmeobjects
+import fmeobjects  # @UnresolvedImport
 import platform
 import ConfigParser
 import json
@@ -87,6 +89,7 @@ class TemplateConstants(object):
     ConfFileSection_oraPortKey = 'oracleport'
     ConfFileSection_sdePortKey = 'sdeport'
     ConfFileSection_instanceKey = 'instance'
+    ConfFileSection_instanceAliasesKey = 'instance_aliases'
     
     ConfFileSection_pmpTokens = 'pmptokens'
     
@@ -449,6 +452,19 @@ class TemplateConfigFileReader(object):
         return credsFileName
    
     def getDataBCNodes(self):
+        '''
+        Gets a list of the computer / node names that the 
+        template considers DataBC machines.
+        
+        (used primarily to determine if the script should 
+         be run in development mode, get passwords from 
+         ./creds/dbCreds.json, or production which gets the
+         passwords directly from pmp)        
+        
+        :returns: list of computer names that are internal to 
+                  databc firewall and have access to pmp.
+        :rtype: list(str)
+        '''
         nodeString = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_govComputers)
         nodeList = nodeString.split(',')
         return nodeList
@@ -645,7 +661,22 @@ class Util(object):
                 if name == classname:
                     retVal = True
         return retVal
-
+    
+    @staticmethod
+    def isEqualIgnoreDomain(param1 , param2):
+        param1 = param1.lower().strip()
+        param2 = param2.lower().strip()
+        if param1 == param2:
+            return True
+        else:
+            param1NoDomain = Util.removeDomain(param1)
+            param2NoDomain = Util.removeDomain(param2)
+            param1NoDomain = param1NoDomain.lower().strip()
+            param2NoDomain = param2NoDomain.lower().strip()
+            if param1NoDomain == param2NoDomain:
+                return True
+        return False
+        
 class CalcParamsBase( object ):
     '''
     This method contains the base functionality which 
@@ -751,8 +782,45 @@ class CalcParamsBase( object ):
         '''
         customScriptDir = self.paramObj.getSdeConnFilePath()
         return customScriptDir
+       
+    def isSourceBCGW(self):
+        '''
+        Reads the source oracle database instance from the 
+        published parameters, compares with the destination
+        instances defined for the three environments.  If the 
+        source database matches any of the environments, 
+        returns the dest_key for the database.
         
-
+        If it does not match it will return None
+        
+        :returns: Describe the return value
+        :rtype: What is the return type
+        '''
+        # make sure it has the parameter for SRC_ORA_INSTANCE
+        # indicating that it is a source oracle instance
+        retVal = None
+        if self.fmeMacroVals.has_key(self.const.FMWParams_SrcInstance):
+            # now get the contents of that parameter
+            sourceOraInst = self.fmeMacroVals[self.const.FMWParams_SrcInstance]
+            destKeys = self.paramObj.parser.items(self.const.ConfFileSection_destKeywords)
+            for destKeyItems in destKeys:
+                destKey = destKeyItems[0]
+                #print 'destKey', destKey
+                inst = self.paramObj.parser.get(destKey, self.const.ConfFileSection_instanceKey)
+                instAliases = self.paramObj.parser.get(destKey, self.const.ConfFileSection_instanceAliasesKey)
+                instances = instAliases.split(',')
+                instances.append(inst)
+                for curInstName in instances:
+                    if Util.isEqualIgnoreDomain(curInstName, sourceOraInst):
+                        retVal = destKey
+                        return retVal
+        msg = "the source oracle instance {0} is not a BCGW instance.  " + \
+              "It is not defined as an instance for any of the following " + \
+              "environments: (DLV|TST|PRD) " 
+        msg = msg.format(sourceOraInst)
+        self.logger.debug(msg)
+        return retVal
+        
 class CalcParamsDevelopment(object):
     
     def __init__(self, parent):
@@ -900,25 +968,36 @@ class CalcParamsDataBC(object):
         self.fmeMacroVals = self.parent.fmeMacroVals
         self.currentPMPResource = None
         
-    def getDestinationPassword(self, destKey=None):
+    def getDestinationPassword(self, destKey=None, schema=None):
         if not destKey:
             destKey = self.fmeMacroVals[self.const.FMWParams_DestKey]
         else: 
             self.paramObj.validateKey(destKey)
             destKey = self.paramObj.getDestinationDatabaseKey(destKey)
+        if not schema:
+            schema = self.fmeMacroVals[self.const.FMWParams_DestSchema]            
         pmpRes = self.paramObj.getDestinationPmpResource(destKey)
         computerName = Util.getComputerName()
         pmpDict = {'token': self.paramObj.getPmpToken(computerName),
                    'baseurl': self.paramObj.getPmpBaseUrl(), 
                    'restdir': self.paramObj.getPmpRestDir()}
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
-        accntName = self.fmeMacroVals[self.const.FMWParams_DestSchema]
 
         msg = 'retrieving the destination password for schame: ({0}) db env key: ({1})'
-        msg = msg.format(accntName, destKey)
+        msg = msg.format(schema, destKey)
         self.logger.debug(msg)
         
-        passwrd = pmp.getAccountPassword(accntName, pmpRes)
+        passwrd = pmp.getAccountPassword(schema, pmpRes)
+        if not passwrd:
+            msg = 'Having trouble retrieving password from PMP.  Going to try a ' + \
+                  'case insensitive search for the password for the account {0}'
+            msg = msg.format(schema)
+            self.logger.warning(msg)
+        if not passwrd:
+            msg = 'Cant find the password in PMP resource {0} for the account {1}'
+            msg = msg.format(pmpRes, schema)
+            self.logger.warning(msg)
+            
         return passwrd
         
     def getPmpDict(self):
@@ -931,34 +1010,64 @@ class CalcParamsDataBC(object):
     def getSourcePassword(self):
         pmpDict = self.getPmpDict()
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
+        missingParamMsg = 'Trying to retrieve the source password from PMP.  In ' + \
+                  'order to do so the published parameter {0} needs to exist ' +\
+                  'and be populated.  Currently it does not exist in the FMW ' + \
+                  'that is being run.'
+        
+        if not self.fmeMacroVals.has_key(self.const.FMWParams_SrcSchema):
+            msg = missingParamMsg.format(self.const.FMWParams_SrcSchema)
+            self.logger.error(msg)
+            raise ValueError, msg
+                  
         accntName = self.fmeMacroVals[self.const.FMWParams_SrcSchema]
         accntName = accntName
-        instance = self.fmeMacroVals[self.const.FMWParams_SrcInstance]
-        msg = 'retreiving source password from pmp for schema: ({0}), instance: ({1})'
-        msg = msg.format(accntName, instance)
-        srcResources = self.paramObj.getSourcePmpResources()
-        pswd = None
+        if not self.fmeMacroVals.has_key(self.const.FMWParams_SrcInstance):
+            msg = missingParamMsg.format(self.const.FMWParams_SrcInstance)
+            self.logger.error(msg)
+            raise ValueError, msg
         
-        for pmpResource in srcResources:
-            self.logger.debug("searching for password in the pmp resource {0}".format(pmpResource))
-            self.currentPMPResource = pmpResource
-            # start by trying to just retrieve the account using 
-            # destSchema@instance as the "User Account" parameter
-            try:
-                accntATInstance = accntName.strip() + '@' + instance.strip()
-                self.logger.debug("account@instance search string: {0}".format(accntATInstance))
-                pswd = pmp.getAccountPassword(accntATInstance, pmpResource)
-                
-            except ValueError:
-                # TODO: Add a proper FME log message here
-                msg = 'There is no account {0} in pmp for the resource {1} using the token {2} from the machine {3}'
-                msg = msg.format(accntName, pmpResource, pmp.token, platform.node())
-                self.logger.warning(msg)
-                # Going to do a search for accounts that might match the user
-                self.getSourcePasswordHeuristic()
-            if pswd:
-                break
-            # add some more warnings
+        instance = self.fmeMacroVals[self.const.FMWParams_SrcInstance]
+        
+        pswd = None
+
+        # Need to detect if the source instance is bcgw.  If it is then
+        # get the password from there.
+        srcDestKey = self.parent.isSourceBCGW()
+        if srcDestKey:
+            msg = 'Source has been detected to be from the ' + \
+                  'bcgw.  Retrieving the password for the ' + \
+                  'source database using the destination ' + \
+                  'keyword {0}'
+            msg = msg.format(srcDestKey)
+            self.logger.info(msg)
+            pswd = self.getDestinationPassword(srcDestKey, accntName)
+        else:
+        
+            msg = 'retreiving source password from pmp for schema: ({0}), instance: ({1})'
+            msg = msg.format(accntName, instance)
+            srcResources = self.paramObj.getSourcePmpResources()
+            
+            for pmpResource in srcResources:
+                self.logger.debug("searching for password in the pmp resource {0}".format(pmpResource))
+                self.currentPMPResource = pmpResource
+                # start by trying to just retrieve the account using 
+                # destSchema@instance as the "User Account" parameter
+                try:
+                    accntATInstance = accntName.strip() + '@' + instance.strip()
+                    self.logger.debug("account@instance search string: {0}".format(accntATInstance))
+                    pswd = pmp.getAccountPassword(accntATInstance, pmpResource)
+                    
+                except ValueError:
+                    # TODO: Add a proper FME log message here
+                    msg = 'There is no account {0} in pmp for the resource {1} using the token {2} from the machine {3}'
+                    msg = msg.format(accntName, pmpResource, pmp.token, platform.node())
+                    self.logger.warning(msg)
+                    # Going to do a search for accounts that might match the user
+                    pswd = self.getSourcePasswordHeuristic()
+                if pswd:
+                    break
+                # add some more warnings
         return pswd
     
     def getSourcePasswordHeuristic(self):

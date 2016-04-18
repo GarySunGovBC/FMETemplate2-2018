@@ -217,7 +217,7 @@ class ChangeDetect(object):
     def readOldChangeLog(self, changeLogPath=None):
         '''
         Reads the old change log format that is made up
-        of the following columns:
+        of the following columns: 
            Date string - datestring for when the change detection
                          was run
            FMW Name - not the full path, just the name of the 
@@ -501,4 +501,6 @@ class ChangeCache():
             LineToAdd = ','.join(elems) + '\n'
             fh.write(LineToAdd)
         fh.close()
+            
+            
             

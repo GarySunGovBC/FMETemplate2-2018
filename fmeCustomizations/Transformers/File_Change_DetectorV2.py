@@ -103,6 +103,14 @@ class ChangeFlagFetcher(object):
         #print 'type of feature', type(feature)
         #print 'feature', feature
         fileChngKey = self.changeCache.const.FMWParams_FileChangeEnabledParam
+        if not self.fmeMacroValues.has_key(fileChngKey):
+            msg = 'File change detection requires you to define a parameter called ' + \
+                  '{0}.  This parameter does not exist.  Add it as a published parameter ' + \
+                  'to your FMW.\nType:   Choice\nprompt:  Whether to use file change ' + \
+                  'detection or not\nConfiguration:   TRUE%FALSE\nDefault Value:  TRUE'
+            msg = msg.format(fileChngKey)
+            self.logger.error(msg)
+            raise ValueError, msg
         changeDetectionEnabledParam = self.fmeMacroValues[fileChngKey]
         
         #self.logger.debug("changeDetectionEnabledParam: {0}".format(changeDetectionEnabledParam))
