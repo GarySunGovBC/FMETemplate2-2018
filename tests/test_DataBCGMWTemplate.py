@@ -111,8 +111,8 @@ class Test_CalcParams(unittest.TestCase):
                                     'LogURL': 'http://arneb.dmz/fmejobsubmitter/DWRSPUB/fme_logger.fmw',
                                     'NotificationEmail': 'dataetl@gov.bc.ca',
                                     'SRC_FEATURE_1': 'I2K_PERMIT',
-                                    'SRC_INSTANCE': 'airprod1.nrs.bcgov',
-                                    'SRC_SCHEMA': 'inventory2000'}
+                                    'SRC_ORA_INSTANCE': 'airprod1.nrs.bcgov',
+                                    'SRC_ORA_SCHEMA': 'inventory2000'}
         self.fmeMacroValues = self.fmeMacroValues_fileSrc
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
 
@@ -153,13 +153,28 @@ class Test_CalcParams(unittest.TestCase):
         spass = self.calcParams.getSourcePassword()
         self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE']))
         
+        self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_1'] =  'WHSE_CORP'
+        self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_1'] = 'BCGW.BCGOV'
+        spass = self.calcParams.getSourcePassword(1)
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_1'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_1']))
+        
+        self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_3'] =  'WHSE_CORP'
+        self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_3'] = 'BCGW.BCGOV'
+        spass = self.calcParams.getSourcePassword(3)
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_3'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_3']))
+        
     def test_getSourcePasswordHeuristic(self):
         self.fmeMacroValues = self.fmeMacroValues_DBSrc
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
-        self.calcParams.fmeMacroVals['SRC_SCHEMA'] =  'CWI_SPI_OPD'
-        self.calcParams.fmeMacroVals['SRC_INSTANCE'] = 'ENVPROD1'
+        self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] =  'CWI_SPI_OPD'
+        self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'ENVPROD1'
         self.calcParams.plugin.currentPMPResource = 'ETL_OPERATIONAL_DBLINKS'
         spass = self.calcParams.getSourcePasswordHeuristic()
+        print 'pass is:', spass
+        
+        self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_5'] =  'CWI_SPI_OPD'
+        self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_5'] = 'ENVPROD1'
+        spass = self.calcParams.getSourcePasswordHeuristic(5)
         print 'pass is:', spass
         
     def test_getDatabaseConnectionFilePath(self):
@@ -168,6 +183,18 @@ class Test_CalcParams(unittest.TestCase):
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
         connFile = self.calcParams.getDatabaseConnectionFilePath()
         print 'connFile', connFile
+   
+    def test_getFailedFeaturesFile(self):
+        self.fmeMacroValues = self.fmeMacroValues_DBSrc
+        self.fmeMacroValues['DEST_DB_ENV_KEY'] = 'DLV'
+        self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
+        failedFeats = self.calcParams.getFailedFeaturesFile()
+        failedFeatsDir = os.path.dirname(failedFeats)
+        msg = 'The output directory {0} for failed features ' + \
+              'was not created'
+        msg = msg.format(failedFeatsDir)
+        self.assertTrue(os.path.exists(failedFeatsDir), msg)
+
    
 class Test_CalcParamsDevel(unittest.TestCase):
     def setUp(self):
@@ -219,8 +246,8 @@ class Test_CalcParamsDevel(unittest.TestCase):
                                     'LogURL': 'http://arneb.dmz/fmejobsubmitter/DWRSPUB/fme_logger.fmw',
                                     'NotificationEmail': 'dataetl@gov.bc.ca',
                                     'SRC_FEATURE_1': 'I2K_PERMIT',
-                                    'SRC_INSTANCE': 'airprod1.nrs.bcgov',
-                                    'SRC_SCHEMA': 'inventory2000'}
+                                    'SRC_ORA_INSTANCE': 'airprod1.nrs.bcgov',
+                                    'SRC_ORA_SCHEMA': 'inventory2000'}
         
         
         self.fmeMacroValues = self.fmeMacroValues_DBSrc
@@ -250,7 +277,7 @@ class Test_CalcParamsDevel(unittest.TestCase):
         self.assertEqual(expectedPassword, develSrcPass, msg)
         
         # should return nothing 
-        calcParams.fmeMacroVals['SRC_INSTANCE'] = 'airprod1'
+        calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'airprod1'
         #develSrcPasswd = calcParams.getSourcePassword()
         #msg = 'Trying to retrieve the password for {0}, but there is only ' + \
         #      'There is no specific entry for that source database so should ' + \
@@ -261,7 +288,7 @@ class Test_CalcParamsDevel(unittest.TestCase):
         msg = msg.format('getSourcePasswordHeuristic', develSrcPass, expectedPassword)
         self.assertEqual(expectedPassword, develSrcPass, msg)
                 
-        calcParams.fmeMacroVals['SRC_INSTANCE'] = 'airprod99'
+        calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'airprod99'
         self.assertRaises(ValueError, lambda:  calcParams.getSourcePassword())
         self.assertRaises(ValueError, lambda:  calcParams.getSourcePasswordHeuristic())
 
@@ -288,6 +315,16 @@ class Test_CalcParamsDevel(unittest.TestCase):
         self.fmeMacroValues['DEST_DB_ENV_KEY'] = 'TEST'
         calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues, True)
         self.assertRaises(ValueError, lambda: calcParams.getDestinationPassword())
+    
+    def test_getFailedFeaturesFile(self):
+        calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues, True)
+        failedFeatsFile = calcParams.getFailedFeaturesFile()
+        print 'failedFeatsFile', failedFeatsFile
+        failedFeatsDir = os.path.dirname(failedFeatsFile)
+        msg = 'Development mode failed features directory {0}' + \
+              'should have been created, but it was not'
+        msg = msg.format(failedFeatsDir)
+        self.assertTrue(os.path.exists(failedFeatsDir), msg)
     
 class Test_TemplateConfigFileReader(unittest.TestCase):
     
@@ -500,7 +537,8 @@ if __name__ == "__main__":
     #                       'Test_TemplateConfigFileReader.test_validateKey']
     #sys.argv = ['', 'Test_Shutdown.test_dbConn']
     #sys.argv = ['', 'Test_Shutdown.test_shutdown']
-    sys.argv = ['', 'Test_CalcParams.test_getSourcePassword']
+    sys.argv = ['',  'Test_CalcParamsDevel.test_getFailedFeaturesFile']
+    # 'Test_CalcParams.test_getFailedFeaturesFile',
     unittest.main()
     
     #suite = unittest.TestSuite()

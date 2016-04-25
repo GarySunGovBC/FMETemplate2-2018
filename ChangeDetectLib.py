@@ -116,7 +116,8 @@ class ChangeDetect(object):
         :returns: The path to the calculated change log
         :rtype: str(path)
         '''
-        changeLogRootDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_changeLogDir)
+        #changeLogRootDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_changeLogDir)
+        changeLogRootDir = self.paramObj.getChangeLogsDirFullPath()
         if create:
             if not os.path.exists(changeLogRootDir):
                 msg = 'The root directory: {0} for file change logs does not exist' + \
@@ -136,7 +137,9 @@ class ChangeDetect(object):
                 msg = msg.format(changeLogFMWDir)
                 self.logger.info(msg)
                 os.mkdir(changeLogFMWDir)
-        changeLogFileName = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_changeLogFileName)
+        
+        #changeLogFileName = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_changeLogFileName)
+        changeLogFileName = self.paramObj.getChangeLogFile()
         fullPathToChangeLog = os.path.join(changeLogFMWDir, changeLogFileName)
         if create:
             if not os.path.exists(fullPathToChangeLog):
