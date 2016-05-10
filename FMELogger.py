@@ -15,7 +15,7 @@ http://pantburk.info/?blog=77
 import logging
 import logging.handlers
 import os.path
-import fmeobjects
+import fmeobjects  # @UnresolvedImport
 
 class FMELogHandler(logging.Handler):
     

@@ -24,7 +24,7 @@ template = DataBCFMWTemplate(fme)
 template.startup()
 '''
 # for some reason this has to manually added
-import sys
+#import sys
 import importlib
 import os
 import pprint
@@ -35,25 +35,25 @@ import pprint
 # not running under fme2015
 # These lines are only necessary for unit tests as they 
 # enable the use of the fmeobjects code
-pathList = os.environ['PATH'].split(';')
-pathList.insert(0, r'E:\sw_nt\FME2015')
-sys.path.insert(0, r'E:\sw_nt\FME2015\fmeobjects\python27')
-sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
-os.environ['PATH'] = ';'.join(pathList)
+# pathList = os.environ['PATH'].split(';')
+# pathList.insert(0, r'E:\sw_nt\FME2015')
+# sys.path.insert(0, r'E:\sw_nt\FME2015\fmeobjects\python27')
+# sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
+# os.environ['PATH'] = ';'.join(pathList)
 
 import site
-import fmeobjects  # @UnresolvedImport
+#import fmeobjects  # @UnresolvedImport
 import platform
 import ConfigParser
 import json
 import logging.config
 import PMP.PMPRestConnect
 import DB.DbLib
-import FMELogger
+#import FMELogger
 import datetime
-import urllib
+#import urllib
 import re
-import cx_Oracle
+#import cx_Oracle
 import inspect
 
 class TemplateConstants(object):
@@ -124,6 +124,7 @@ class TemplateConstants(object):
     FMWParams_SrcXLSPrefix = 'SRC_DATASET_XLS_'
     FMWParams_SrcFeaturePrefix = 'SRC_FEATURE_'
     FMWParams_SrcSchema = 'SRC_ORA_SCHEMA'
+    FMWParams_SrcProxySchema = 'SRC_ORA_PROXY_SCHEMA'
     # if there is more than one source schema use the method
     # getSrcInstanceParam to retrieve it
     
@@ -180,6 +181,10 @@ class TemplateConstants(object):
     def getSrcSchemaParam(self, position):
         val = self.calcNumVal(self.FMWParams_SrcSchema, position)
         return val
+    
+    def getSrcSchemaProxyParam(self, position):
+        val = self.calcNumVal(self.FMWParams_SrcProxySchema, position)
+        return val
         
     def calcNumVal(self, val, position):
         if type(position) is str:
@@ -193,8 +198,7 @@ class TemplateConstants(object):
         retValtemplate = '{0}_{1}'
         retVal = retValtemplate.format(val, position )
         return retVal
-
-    
+  
 class Start(object):
     
     def __init__(self, fme):
@@ -819,6 +823,24 @@ class CalcParamsBase( object ):
         port = self.paramObj.getDestinationOraclePort()
         return port 
     
+    def getSchemaForPasswordRetrieval(self, passwordPosition):
+        schemaMacroKey = self.const.FMWParams_SrcSchema
+        instanceMacroKey = self.const.FMWParams_SrcInstance
+        proxySchemaMacroKey = self.const.FMWParams_SrcProxySchema
+        if passwordPosition:
+            if type(passwordPosition) is not int:
+                msg = 'the arg passwordPosition you provided is {0} which has a type of {1}.  This ' + \
+                      'arg must have a type of int.'
+                raise ValueError, msg
+            instanceMacroKey = self.const.getSrcInstanceParam(passwordPosition)
+            schemaMacroKey = self.const.getSrcSchemaParam(passwordPosition)
+            proxySchemaMacroKey = self.const.getSrcSchemaProxyParam(passwordPosition)
+        if self.fmeMacroVals.has_key(proxySchemaMacroKey):
+            # if proxy key has a value then retrieve the password for the proxy.
+            # if it does not then then retrieve the value for the schema
+            schemaMacroKey = proxySchemaMacroKey
+        return schemaMacroKey, instanceMacroKey
+
     def getSourcePassword(self, passwordPosition=None):
         '''
         Retrieves the source passwords from PMP. This method is 
@@ -852,16 +874,7 @@ class CalcParamsBase( object ):
         :returns: the source password
         :rtype: str
         '''
-        schemaMacroKey = self.const.FMWParams_SrcSchema
-        instanceMacroKey = self.const.FMWParams_SrcInstance
-        if passwordPosition:
-            if type(passwordPosition) is not int:
-                msg = 'the arg passwordPosition you provided is {0} which has a type of {1}.  This ' + \
-                      'arg must have a type of int.'
-                raise ValueError, msg
-            instanceMacroKey = self.const.getSrcInstanceParam(passwordPosition)
-            schemaMacroKey = self.const.getSrcSchemaParam(passwordPosition)
-        
+        schemaMacroKey, instanceMacroKey = self.getSchemaForPasswordRetrieval(passwordPosition)
         inst = self.fmeMacroVals[instanceMacroKey]
         schema = self.fmeMacroVals[schemaMacroKey]
 
@@ -872,9 +885,9 @@ class CalcParamsBase( object ):
         self.logger.info(msg)
         return pswd
     
-    def getFailedFeaturesFile(self):
+    def getFailedFeaturesFile(self, failedFeatsFileName=None):
         self.logger.debug("Calling plugin to get the failed features")
-        failedFeatures = self.plugin.getFailedFeaturesFile()
+        failedFeatures = self.plugin.getFailedFeaturesFile(failedFeatsFileName)
         return failedFeatures
         
     def getDestinationPassword(self):
@@ -1007,11 +1020,10 @@ class CalcParamsDevelopment(object):
         return retVal
     
     def getSourcePassword(self, position=None):
-        srcSchema = self.parent.fmeMacroVals[self.const.FMWParams_SrcSchema]
-        srcInstance = self.parent.fmeMacroVals[self.const.FMWParams_SrcInstance]
-        if position:
-            srcInstance = self.const.getSrcInstanceParam(position)
-            srcSchema = self.const.getSrcSchemaParam(position)
+        schemaMacroKey, instanceMacroKey = self.parent.getSchemaForPasswordRetrieval(position)
+        
+        srcInstance = self.fmeMacroVals[instanceMacroKey]
+        srcSchema = self.fmeMacroVals[schemaMacroKey]
 
         msg = 'Getting source password for user ({0}) and instance ({1})'
         msg = msg.format(srcSchema, srcInstance)
@@ -1026,6 +1038,9 @@ class CalcParamsDevelopment(object):
                dbUser.lower().strip() == srcSchema.lower().strip():
                 retVal =  dbPass
                 break
+        if not retVal:
+            retVal = self.getSourcePasswordHeuristic(position)
+            self.logger.debug("heuristic password search found the password {0}".format(retVal))
         if not retVal:
             msg = 'Running in DevMod.  This means that the template is attempting ' +  \
                   'to retrieve the password from the json credential file {4} Was unable to ' + \
@@ -1042,27 +1057,29 @@ class CalcParamsDevelopment(object):
         For now just ignores the domain when searching for the password
         '''
         retVal = None
-        srcSchemaParm = self.const.FMWParams_SrcSchema
-        srcInstParam = self.const.FMWParams_SrcInstance
-        if position:
-            srcSchemaParm = self.const.getSrcSchemaParam(position)
-            srcInstParam = self.const.getSrcInstanceParam(position)
+        schemaMacroKey, instanceMacroKey = self.parent.getSchemaForPasswordRetrieval(position)
         
-        srcSchema = self.parent.fmeMacroVals[srcSchemaParm]
-        srcInstance = self.parent.fmeMacroVals[srcInstParam]
+        srcSchema = self.parent.fmeMacroVals[schemaMacroKey]
+        srcInstance = self.parent.fmeMacroVals[instanceMacroKey]
         
         srcInstance = Util.removeDomain(srcInstance)
         
         for dbParams in self.data[self.const.DevelopmentDatabaseCredentialsFile_SourceCreds]:
+            self.logger.debug("dbParmas {0}".format(dbParams))
             dbUser = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbUser]
             dbInst = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbInst]
-            dbInstLst = dbInst.split('.')
-            dbInst = dbInstLst[0]
-            dbPass = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbPswd]
+            dbInst = Util.removeDomain(dbInst)
             
-            if dbInst.lower().strip() == srcInstance.lower() and \
+            #dbInstLst = dbInst.split('.')
+            #dbInst = dbInstLst[0]
+            dbPass = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbPswd]
+            self.logger.debug('inst1 {0}, inst2 {1}'.format(dbInst.lower().strip(), srcInstance.lower().strip()))
+            self.logger.debug("schema1 {0} schema2 {1}".format(dbUser.lower().strip(), srcSchema.lower().strip()))
+            if dbInst.lower().strip() == srcInstance.lower().strip() and \
                dbUser.lower().strip() == srcSchema.lower().strip():
                 retVal =  dbPass
+                msg = 'found the value for instance {0}, schema {1}'.format(srcInstance, srcSchema)
+                self.logger.debug(msg)
                 break
         if not retVal:
             msg = 'Running in DevMod.  This means that the template is attempting ' +  \
@@ -1075,7 +1092,7 @@ class CalcParamsDevelopment(object):
             raise ValueError, msg
         return retVal
         
-    def getFailedFeaturesFile(self):
+    def getFailedFeaturesFile(self, failedFeatsFileName=None):
         '''
         When run in development mode will look for an 
         ./outputs/failed directory, if it doesn't exist
@@ -1107,8 +1124,10 @@ class CalcParamsDevelopment(object):
             msg = 'The failed features directory {0} does not exist, creating now'
             self.logger.debug(msg.format(ffDir))
             os.makedirs(ffDir)
-            
-        ffFile = os.path.join(ffDir, failedFeatsFile)
+        if not failedFeatsFileName:
+            ffFile = os.path.join(ffDir, failedFeatsFileName)
+        else:
+            ffFile = os.path.join(ffDir, failedFeatsFile)
         msg = 'The failed featured file being used is {0}'
         msg = msg.format(ffFile)
         self.logger.debug(msg)
@@ -1173,30 +1192,25 @@ class CalcParamsDataBC(object):
     def getSourcePassword(self, position=None):
         pmpDict = self.getPmpDict()
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
-        
-        schema = self.const.FMWParams_SrcSchema
-        inst = self.const.FMWParams_SrcInstance
-        if position:
-            schema = self.const.getSrcSchemaParam(position)
-            inst = self.const.getSrcInstanceParam(position)
-        
+        schemaMacroKey, instanceMacroKey = self.parent.getSchemaForPasswordRetrieval(position)
+
         missingParamMsg = 'Trying to retrieve the source password from PMP.  In ' + \
                   'order to do so the published parameter {0} needs to exist ' +\
                   'and be populated.  Currently it does not exist in the FMW ' + \
                   'that is being run.'
         
-        if not self.fmeMacroVals.has_key(schema):
-            msg = missingParamMsg.format(schema)
+        if not self.fmeMacroVals.has_key(schemaMacroKey):
+            msg = missingParamMsg.format(schemaMacroKey)
             self.logger.error(msg)
             raise ValueError, msg
                   
-        accntName = self.fmeMacroVals[schema]
-        if not self.fmeMacroVals.has_key(inst):
-            msg = missingParamMsg.format(inst)
+        accntName = self.fmeMacroVals[schemaMacroKey]
+        if not self.fmeMacroVals.has_key(instanceMacroKey):
+            msg = missingParamMsg.format(instanceMacroKey)
             self.logger.error(msg)
             raise ValueError, msg
         
-        instance = self.fmeMacroVals[inst]
+        instance = self.fmeMacroVals[instanceMacroKey]
         
         pswd = None
 
@@ -1262,15 +1276,10 @@ class CalcParamsDataBC(object):
                   fmws destSchema / instance combination
         :rtype: str
         '''
-        
-        srcInst = self.const.FMWParams_SrcInstance
-        srcSchema = self.const.FMWParams_SrcSchema
-        if position:
-            srcInst = self.const.getSrcInstanceParam(position)
-            srcSchema = self.const.getSrcSchemaParam(position)
-            
-        srcInstanceInFMW = self.fmeMacroVals[srcInst].lower().strip()
-        srcSchemaInFMW = self.fmeMacroVals[srcSchema].lower().strip()
+        schemaMacroKey, instanceMacroKey = self.parent.getSchemaForPasswordRetrieval(position)
+
+        srcInstanceInFMW = self.fmeMacroVals[instanceMacroKey].lower().strip()
+        srcSchemaInFMW = self.fmeMacroVals[schemaMacroKey].lower().strip()
         # sometimes the source instance includes the domain so making sure this 
         # is stripped out, example idwprod1.env.gov.bc.ca becomes just idwprod1
         srcInstanceInFMWLst = srcInstanceInFMW.split('.')
@@ -1325,18 +1334,17 @@ class CalcParamsDataBC(object):
                           'pmp has different passwords for each of these.  Unable to proceed as ' + \
                           'not sure which password to use.  Fix this by changing the parameter {3} ' + \
                           'to match a "User Account" in pmp exactly.'
-                    msg = msg.format(self.fmeMacroVals[self.const.FMWParams_SrcSchema], 
-                                     self.fmeMacroVals[self.const.FMWParams_SrcInstance], 
+                    msg = msg.format(self.fmeMacroVals[schemaMacroKey], 
+                                     self.fmeMacroVals[instanceMacroKey], 
                                      ','.join(instList), 
-                                     self.const.FMWParams_SrcInstance)
+                                     instanceMacroKey)
                     raise ValueError, msg
             else:
                 # get the password and return it
                 pswd = pmp.getAccountPasswordWithAccountId(instList[0][1], resId)
         return pswd
             
-    def getFailedFeaturesFile(self):
-        print 'neeed to implement'
+    def getFailedFeaturesFile(self, failedFeatsFileName=None):
         '''
         this is going to put the failed features
         into the template outputs directory.
@@ -1368,9 +1376,11 @@ class CalcParamsDataBC(object):
             msg = msg.format(fmwDir)
             self.logger.debug(msg)
             os.makedirs(fmwDir)
-        
-        failedFeatsFile = self.paramObj.getFailedFeaturesFile()
-        ffFullPathFile = os.path.join(fmwDir, failedFeatsFile )
+        if not failedFeatsFileName:
+            failedFeatsFile = self.paramObj.getFailedFeaturesFile()
+            ffFullPathFile = os.path.join(fmwDir, failedFeatsFile )
+        else:
+            ffFullPathFile = os.path.join(fmwDir, failedFeatsFileName )
         msg = "The full file path for failed features csv file is {0}".format(ffFullPathFile)
         self.logger.debug(msg)
         return ffFullPathFile

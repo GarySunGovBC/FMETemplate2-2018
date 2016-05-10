@@ -3,10 +3,17 @@ Created on Dec 11, 2015
 
 @author: kjnether
 '''
+import os
+import sys
+
+pathList = os.environ['PATH'].split(';')
+pathList.insert(0, r'E:\sw_nt\FME2015')
+sys.path.insert(0, r'E:\sw_nt\FME2015\fmeobjects\python27')
+sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
+os.environ['PATH'] = ';'.join(pathList)
+
 import unittest
 import site
-import sys
-import os
 import pprint
 import DataBCFMWTemplate
 
@@ -163,6 +170,18 @@ class Test_CalcParams(unittest.TestCase):
         spass = self.calcParams.getSourcePassword(3)
         self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_3'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_3']))
         
+        self.calcParams.fmeMacroVals['SRC_ORA_PROXY_SCHEMA_4'] =  'DBLINK_FISS'
+        self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_4'] =  'FISS'
+        self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_4'] = 'RIBPROD1.NRS.BCGOV'
+        spass = self.calcParams.getSourcePassword(4)
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_4'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_4']))
+        
+        self.calcParams.fmeMacroVals['SRC_ORA_PROXY_SCHEMA'] =  'DBLINK_FISS'
+        self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] =  'FISS'
+        self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'RIBPROD1.NRS.BCGOV'
+        spass = self.calcParams.getSourcePassword()
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_4'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_4']))
+        
     def test_getSourcePasswordHeuristic(self):
         self.fmeMacroValues = self.fmeMacroValues_DBSrc
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
@@ -283,7 +302,8 @@ class Test_CalcParamsDevel(unittest.TestCase):
         #      'There is no specific entry for that source database so should ' + \
         #      'return \'None\' but intead its returning {1}'
         #msg = msg.format(calcParams.fmeMacroVals['SRC_INSTANCE'], develSrcPasswd)
-        self.assertRaises(ValueError, lambda:  calcParams.getSourcePassword())
+        #self.assertRaises(ValueError, lambda:  calcParams.getSourcePassword())
+        self.assertEqual(expectedPassword, develSrcPass, msg)
         develSrcPass = calcParams.getSourcePasswordHeuristic()
         msg = msg.format('getSourcePasswordHeuristic', develSrcPass, expectedPassword)
         self.assertEqual(expectedPassword, develSrcPass, msg)
@@ -291,6 +311,13 @@ class Test_CalcParamsDevel(unittest.TestCase):
         calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'airprod99'
         self.assertRaises(ValueError, lambda:  calcParams.getSourcePassword())
         self.assertRaises(ValueError, lambda:  calcParams.getSourcePasswordHeuristic())
+
+        calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'envprod1'
+        calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] = 'doodoo'
+        calcParams.fmeMacroVals['SRC_ORA_PROXY_SCHEMA'] = 'USERNAME'
+        develSrcPass = calcParams.getSourcePassword()
+        msg = msg.format('getSourcePassword', develSrcPass, expectedPassword)
+        self.assertEqual(expectedPassword, develSrcPass, msg)
 
     def test_getDestinationPassword(self):
         expectedPassword = 'thisIsNotThePassword'
@@ -537,8 +564,11 @@ if __name__ == "__main__":
     #                       'Test_TemplateConfigFileReader.test_validateKey']
     #sys.argv = ['', 'Test_Shutdown.test_dbConn']
     #sys.argv = ['', 'Test_Shutdown.test_shutdown']
-    sys.argv = ['',  'Test_CalcParamsDevel.test_getFailedFeaturesFile']
+    sys.argv = ['','Test_CalcParamsDevel.test_getSourcePassword',  'Test_CalcParams.test_getSourcePassword']
+    #sys.argv = ['','Test_CalcParamsDevel.test_getSourcePassword']
+
     # 'Test_CalcParams.test_getFailedFeaturesFile',
+    # 
     unittest.main()
     
     #suite = unittest.TestSuite()
