@@ -38,11 +38,8 @@ API DOC:
 """
 import DataBCFMWTemplate
 import os.path
-import stat
 import datetime
-import re
 import time
-import sys
 import logging
 import pytz
 

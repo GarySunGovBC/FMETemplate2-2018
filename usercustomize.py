@@ -7,8 +7,10 @@ import site
 import platform
 import os.path
 print 'running usercustomize...'
-if platform.node() == 'matar':
+print 'platform.node()', platform.node()
+if platform.node().lower() == 'matar':
     print 'adding matar internal lib paths...'
+    #Z:\scripts\python\DataBCPyLib\PMP
     matarPath = r'\\data.bcgov\work\scripts\python\DataBCPyLib'
     site.addsitedir(matarPath)
     print '{0} path has been added'.format(matarPath)
