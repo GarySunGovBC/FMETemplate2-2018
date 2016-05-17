@@ -1,0 +1,450 @@
+#! <?xml version="1.0" encoding="utf-8" ?>
+#! <TRANSFORMER
+# TRANSFORMER_BEGIN "File Change Detector v2",1,DataBC,faf9758b-0f21-44e9-b194-229bb4a6d64e,"Linked Always",No,NO_PARALLELISM,,No,15538,YES,No
+# <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Provides routing for features from file-based data sources depending upon whether the source file has changed since the last time it was replicated.</p>
+# <p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">
+#     <br/>
+# </p>
+# <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Dependencies include:</p>
+# <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">- python startup script to detect file change</p>
+# <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">- etlAuditLog.txt file to record source file replications. This file will be created if it does not exist.</p>
+# <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">- python shutdown script to update the etlAuditLog file. </p>
+# 
+# TRANSFORMER_END
+#! HISTORY=""
+#! WORKSPACE_VERSION="1"
+#! DOC_EXTENTS="3176 1024"
+#! FME_BUILD_NUM="15538"
+#! DOC_TOP_LEFT="145 -1344"
+#! PASSWORD=""
+#! CATEGORY="DataBC"
+#! FME_PROCESS_COUNT="NO_PARALLELISM"
+#! FMX_INSERT_MODE="Linked Always"
+#! XFORM_DEPRECATED="No"
+#! LAST_SAVE_DATE="2016-02-12T11:21:56"
+#! LEGAL_TERMS_CONDITIONS="&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;"
+#! FME_SERVER_SERVICES=""
+#! REQUIREMENTS_KEYWORD="none"
+#! FME_LINKED_TRANSFORMER_VERSION="1"
+#! ITERATION_COUNT_ATTR=""
+#! WARN_INVALID_XFORM_PARAM="Yes"
+#! DESCRIPTION="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Provides routing for features from file-based data sources depending upon whether the source file has changed since the last time it was replicated.&lt;/p&gt;&#10;&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Dependencies include:&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- python startup script to detect file change&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- etlAuditLog.txt file to record source file replications. This file will be created if it does not exist.&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- python shutdown script to update the etlAuditLog file. &lt;/p&gt;&#10;"
+#! MAX_LOOP_ITERATIONS=""
+#! BLOCKED_LOOPING="No"
+#! FME_PROCESS_GROUP_BY=""
+#! ATTR_TYPE_ENCODING="SDF"
+#! LAST_SAVE_BUILD="FME(R) 2015.1.2.0 (20150911 - Build 15538 - WIN32)"
+#! VIEW_POSITION="492.005 -564.006"
+#! FME_DOCUMENT_PRIORGUID="8b186fa5-d4f9-49e8-ae77-536f1fbba175,940a930a-63df-4838-9186-25fc02ef4007,1ca5cdd4-0628-472b-b2e6-0eb76d31976a,af5c1430-3c00-4d6b-b35f-6025f2b5f165,bd78e716-0c37-4158-892d-f34e31ac75f6,5738adea-05d6-45eb-8c41-22cb1e7087a9,d4684772-3fef-4e2a-8a4a-6f6f01a48c68,7c0c6bb4-4ef0-477f-8e28-adf93309af15,3a8ed498-756b-4d45-8ae6-b98a3693615d,bc04c7e0-0873-42f4-850c-8163e6b4dd0f"
+#! FME_PROCESS_GROUPS_ORDERED="No"
+#! USAGE="&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;"
+#! TITLE="File Change Detector v2"
+#! REQUIREMENTS="&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;"
+#! SHOW_INFO_NODES="true"
+#! SHOW_ANNOTATIONS="true"
+#! ZOOM_SCALE="100"
+#! FME_DOCUMENT_GUID="faf9758b-0f21-44e9-b194-229bb4a6d64e"
+#! >
+#! <DATASETS>
+#! </DATASETS>
+#! <DATA_TYPES>
+#! </DATA_TYPES>
+#! <GEOM_TYPES>
+#! </GEOM_TYPES>
+#! <FEATURE_TYPES>
+#! </FEATURE_TYPES>
+#! <FMESERVER>
+#! </FMESERVER>
+#! <GLOBAL_PARAMETERS>
+#! </GLOBAL_PARAMETERS>
+#! <COMMENTS>
+#! <COMMENT
+#! IDENTIFIER="18"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;Step 3: A new CHANGE DETECTED &#13;&lt;br&gt;attribute is added to each feature, and&#13;&lt;br&gt;populated with the TRUE or FALSE &#13;&lt;br&gt;value determined in the python start&#13;&lt;br&gt;up script.&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1525 -462"
+#! TOP_LEFT="1525 -462"
+#! BOTTOM_RIGHT="1525 -462"
+#! BOUNDING_RECT="1525 -462 0 -0"
+#! ORDER="14"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="8"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="2"
+#! />
+#! <COMMENT
+#! IDENTIFIER="19"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;Step 2: Use the &apos;fme_dataset&apos; value as a key&#13;&lt;br&gt;to retrieving a list of characteristics associated&#13;&lt;br&gt;with the file, as determined by the python startup&#13;&lt;br&gt;script.  The following characteristics are provided&#13;&lt;br&gt;in a python list object: &#13;&lt;br&gt;  [change detected: &apos;True&apos; &#13;&lt;br&gt; &apos;False&apos;, file date]&#13;&lt;br&gt;               index[0]                             index[1]&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="949 -1178"
+#! TOP_LEFT="949 -1178"
+#! BOTTOM_RIGHT="949 -1178"
+#! BOUNDING_RECT="949 -1178 0 -0"
+#! ORDER="15"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="8"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="6"
+#! />
+#! <COMMENT
+#! IDENTIFIER="20"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;Step 1: Expose the &apos;fme_dataset&apos; attribute.&#13;&lt;br&gt;For file-based data sources, this provides the full&#13;&lt;br&gt;path file name.  This attribute provides a key to&#13;&lt;br&gt;retrieving the status indicator for file-based change&#13;&lt;br&gt;determined by the python startup script.&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="435 -455"
+#! TOP_LEFT="435 -455"
+#! BOTTOM_RIGHT="435 -455"
+#! BOUNDING_RECT="435 -455 0 -0"
+#! ORDER="16"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="8"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="1"
+#! />
+#! <COMMENT
+#! IDENTIFIER="21"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;Step 5: Features deemed to have been&#13;&lt;br&gt;sourced from a file dataset that has &#13;&lt;br&gt;changed are stripped of interim processing&#13;&lt;br&gt;attributes.&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="2547 -320"
+#! TOP_LEFT="2547 -320"
+#! BOTTOM_RIGHT="2547 -320"
+#! BOUNDING_RECT="2547 -320 0 -0"
+#! ORDER="17"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="8"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="4"
+#! />
+#! <COMMENT
+#! IDENTIFIER="22"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;Step 4: Features are filtered according &#13;&lt;br&gt;to the CHANGE DETECTED boolean&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1968 -1215"
+#! TOP_LEFT="1968 -1215"
+#! BOTTOM_RIGHT="1968 -1215"
+#! BOUNDING_RECT="1968 -1215 0 -0"
+#! ORDER="18"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="8"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="3"
+#! />
+#! <COMMENT
+#! IDENTIFIER="23"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;Step 6: Features deemed to have been&#13;&lt;br&gt;sourced from a file dataset that has not&#13;&lt;br&gt;changed are stripped of interim processing&#13;&lt;br&gt;attributes.&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="2614 -1344"
+#! TOP_LEFT="2614 -1344"
+#! BOTTOM_RIGHT="2614 -1344"
+#! BOUNDING_RECT="2614 -1344 0 -0"
+#! ORDER="19"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="8"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="5"
+#! />
+#! </COMMENTS>
+#! <CONSTANTS>
+#! </CONSTANTS>
+#! <BOOKMARKS>
+#! </BOOKMARKS>
+#! <TRANSFORMERS>
+#! <TRANSFORMER
+#! IDENTIFIER="1"
+#! TYPE="AttributeExposer"
+#! VERSION="0"
+#! POSITION="623 -742"
+#! BOUNDING_RECT="623 -742 0 0"
+#! ORDER="8"
+#! PARMS_EDITED="false"
+#! ENABLED="true"
+#! LAST_PARM_EDIT="14440"
+#! >
+#! <OUTPUT_FEAT NAME="OUTPUT"/>
+#! <FEAT_COLLAPSED COLLAPSED="0"/>
+#! <XFORM_ATTR ATTR_NAME="fme_dataset" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_PARM PARM_NAME="ATTR_LIST" PARM_VALUE="fme_dataset"/>
+#! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="CD_1:_ExposeFMEDatasetName"/>
+#! </TRANSFORMER>
+#! <TRANSFORMER
+#! IDENTIFIER="2"
+#! TYPE="AttributeExposer"
+#! VERSION="0"
+#! POSITION="1618 -740"
+#! BOUNDING_RECT="1618 -740 0 0"
+#! ORDER="9"
+#! PARMS_EDITED="false"
+#! ENABLED="true"
+#! LAST_PARM_EDIT="14440"
+#! >
+#! <OUTPUT_FEAT NAME="OUTPUT"/>
+#! <FEAT_COLLAPSED COLLAPSED="0"/>
+#! <XFORM_ATTR ATTR_NAME="fme_dataset" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="CHANGE_DETECTED" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_PARM PARM_NAME="ATTR_LIST" PARM_VALUE="CHANGE_DETECTED"/>
+#! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="CD_3:_ExposeChangeAttribute"/>
+#! </TRANSFORMER>
+#! <TRANSFORMER
+#! IDENTIFIER="3"
+#! TYPE="AttributeFilter"
+#! VERSION="2"
+#! POSITION="2142 -745"
+#! BOUNDING_RECT="2142 -745 0 0"
+#! ORDER="10"
+#! PARMS_EDITED="false"
+#! ENABLED="true"
+#! LAST_PARM_EDIT="14440"
+#! >
+#! <OUTPUT_FEAT NAME="TRUE"/>
+#! <FEAT_COLLAPSED COLLAPSED="0"/>
+#! <XFORM_ATTR ATTR_NAME="fme_dataset" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_ATTR ATTR_NAME="CHANGE_DETECTED" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <OUTPUT_FEAT NAME="FALSE"/>
+#! <FEAT_COLLAPSED COLLAPSED="1"/>
+#! <XFORM_ATTR ATTR_NAME="fme_dataset" IS_USER_CREATED="false" FEAT_INDEX="1" />
+#! <XFORM_ATTR ATTR_NAME="CHANGE_DETECTED" IS_USER_CREATED="false" FEAT_INDEX="1" />
+#! <OUTPUT_FEAT NAME="&lt;BLANK&gt;"/>
+#! <FEAT_COLLAPSED COLLAPSED="2"/>
+#! <XFORM_ATTR ATTR_NAME="fme_dataset" IS_USER_CREATED="false" FEAT_INDEX="2" />
+#! <XFORM_ATTR ATTR_NAME="CHANGE_DETECTED" IS_USER_CREATED="false" FEAT_INDEX="2" />
+#! <OUTPUT_FEAT NAME="&lt;UNFILTERED&gt;"/>
+#! <FEAT_COLLAPSED COLLAPSED="3"/>
+#! <XFORM_ATTR ATTR_NAME="fme_dataset" IS_USER_CREATED="false" FEAT_INDEX="3" />
+#! <XFORM_ATTR ATTR_NAME="CHANGE_DETECTED" IS_USER_CREATED="false" FEAT_INDEX="3" />
+#! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="CD_4:_FilterOnChangeDetected"/>
+#! <XFORM_PARM PARM_NAME="ATTR_GROUP" PARM_VALUE=""/>
+#! <XFORM_PARM PARM_NAME="ATTR_VALUES" PARM_VALUE="TRUE,FALSE"/>
+#! <XFORM_PARM PARM_NAME="ATTR_NAME" PARM_VALUE="CHANGE_DETECTED"/>
+#! </TRANSFORMER>
+#! <TRANSFORMER
+#! IDENTIFIER="4"
+#! TYPE="AttributeRemover"
+#! VERSION="0"
+#! POSITION="2680 -549"
+#! BOUNDING_RECT="2680 -549 0 0"
+#! ORDER="11"
+#! PARMS_EDITED="false"
+#! ENABLED="true"
+#! LAST_PARM_EDIT="14440"
+#! >
+#! <OUTPUT_FEAT NAME="OUTPUT"/>
+#! <FEAT_COLLAPSED COLLAPSED="0"/>
+#! <XFORM_PARM PARM_NAME="REMOVE_ATTRS" PARM_VALUE="CHANGE_DETECTED,fme_dataset"/>
+#! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="CD_5:_CleanAttsFromChanged"/>
+#! <XFORM_PARM PARM_NAME="TRANSFORMER_GROUP" PARM_VALUE="-"/>
+#! <XFORM_PARM PARM_NAME="LIST_ATTRS" PARM_VALUE=""/>
+#! <XFORM_PARM PARM_NAME="PARAMETERS_GROUP" PARM_VALUE="-"/>
+#! </TRANSFORMER>
+#! <TRANSFORMER
+#! IDENTIFIER="5"
+#! TYPE="AttributeRemover"
+#! VERSION="0"
+#! POSITION="2730 -995"
+#! BOUNDING_RECT="2730 -995 0 0"
+#! ORDER="12"
+#! PARMS_EDITED="false"
+#! ENABLED="true"
+#! LAST_PARM_EDIT="14440"
+#! >
+#! <OUTPUT_FEAT NAME="OUTPUT"/>
+#! <FEAT_COLLAPSED COLLAPSED="0"/>
+#! <XFORM_PARM PARM_NAME="REMOVE_ATTRS" PARM_VALUE="CHANGE_DETECTED,fme_dataset"/>
+#! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="CD_6:_CleanAttsFromUnchanged"/>
+#! <XFORM_PARM PARM_NAME="TRANSFORMER_GROUP" PARM_VALUE="-"/>
+#! <XFORM_PARM PARM_NAME="LIST_ATTRS" PARM_VALUE=""/>
+#! <XFORM_PARM PARM_NAME="PARAMETERS_GROUP" PARM_VALUE="-"/>
+#! </TRANSFORMER>
+#! <TRANSFORMER
+#! IDENTIFIER="6"
+#! TYPE="PythonCaller"
+#! VERSION="1"
+#! POSITION="1132 -757"
+#! BOUNDING_RECT="1132 -757 0 0"
+#! ORDER="13"
+#! PARMS_EDITED="true"
+#! ENABLED="true"
+#! LAST_PARM_EDIT="15538"
+#! >
+#! <OUTPUT_FEAT NAME="OUTPUT"/>
+#! <FEAT_COLLAPSED COLLAPSED="0"/>
+#! <XFORM_ATTR ATTR_NAME="fme_dataset" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_PARM PARM_NAME="PYTHONSOURCE" PARM_VALUE="#&lt;space&gt;class&lt;space&gt;to&lt;space&gt;retrieve&lt;space&gt;a&lt;space&gt;flag&lt;space&gt;associated&lt;space&gt;with&lt;space&gt;the&lt;space&gt;input&lt;space&gt;feature&lt;apos&gt;s&lt;space&gt;dataset&lt;lf&gt;#&lt;space&gt;name&lt;space&gt;that&lt;space&gt;indicates&lt;space&gt;whether&lt;space&gt;or&lt;space&gt;not&lt;space&gt;the&lt;space&gt;dataset&lt;space&gt;has&lt;space&gt;changed&lt;space&gt;since&lt;space&gt;the&lt;lf&gt;#&lt;space&gt;last&lt;space&gt;successful&lt;space&gt;replication&lt;lf&gt;import&lt;space&gt;fmeobjects&lt;lf&gt;import&lt;space&gt;File_Change_DetectorV2&lt;lf&gt;import&lt;space&gt;fme&lt;lf&gt;&lt;lf&gt;"/>
+#! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="CD_2:_RetrieveChangeStatus"/>
+#! <XFORM_PARM PARM_NAME="PYTHONSYMBOL" PARM_VALUE="File_Change_DetectorV2.ChangeFlagFetcher"/>
+#! <XFORM_PARM PARM_NAME="TRANSFORMER_GROUP" PARM_VALUE="-"/>
+#! <XFORM_PARM PARM_NAME="PARAMETERS_GROUP" PARM_VALUE="-"/>
+#! </TRANSFORMER>
+#! </TRANSFORMERS>
+#! <SUBDOCUMENT_IOS>
+#! <SUBDOCUMENT_IO
+#! IDENTIFIER="7"
+#! NAME="FILE_SOURCE"
+#! POSITION="145 -794"
+#! BOUNDING_RECT="145 -794 0 0"
+#! COLLAPSED="false"
+#! PUBLISHED="true"
+#! IS_SOURCE="true"
+#! ATTR_MODE="0"
+#! >
+#! </SUBDOCUMENT_IO>
+#! <SUBDOCUMENT_IO
+#! IDENTIFIER="8"
+#! NAME="CHANGES"
+#! POSITION="3280 -634"
+#! BOUNDING_RECT="3280 -634 0 0"
+#! COLLAPSED="false"
+#! IS_SOURCE="false"
+#! ATTR_MODE="0"
+#! >
+#! </SUBDOCUMENT_IO>
+#! <SUBDOCUMENT_IO
+#! IDENTIFIER="9"
+#! NAME="NO_CHANGES"
+#! POSITION="3321 -1078"
+#! BOUNDING_RECT="3321 -1078 0 0"
+#! COLLAPSED="false"
+#! IS_SOURCE="false"
+#! ATTR_MODE="0"
+#! >
+#! </SUBDOCUMENT_IO>
+#! </SUBDOCUMENT_IOS>
+#! <FEAT_LINKS>
+#! <FEAT_LINK
+#! IDENTIFIER="10"
+#! SOURCE_NODE="2"
+#! TARGET_NODE="3"
+#! SOURCE_PORT_DESC="fo 0"
+#! TARGET_PORT_DESC="fi 0"
+#! ENABLED="true"
+#! EXTRA_POINTS=""
+#! />
+#! <FEAT_LINK
+#! IDENTIFIER="11"
+#! SOURCE_NODE="3"
+#! TARGET_NODE="4"
+#! SOURCE_PORT_DESC="fo 0"
+#! TARGET_PORT_DESC="fi 0"
+#! ENABLED="true"
+#! EXTRA_POINTS=""
+#! />
+#! <FEAT_LINK
+#! IDENTIFIER="12"
+#! SOURCE_NODE="3"
+#! TARGET_NODE="5"
+#! SOURCE_PORT_DESC="fo 1"
+#! TARGET_PORT_DESC="fi 0"
+#! ENABLED="true"
+#! EXTRA_POINTS=""
+#! />
+#! <FEAT_LINK
+#! IDENTIFIER="13"
+#! SOURCE_NODE="1"
+#! TARGET_NODE="6"
+#! SOURCE_PORT_DESC="fo 0"
+#! TARGET_PORT_DESC="fi 0"
+#! ENABLED="true"
+#! EXTRA_POINTS=""
+#! />
+#! <FEAT_LINK
+#! IDENTIFIER="14"
+#! SOURCE_NODE="6"
+#! TARGET_NODE="2"
+#! SOURCE_PORT_DESC="fo 0"
+#! TARGET_PORT_DESC="fi 0"
+#! ENABLED="true"
+#! EXTRA_POINTS=""
+#! />
+#! <FEAT_LINK
+#! IDENTIFIER="15"
+#! SOURCE_NODE="7"
+#! TARGET_NODE="1"
+#! SOURCE_PORT_DESC="0"
+#! TARGET_PORT_DESC="fi 0"
+#! ENABLED="true"
+#! EXTRA_POINTS=""
+#! />
+#! <FEAT_LINK
+#! IDENTIFIER="16"
+#! SOURCE_NODE="4"
+#! TARGET_NODE="8"
+#! SOURCE_PORT_DESC="fo 0"
+#! TARGET_PORT_DESC="0"
+#! ENABLED="true"
+#! EXTRA_POINTS=""
+#! />
+#! <FEAT_LINK
+#! IDENTIFIER="17"
+#! SOURCE_NODE="5"
+#! TARGET_NODE="9"
+#! SOURCE_PORT_DESC="fo 0"
+#! TARGET_PORT_DESC="0"
+#! ENABLED="true"
+#! EXTRA_POINTS=""
+#! />
+#! </FEAT_LINKS>
+#! <BREAKPOINTS>
+#! </BREAKPOINTS>
+#! <ATTR_LINKS>
+#! </ATTR_LINKS>
+#! <SUBDOCUMENTS>
+#! </SUBDOCUMENTS>
+#! <LOOKUP_TABLES>
+#! </LOOKUP_TABLES>
+#! </TRANSFORMER>
+#! 
+#! START_HEADER
+#! END_HEADER
+
+LOG_FILTER_MASK -1
+DEFAULT_MACRO WB_CURRENT_CONTEXT
+DEFAULT_MACRO File_Change_Detector_v2_WORKSPACE_NAME ""
+INCLUDE [puts {MACRO WB_OLD_CONTEXT_$(File_Change_Detector_v2_WORKSPACE_NAME) $(WB_CURRENT_CONTEXT)};          puts {MACRO WB_CURRENT_CONTEXT $(File_Change_Detector_v2_WORKSPACE_NAME)}]
+FACTORY_DEF * TeeFactory   FACTORY_NAME "$(File_Change_Detector_v2_WORKSPACE_NAME)_FILE_SOURCE1455304916 Input Splitter"   INPUT FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_FILE_SOURCE"   OUTPUT FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_FILE_SOURCE"
+# -------------------------------------------------------------------------
+
+# Expose all attributes.  This ensures that if you expose fme_dataset, you will get it.
+
+READER_META_ATTRIBUTES fme_feature_type fme_dataset fme_basename
+FACTORY_DEF * TeeFactory    FACTORY_NAME $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_1:_ExposeFMEDatasetName    INPUT  FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_FILE_SOURCE"    OUTPUT FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_1:_ExposeFMEDatasetName_OUTPUT"
+
+# -------------------------------------------------------------------------
+
+
+FME_PYTHON_PATH "$(FME_MF_DIR)"
+
+FACTORY_DEF * PythonFactory    FACTORY_NAME $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_2:_RetrieveChangeStatus    INPUT  FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_1:_ExposeFMEDatasetName_OUTPUT"    SYMBOL_NAME File_Change_DetectorV2.ChangeFlagFetcher    SOURCE_CODE #<space>class<space>to<space>retrieve<space>a<space>flag<space>associated<space>with<space>the<space>input<space>feature<apos>s<space>dataset<lf>#<space>name<space>that<space>indicates<space>whether<space>or<space>not<space>the<space>dataset<space>has<space>changed<space>since<space>the<lf>#<space>last<space>successful<space>replication<lf>import<space>fmeobjects<lf>import<space>File_Change_DetectorV2<lf>import<space>fme<lf><lf>    OUTPUT PYOUTPUT FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_2:_RetrieveChangeStatus_OUTPUT"
+
+# -------------------------------------------------------------------------
+
+# Expose all attributes.  This ensures that if you expose fme_dataset, you will get it.
+
+READER_META_ATTRIBUTES fme_feature_type fme_dataset fme_basename
+FACTORY_DEF * TeeFactory    FACTORY_NAME $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_3:_ExposeChangeAttribute    INPUT  FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_2:_RetrieveChangeStatus_OUTPUT"    OUTPUT FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_3:_ExposeChangeAttribute_OUTPUT"
+
+# -------------------------------------------------------------------------
+Lookup $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_AttributeFilterLut   TRUE ok   FALSE ok   "" notok   ENCODED
+
+Tcl2 proc $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_setFeatType {} {     global FME_FeatureType;     set ft {$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_};     append ft [FME_EncodeText [FME_GetAttribute {"CHANGE_DETECTED"}]];     set FME_FeatureType $ft; }
+FACTORY_DEF * TestFactory    FACTORY_NAME $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected    INPUT  FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_3:_ExposeChangeAttribute_OUTPUT"    TEST @Lookup($(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_AttributeFilterLut,"CHANGE_DETECTED",ENCODED_ATTR) == "ok"    OUTPUT PASSED FEATURE_TYPE * @Tcl2($(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_setFeatType)    OUTPUT FAILED FEATURE_TYPE $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_<UNFILTERED>
+FACTORY_DEF * TestFactory    FACTORY_NAME $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_BlankFilter    INPUT FEATURE_TYPE $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_<UNFILTERED>    TEST @Value("CHANGE_DETECTED") == ""    OUTPUT PASSED FEATURE_TYPE $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_<BLANK>    OUTPUT FAILED FEATURE_TYPE $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_<UNFILTERED>
+
+FACTORY_DEF * TeeFactory   FACTORY_NAME "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected <BLANK> Output Nuker"   INPUT FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_<BLANK>"
+FACTORY_DEF * TeeFactory   FACTORY_NAME "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected <UNFILTERED> Output Nuker"   INPUT FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_<UNFILTERED>"
+# -------------------------------------------------------------------------
+
+INCLUDE [    set macroLine "MACRO $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_6:_CleanAttsFromUnchanged_LIST_EXP ";    foreach attr [split ""] {       set attr [FME_DecodeText $attr];       set attr [regsub "{}$" $attr "{}.*"];       set attr [regsub -all "{}" $attr "{\[0-9\]+}"];       append macroLine ",^$attr$";    };    puts $macroLine; ]
+FACTORY_DEF * TeeFactory    FACTORY_NAME $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_6:_CleanAttsFromUnchanged    INPUT  FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_FALSE"    OUTPUT FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_6:_CleanAttsFromUnchanged_OUTPUT"        @RemoveAttributes(CHANGE_DETECTED,fme_dataset)        @RemoveAttributes(fme_regexp_match"$($(File_Change_Detector_v2_WORKSPACE_NAME)_CD_6:_CleanAttsFromUnchanged_LIST_EXP)")
+
+# -------------------------------------------------------------------------
+
+INCLUDE [    set macroLine "MACRO $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_5:_CleanAttsFromChanged_LIST_EXP ";    foreach attr [split ""] {       set attr [FME_DecodeText $attr];       set attr [regsub "{}$" $attr "{}.*"];       set attr [regsub -all "{}" $attr "{\[0-9\]+}"];       append macroLine ",^$attr$";    };    puts $macroLine; ]
+FACTORY_DEF * TeeFactory    FACTORY_NAME $(File_Change_Detector_v2_WORKSPACE_NAME)_CD_5:_CleanAttsFromChanged    INPUT  FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_TRUE"    OUTPUT FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_5:_CleanAttsFromChanged_OUTPUT"        @RemoveAttributes(CHANGE_DETECTED,fme_dataset)        @RemoveAttributes(fme_regexp_match"$($(File_Change_Detector_v2_WORKSPACE_NAME)_CD_5:_CleanAttsFromChanged_LIST_EXP)")
+
+FACTORY_DEF * TeeFactory   FACTORY_NAME "$(File_Change_Detector_v2_WORKSPACE_NAME)_CHANGES1455304916 Output Collector"   INPUT FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_5:_CleanAttsFromChanged_OUTPUT"   OUTPUT FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CHANGES"
+FACTORY_DEF * TeeFactory   FACTORY_NAME "$(File_Change_Detector_v2_WORKSPACE_NAME)_NO_CHANGES1455304916 Output Collector"   INPUT FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_CD_6:_CleanAttsFromUnchanged_OUTPUT"   OUTPUT FEATURE_TYPE "$(File_Change_Detector_v2_WORKSPACE_NAME)_NO_CHANGES"
+INCLUDE [puts {MACRO WB_CURRENT_CONTEXT $(WB_OLD_CONTEXT_$(File_Change_Detector_v2_WORKSPACE_NAME))}]
