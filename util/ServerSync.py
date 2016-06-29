@@ -14,6 +14,7 @@ import FMEUtil.PyFMEServerV2
 import sys
 import time
 import logging
+import pprint
 
 class ConfigLogging(object):
     
@@ -81,7 +82,16 @@ class Deploy(object):
     def __init__(self):
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
-        pass
+        
+    def deployAll(self):
+        deployPy = PythonDeployment()
+        deployPy.DeployPython()
+        
+        deployConf = ConfigsDepolyment()
+        deployConf.CopyConfig()
+        
+        deployFmeCust = FMECustomizationDeployments()
+        deployFmeCust.CopyCustomTransformers()
     
 class FMWDeployment(object):
     '''
@@ -93,8 +103,35 @@ class FMWDeployment(object):
 
         self.params = Params()
         self.fmeServ = FMEUtil.PyFMEServerV2.FMEServer(self.params.FmeServerUrl, self.params.FmeServerAuthKey)
+        
+        self.fmwSrcDir = r'\\data.bcgov\work\Workspace\kjnether\proj\FMETemplateRevision\data\templateImplementation\BCGW_REP_SCHEDULED'
+        self.fmeServ = FMEUtil.PyFMEServerV2.FMEServer(self.params.FmeServerUrl, self.params.FmeServerAuthKey)
+
+    def copyFMWs(self, overwrite=False):
+        repo = self.fmeServ.getRepository()
+        
+        wrkspcs = repo.getWorkspaces(self.params.FmeServerRepository)
+        wrkspcsNames = wrkspcs.getWorkspaceNames()
+        print 'wrkspcsNames', wrkspcsNames
+        for dirName, subdirList, fileList in os.walk(self.fmwSrcDir):
+            for curFile in fileList:
+                if os.path.splitext(curFile)[1].lower() == '.fmw':
+                    fullPath2FMW = os.path.join(dirName, curFile)
+                    if curFile not in wrkspcsNames:
+                        self.logger.debug("uploading {0}".format(fullPath2FMW))
+                        repo.copy2Repository(self.params.FmeServerRepository, fullPath2FMW)
+                        wrkspcs.registerWithJobSubmitter(curFile)
+                    else:
+                        wrkSpcInfo = wrkspcs.getWorkspaceInfo(curFile, detail='low')
+                        #  u'lastSaveDate': u'2016-04-25T11:48:00',
+                        lastSaveDate = wrkSpcInfo['lastSaveDate']
+                        destModTime = time.strptime(wrkSpcInfo['lastSaveDate'], '%Y-%m-%dT%H:%M:%S')
+                        srcModTime = time.ctime(os.path.getmtime(fullPath2FMW))
+                        if srcModTime> destModTime:
+                            repo.updateRepository(self.params.FmeServerRepository, fullPath2FMW)
+                            wrkspcs.registerWithJobSubmitter(curFile)
     
-    def CopyFMW(self, fmwFile, repoName):
+    def copyFMW(self, fmwFile, repoName):
         fmwPath, fmw = os.path.split(fmwFile)
         if not os.path.exists(fmwFile):
             msg = 'The fmw file {0} that you are trying to upload to FME Server does not exist'
@@ -113,47 +150,99 @@ class BaseDeployment(object):
     def __init__(self):
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
+        self.params = Params()
+        self.templateDestDir = str(posixpath.sep).join(self.params.pythonDirs)
         
     def deploy(self, deploymentList, overWrite):
         for deployment in deploymentList:
             writeFile = False
-            
             if overWrite:
+                self.logger.debug("overwrite parameter set")
                 writeFile = True
-            elif not self.resource.exists(deployment.dirType, deployment.destFileFullPathList):
+            elif not deployment.exists():
+                self.logger.debug("object {0} does not exist".format(deployment.destFileFullPathStr))
                 writeFile = True
             else:
                 if deployment.isSourceNewer():
+                    self.logger.debug("source is newer! {0}".format(deployment.getSourceFileString()))
                     writeFile = True
             if writeFile:
                 deployment.deploy()
-            
-            
-            # set this up so that it does the evaluation for overwriting or not as well
-        
+                    
 class Deployment(object):
     
-    def __init__(self, dirType, dirList, srcFile):
+    def __init__(self, dirType, srcFile, destDirStr=None, destDirList=None):
+        # if using destDirStr parameter, MAKE CERTAIN The path delimiter is 
+        # UNIX/POSIX forward slash, ala... '/'  NOT \
+        
+        # logging setup ...
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
+        
+        # global params...
         self.params = Params()
         
+        # create fme server rest api obj...
         self.fmeServ = FMEUtil.PyFMEServerV2.FMEServer(self.params.FmeServerUrl, self.params.FmeServerAuthKey)
         self.resource = self.fmeServ.getResources()
-
-
+        
+        # setting the object properties...
+        # sanity checking...
+        
+        if not destDirStr and not destDirList:
+            msg = '{0} class instantiation requires you to specify one ' + \
+                  'of these parameters: destDirStr | destDirList, you ' + \
+                  'did not supply values for either'
+            msg = msg.format(self.__class__.__name__)
+            raise ValueError, msg
+        if destDirStr and destDirList:
+            tmpDestDirStr_winPathList = destDirStr.split('\\')
+            tmpDestDirStr_posixPathList = destDirStr.split('/')
+            if not (tmpDestDirStr_winPathList == destDirList or
+               tmpDestDirStr_posixPathList == destDirList):
+                msg = '{0} - You supplied values for both destDirList and  ' + \
+                      'destDirStr, and they seem to refer to different ' + \
+                      'directories, easiest fix is to supply one or the ' + \
+                      'the other!  Values Provided are destDirStr : {1} ' + \
+                      'and destDirList : {2}'
+                msg = msg.format(self.__class__.__name__, 
+                                 destDirStr, 
+                                 destDirList)
+                raise ValueError, msg
+            else:
+                destDirStr = '/'.join(destDirList)
+        elif destDirList:
+            destDirStr = '/'.join(destDirStr)
+        elif destDirStr:
+            destDirList = destDirStr.split('/')
+            
         # fme resource type example FME_SHAREDRESOURCE_ENGINE
         self.destDirType = dirType
         # fme directory list including file reference
-        self.destFileFullPathList = dirList
-        self.destFileFullPathStr = '/'.join(self.destFileFullPathList)
+        self.destFileFullPathList = destDirList
+        self.destFileFullPathStr = destDirStr
         # source file path (windows path)
         self.srcFile = srcFile
         # fme directory list without the file reference
         self.destDirList = self.destFileFullPathList[:-1]
         self.destDirStr = '/'.join(self.destDirList)
         
+    def exists(self):
+        return self.resource.exists(self.getFMEResourceDirectoryType(), self.destFileFullPathList)
+        
+    def getResource(self):
+        ''' returns a python fme server resource object
+        '''
+        return self.resource
+
+    def getFMEResourceDirectoryType(self):
+        return  self.destDirType
+        
+    def getSourceFileString(self):
+        return self.srcFile
+        
     def deploy(self):
+        self.logger.debug("Writing the source file to fme server {0}".format(self.srcFile))
         self.resource.copyFile(self.destDirType, 
                                self.destDirList, 
                                self.srcFile, 
@@ -162,29 +251,27 @@ class Deployment(object):
         
     def isSourceNewer(self):
         retVal = False
-        destDirInfo = self.resource.getResourceInfo(self.dirType, self.destFileFullPathList)
+        destDirInfo = self.resource.getResourceInfo(self.destDirType, self.destFileFullPathList)
         destModTime = time.strptime(destDirInfo['date'], '%Y-%m-%dT%H:%M:%S')
         srcModTime = time.ctime(os.path.getmtime(self.srcFile))
         if srcModTime > destModTime:
             retVal = True
         return retVal
         
-class PythonDeployment(object):
+class PythonDeployment(BaseDeployment):
     
     def __init__(self):
+        BaseDeployment.__init__(self)
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
-
         self.logger.debug("LOGGING in {0}".format(modDotClass))
-        self.params = Params()
         
-        self.fmeServ = FMEUtil.PyFMEServerV2.FMEServer(self.params.FmeServerUrl, self.params.FmeServerAuthKey)
-        self.resource = self.fmeServ.getResources()
+        #self.fmeServ = FMEUtil.PyFMEServerV2.FMEServer(self.params.FmeServerUrl, self.params.FmeServerAuthKey)
+        #self.resource = self.fmeServ.getResources()
         # specific python modules to be synced to the root directory of fme server
         # resources
         self.templatePythonFiles = ['DataBCFMWTemplate.py','ChangeDetectLib.py','FMELogger.py']
         
-        self.templateDestDir = str(posixpath.sep).join(self.params.pythonDirs)
         self.logger.debug("template is {0}".format(self.templateDestDir))
         print 'self.templateDestDir', self.templateDestDir
         
@@ -202,17 +289,7 @@ class PythonDeployment(object):
         self.CopyPythonFiles()
         self.CopyPythonDependencies()
         self.CopyDataBCModules()
-        
-    def DeleteRootDir(self):
-        print 'deleting the plugins dir...'
-        # should not have to use this so commented out this line, 
-        # only implmeented this for debugging.  FME Server should 
-        # automatically create may of the directories that are being 
-        # deleted which may cause problems, even after they are 
-        # recreated.
-        #self.resource.deleteDirectory(self.params.FmeServerResources_EngineDirType, ['Plugins'])
-        print 'done'
-        
+                
     def CopyPythonFiles(self, overwrite=False):
         '''
         Copies the files described in the list self.templatePythonFiles
@@ -226,43 +303,28 @@ class PythonDeployment(object):
         :type overwrite: enter type
         
         '''
-        '''
-        Describe your method and what it does here ( if multiple 
-        lines make sure they are aligned to this margin)
-        
-        
-        '''
         logging.debug("got here now in {0}".format(__name__))
-        self.CheckForDirectories()
+        #self.CheckForDirectories()
+        fileDeploymentList = []
         for pyFile in self.templatePythonFiles:
-            writeFile = False
-
+            self.params.FmeServerResources_EngineDirType
             src = os.path.join(self.params.templateSourceDir, pyFile)
             dest = posixpath.join(self.templateDestDir, pyFile)
-            if overwrite:
-                writeFile = True
-            elif not self.resource.exists(self.params.FmeServerResources_EngineDirType, dest.split('/')):
-                writeFile = True
-            else:
-                # otherwise if its been updated on the source side since the destination 
-                # dump.
-                destDirInfo = self.resource.getResourceInfo(self.params.FmeServerResources_EngineDirType, dest.split('/'))
-                destModTime = time.strptime(destDirInfo['date'], '%Y-%m-%dT%H:%M:%S')
-                srcModTime = time.ctime(os.path.getmtime(src))
-                if srcModTime > destModTime:
-                    writeFile = True
-            if writeFile:
-                self.logger.info("Updating the file: {0}".format(os.path.basename(src)))
-                self.resource.copyFile(self.params.FmeServerResources_EngineDirType, 
-                                       self.templateDestDir.split('/'), 
-                                       src, 
-                                       overwrite=True
-                                       )
+            self.logger.debug("src: {0}".format(src))
+            self.logger.debug("dest: {0}".format(dest))
+            deployment = Deployment(
+                            self.params.FmeServerResources_EngineDirType, 
+                            src, 
+                            destDirStr=dest
+                            )
+            fileDeploymentList.append(deployment)
+        self.deploy(fileDeploymentList, overwrite)           
                 
     def CopyPythonDependencies(self, overwrite=False):
         
         ignoreList = ['.gitignore', 'requirements.txt']
         self.logger.info("files that are configured to be skipped: {0}".format(ignoreList))
+        deploymentList = []
         for dirName, subdirList, fileList in os.walk(self.depsDir):
             for curFile in fileList:
                 if curFile not in ignoreList:
@@ -275,47 +337,14 @@ class PythonDeployment(object):
                     destPathWthFile = posixpath.join(destPath, curFile)
                     destPathList = destPath.split('/')
                     
-                    if overwrite:
-                        writeFile = True
-                    elif not self.resource.exists(self.params.FmeServerResources_EngineDirType, destPathWthFile.split('/')):
-                        writeFile = True
-                    else:
-                        destDirInfo = self.resource.getResourceInfo(self.params.FmeServerResources_EngineDirType, destPathWthFile.split('/'))
-                        destModTime = time.strptime(destDirInfo['date'], '%Y-%m-%dT%H:%M:%S')
-                        srcModTime = time.ctime(os.path.getmtime(srcFile))
-                        if srcModTime > destModTime:
-                            writeFile = True
-                        else:
-                            self.logger.debug("skipping the file: {0}".format(srcFile))
-                    if writeFile:
-                        self.logger.debug("writing to fme server: {0}".format(srcFile))
-                        self.resource.copyFile(self.params.FmeServerResources_EngineDirType, 
-                                           destPathList, 
-                                           srcFile,
-                                           overwrite=True, 
-                                           createDirectories=True)
-    
-    
-    def CopyCustomTransformers(self):
-        customizationDir = 'fmeCustomizations'
-        transformersDir = 'Transformers'
-        srcPath = os.path.join(self.params.templateSourceDir, customizationDir, transformersDir)
-        for dirName, subdirList, fileList in os.walk(srcPath):
-            for file2Copy in fileList:
-                srcFile = os.path.join(dirName, file2Copy)
-                relPath = os.path.relpath(srcFile, os.path.join(self.params.templateSourceDir, customizationDir))
-                relPath = relPath.replace("\\", '/')
-                dir = posixpath.dirname(relPath)
-                print 'relPath', relPath
-                print 'copying {0} to {1} on fme server'.format(srcFile, dir)
-                dirList = dir.split('/')
-                self.resource.copyFile(self.params.FmeServerResources_EngineDirType, 
-                                               dirList, 
-                                               srcFile,
-                                               overwrite=True, 
-                                               createDirectories=True)
+                    deployment = Deployment(self.params.FmeServerResources_EngineDirType, 
+                                            srcFile, 
+                                            destDirStr=destPathWthFile)
+                    deploymentList.append(deployment)
+        self.deploy(deploymentList, overwrite)           
                                 
     def CopyDataBCModules(self, overwrite=False):
+        deploymentList = []
         for DataBCMod in self.params.dataBCModules2Sync:
             modPath = os.path.join(self.params.dataBCModulesDir, DataBCMod)
             for dirName, subdirList, fileList in os.walk(modPath):
@@ -331,29 +360,14 @@ class PythonDeployment(object):
                         destPathWithFile = posixpath.join(destPath, curFile)
                         dirList = destPath.split('/')
                         
-                        writeFile = False
-                        
-                        if overwrite:
-                            writeFile = True
-                        elif not self.resource.exists(self.params.FmeServerResources_EngineDirType, destPathWithFile.split('/')):
-                            writeFile = True
-                        else:
-                            destDirInfo = self.resource.getResourceInfo(self.params.FmeServerResources_EngineDirType, dirList)
-                            destModTime = time.strptime(destDirInfo['date'], '%Y-%m-%dT%H:%M:%S')
-                            srcModTime = time.ctime(os.path.getmtime(srcFile))
-                            if srcModTime > destModTime:
-                                writeFile = True
-                        if writeFile:
-                            self.logger.debug('writing the file to fmeserver: {0}'.format(srcFile))
-                            #self.logger.debug('dstFile: {0}'.format(destPath))
-                            del dirList[-1]
-                            self.resource.copyFile(self.params.FmeServerResources_EngineDirType, 
-                                           dirList, 
-                                           srcFile,
-                                           overwrite=True, 
-                                           createDirectories=True)
+                        deployment = Deployment(self.params.FmeServerResources_EngineDirType, 
+                                                srcFile,
+                                                destDirStr=destPathWithFile)
+                        deploymentList.append(deployment)
+        self.deploy(deploymentList, overwrite)
         
     def CheckForDirectories(self):
+        # TODO: rewrite this to use the new deployment object
         dirType = self.params.FmeServerResources_EngineDirType
         dir2CreateList = self.templateDestDir.split('/')
         dirs = []
@@ -365,49 +379,70 @@ class PythonDeployment(object):
                     self.resource.createDirectory(dirType, dirs, curDir)
                     dirs.append(curDir)
 
-class ConfigsDepolyment(object):
-    def CopyConfig(self):
-        ignoreList = ['dbCreds.json']
+class FMECustomizationDeployments(BaseDeployment):
+    
+    def __init__(self):
+        BaseDeployment.__init__(self)    
+    
+    def CopyCustomTransformers(self, overwrite=False):
+        customizationDir = 'fmeCustomizations'
+        transformersDir = 'Transformers'
+        deploymentList = []
+        srcPath = os.path.join(self.params.templateSourceDir, customizationDir, transformersDir)
+        for dirName, subdirList, fileList in os.walk(srcPath):
+            for file2Copy in fileList:
+                srcFile = os.path.join(dirName, file2Copy)
+                relPath = os.path.relpath(srcFile, os.path.join(self.params.templateSourceDir, customizationDir))
+                relPath = relPath.replace("\\", '/')
+                
+                deploy = Deployment(self.params.FmeServerResources_EngineDirType, 
+                                    srcFile, 
+                                    destDirStr=relPath)
+                deploymentList.append(deploy)
+        self.deploy(deploymentList, overwrite)
+
+class ConfigsDepolyment(BaseDeployment):
+    
+    def __init__(self):
+        BaseDeployment.__init__(self)
+        self.ignoreList = ['dbCreds.json']
+        self.srcDir = 'config'
+    
+    def CopyConfig(self, overwrite=False):
         configDirName = 'config'
-        srcDir = os.path.join(self.params.templateSourceDir, configDirName)
+        srcDir = os.path.join(self.params.templateSourceDir, self.srcDir)
         destDir = posixpath.join(self.templateDestDir, configDirName)
         dirList = destDir.split('/')
+        deploymentList = []
         for dirName, subdirList, fileList in os.walk(srcDir):
             for curFile in fileList:
-                if curFile not in ignoreList:
+                if curFile not in self.ignoreList:
                     srcFile = os.path.join(dirName, curFile)
-                    print 'srcFile', srcFile, destDir
-                    self.resource.copyFile(self.params.FmeServerResources_EngineDirType, 
-                                               dirList, 
-                                               srcFile,
-                                               overwrite=True, 
-                                               createDirectories=True)
-
-
+                    destDir = posixpath.join(destDir, dirName, curFile)
+                    destDir = posixpath.normpath(destDir)
+                    deployment = Deployment(self.params.FmeServerResources_EngineDirType, 
+                                            srcFile, 
+                                            destDirStr=destDir)
+        self.deploy(deploymentList, overwrite)
 
 if __name__ == '__main__':
     
     ConfigLogging()
-    
+    deploy = Deploy()
+    #deploy.deployAll()
     
     fmwFile = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\testFMWs\none2none.fmw'
     #fmwFile = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\testFMWs\acdf_ownership_codes_staging_csv_bcgw.fmw'
     #fmwFile = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\testFMWs\og_water_management_basins_sp_ogis_sde_bcgw.fmw'
-        
-    #repoName = 'GuyLaFleur'
-    #fmwDeploy = FMWDeployment()
-    #fmwDeploy.CopyFMW( fmwFile, repoName)
+    
+    fmwFile = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\templateImplementation\BCGW_REP_SCHEDULED\fadm_public_sustained_yield_un_geoprd_sde_bcgw\fadm_public_sustained_yield_un_geoprd_sde_bcgw.fmw'
+    
+    fmwDeploy = FMWDeployment()
+    
+    #fmwDeploy.copyFMWs()
+    fmwDeploy.copyFMW(fmwFile, Params.FmeServerRepository)
     
     
-    deploy = PythonDeployment()
-    deploy.DeployPython()
-    
-    
-#     deploy.CopyCustomTransformers()
-#     #deploy.DeleteRootDir() 
-#     ()
-#     deploy.CopyDataBCModules()
-#     deploy.CopyConfig()
             
         
     
