@@ -337,7 +337,7 @@ class TemplateConfigFileReader(object):
     
     def __init__(self, key, confFile=None):
         #ModuleLogConfig()
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}.{1}'.format(__name__, self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
 
         self.confFile = confFile

@@ -1,0 +1,1765 @@
+#! <?xml version="1.0" encoding="utf-8" ?>
+#! <WORKSPACE
+#    
+#    
+#    Command-line to run this workspace:
+#    
+#    
+#    E:\sw_nt\FME2015\fme.exe Z:\scripts\python\DataBCFmeTemplate2\FMWTemplates\SDEDC_TO_BCGW.fmw
+#          --DEST_SCHEMA "<DESTINATION SCHEMA>"
+#          --DEST_FEATURE_1 "<DESTINATION TABLE>"
+#          --DEST_DB_ENV_KEY "DLV"
+#          --SRC_ORA_INSTANCE "<SOURCE ORACLE INSTANCE>"
+#          --SRC_ORA_PROXY_SCHEMA "<SOURCE ORACLE SCHEMA FOR DB CONNECTION>"
+#          --SRC_SERVER "<SOURCE ORACLE SERVER>"
+#          --SRC_DIRECTCONNECT "<DIRECT CONNECT STRING, EXAMPLE: sde:oracle10g:ogcprod.ca>"
+#          --SRC_ORA_SCHEMA "<SRC ORACLE SCHEMA>"
+#          --SRC_FEATURE_1 "<SOURCE TABLE>"
+#    
+#    
+#! BEGIN_TCL=""
+#! FME_STROKE_MAX_DEVIATION="0"
+#! FME_DOCUMENT_GUID="59238750-f6c9-4bbe-8573-05485dacd91d"
+#! LEGAL_TERMS_CONDITIONS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Any portion of this document, or any information supplied by the Province in relation to this document may not be used or disclosed for any purpose other than for DataBC Warehouse Population Services. Without limiting the generality of the foregoing, the User agrees to hold in confidence all information supplied by the Province in relation to this document. &lt;/p&gt;&#10;"
+#! WARN_INVALID_XFORM_PARAM="No"
+#! END_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;shutIt&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Shutdown&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;shutIt.shutdown&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! END_TCL=""
+#! SOURCE="NONE"
+#! TITLE="SDEGEODB_TO_BCGW"
+#! FME_IMPLICIT_CSMAP_REPROJECTION_MODE="Datum"
+#! DESTINATION_ROUTING_FILE=""
+#! FME_SERVER_SERVICES=""
+#! LOG_FILE="$(LOGFILE)"
+#! FME_GEOMETRY_HANDLING="Classic"
+#! CATEGORY="DataBC Warehouse Replication"
+#! DOC_EXTENTS="3273 3887"
+#! LOG_MAX_PRECISION="Yes"
+#! LOG_MAX_RECORDED_FEATURES="200"
+#! SOURCE_ROUTING_FILE=""
+#! DOC_TOP_LEFT="100 -3887"
+#! WORKSPACE_VERSION="1"
+#! MAX_LOG_FEATURES="200"
+#! REQUIREMENTS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List dependencies specific to this replication &lt;/p&gt;&#10;"
+#! LAST_SAVE_DATE="2016-08-17T14:41:17"
+#! FME_DOCUMENT_PRIORGUID="2c011f65-c579-45c9-9da8-8d3b2e3c0014,a56a6293-df80-43ab-83b6-7068a543836f"
+#! SHOW_ANNOTATIONS="true"
+#! LAST_SAVE_BUILD="FME(R) 2015.1.2.0 (20150911 - Build 15538 - WIN32)"
+#! USAGE="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Describe expected replication schedule &lt;/p&gt;&#10;"
+#! MULTI_WRITER_DATASET_ORDER="BY_ID"
+#! ZOOM_SCALE="77"
+#! BEGIN_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;start&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Start&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;start.startup&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;lf&gt;"
+#! REQUIREMENTS_KEYWORD="none"
+#! FME_BUILD_NUM="15538"
+#! SHOW_INFO_NODES="true"
+#! PASSWORD=""
+#! FME_REPROJECTION_ENGINE="FME"
+#! STRICT_PARAMETER_VALIDATION="false"
+#! DESTINATION="NONE"
+#! IGNORE_READER_FAILURE="No"
+#! ATTR_TYPE_ENCODING="SDF"
+#! REDIRECT_TERMINATORS="NONE"
+#! HISTORY=""
+#! VIEW_POSITION="7.79229 -70.1306"
+#! DESCRIPTION="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List Source and Destination datasets and describe any inline data manipulations &lt;/p&gt;&#10;"
+#! >
+#! <DATASETS>
+#! <DATASET
+#! IS_SOURCE="true"
+#! ROLE="READER"
+#! FORMAT="GEODATABASE_SDE"
+#! DATASET="$(SRC_ORA_INSTANCE)"
+#! KEYWORD="GEODATABASE_SDE_1"
+#! MULTI_GEOM_ALLOWED="false"
+#! ATTR_MAX_LENGTH="60"
+#! ATTR_CASE="ANY"
+#! ALLOWED_FEAT_TYPES=""
+#! WRITE_DEFS="true"
+#! DEFLINE_TEMPLATE="geodb_type {FME_GEN_GEOMETRY}"
+#! DEFLINE_ATTRS="true"
+#! EXPOSABLE_ATTRS="fme_start_angle double multi_reader_id integer geodb_color char(50) geodb_text_lc_margin_bottom double geodb_text_angle double geodb_junction_feature_count integer geodb_dim_begin_dimension_x double geodb_dim_begin_dimension_y double geodb_dim_begin_dimension_z double geodb_element_id integer geodb_feature_is_simple boolean geodb_measures char(254) geodb_dim_extn_line_angle double geodb_text_leader_line_tolerance double geodb_rotation double geodb_rel_destination_oid integer geodb_text_clip boolean geodb_dim_line_display smallint multi_reader_full_id integer geodb_text_leader_line char(254) geodb_font_size double fme_text_string char(50) fme_rotation double geodb_sweep_angle double geodb_primary_axis double geodb_original_arc_direction char(17) geodb_dim_end_dimension_x double geodb_dim_type smallint geodb_element_index integer geodb_dim_end_dimension_y double geodb_dim_end_dimension_z double geodb_text_point_scale_factor double geodb_junction_element_count integer geodb_font_weight smallint geodb_text_string_with_format_tags char(254) geodb_text_lc_style char(20) geodb_text_leader_line_anchor_point char(254) geodb_type char(25) geodb_secondary_axis double geodb_font_name char(254) geodb_text_break_char integer fme_geometry fme_char(50) geodb_text_lc_textbox_x1 double geodb_text_lc_textbox_x2 double geodb_text_lc_textbox_x3 double geodb_dim_text_angle double geodb_ancillary_role char(7) geodb_text_lc_textbox_x4 double geodb_text_leader_line_width double geodb_text_lc_accent_bar_width double geodb_font_charset smallint geodb_text_color char(254) geodb_text_scale boolean fme_dataset char(50) geodb_text_y_offset double geodb_v_align char(50) geodb_dim_style_id integer geodb_feature_dataset char(254) geodb_raster_pyramid_level integer geodb_font_italic boolean multi_reader_keyword char(50) geodb_h_align char(50) geodb_dim_line_x double geodb_dim_line_y double geodb_text_ref_scale double geodb_to_junction_element_id integer fme_primary_axis double geodb_dim_line_z double geodb_start_angle double geodb_raster_pyramid_resample_type char(100) geodb_dim_marker_display smallint geodb_text_lc_margin_left double fme_feature_type char(50) geodb_text_lc_textbox_y1 double fme_sweep_angle double geodb_text_lc_textbox_y2 double geodb_topological_configuration char(6) geodb_text_character_width double geodb_text_lc_textbox_y3 double geodb_text_lc_textbox_y4 double geodb_font_underline boolean geodb_edge_feature_count integer geodb_text_lc_margin_right double geodb_text_size double geodb_dim_extn_line_display smallint geodb_linked_feature_id integer geodb_text_string char(254) geodb_dim_text_x double geodb_raster_compression_type char(100) geodb_right_to_left boolean geodb_dim_text_y double geodb_text_x_offset double geodb_dim_text_z double geodb_arc_start_x double geodb_raster_compression_quality integer geodb_arc_start_y double geodb_arc_start_z double geodb_text_part_count integer geodb_dim_custom_length double geodb_text_word_spacing double geodb_text_lc_margin_top double geodb_text_line_spacing double fme_secondary_axis double geodb_metadata_string char(254) fme_color char(50) geodb_from_junction_element_id integer multi_reader_type char(50) fme_text_size double geodb_arc_end_x double geodb_font_bold boolean geodb_arc_end_y double geodb_arc_end_z double geodb_text_char_spacing double fme_basename char(50) geodb_edge_element_count integer fme_type char(50) geodb_text_leader_line_color char(50) geodb_text_lc_accent_bar_color char(50) geodb_dim_using_custom_length boolean geodb_font_strikethrough boolean geodb_rel_origin_oid integer fme_fill_color char(50) geodb_dim_length double geodb_feature_has_relationships boolean geodb_text_lc_gap double"
+#! DEFLINE_PARMS=""
+#! ATTR_INDEX_TYPES=""
+#! ATTR_NAME_INVALID_CHARS=""
+#! SUPPORTS_FEATURE_TYPE_FANOUT="true"
+#! ENABLED="true"
+#! DYNAMIC_FEATURE_TYPES_LIST_ON_MERGE="true"
+#! DATASET_TYPE="NONE"
+#! GENERATE_FME_BUILD_NUM="13450"
+#! START_FEATURE=""
+#! MIN_FEATURES=""
+#! COORDSYS=""
+#! MAX_FEATURES=""
+#! MAX_FEATURES_PER_FEATURE_TYPE=""
+#! FEATURE_TYPES=""
+#! >
+#! <METAFILE_PARAMETER
+#! NAME="ADVANCED_PARMS"
+#! VALUE="GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MINX GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MINY GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MAXX GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MAXY _GEODB_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM GEODATABASE_SDE_IN_CLIP_TO_ENVELOPE GEODATABASE_SDE_IN_TRANSLATE_SPATIAL_DATA_ONLY GEODATABASE_SDE_IN_RESOLVE_DOMAINS GEODATABASE_SDE_IN_RESOLVE_SUBTYPE_NAMES GEODATABASE_SDE_IN_IGNORE_NETWORK_INFO GEODATABASE_SDE_IN_IGNORE_RELATIONSHIP_INFO GEODATABASE_SDE_IN_SPLIT_COMPLEX_EDGES GEODATABASE_SDE_IN_WHERE _GEODBInSearchFeature _GEODBInSearchOrder _GEODBInSearchMethod _GEODBInChildVersionName _GEODBInFeatureReadMode NULL_OUT_TRANSACTION_TYPE NULL_OUT_SIMPLIFY_GEOM NULL_OUT_ORIGIN_X NULL_OUT_ORIGIN_Y NULL_OUT_XY_SCALE NULL_OUT_HAS_Z_VALUES NULL_OUT_Z_ORIGIN NULL_OUT_Z_SCALE NULL_OUT_GRID_1 _GEODBOutWriterMode _GEODBOutTransaction _GEODBOutTransactionInterval _GEODBOutIgnoreFailedFeatureEntry _GEODBOutMaxNumberFailedFeatures _GEODBOutDumpFailedFeatures _GEODBOutFFSDumpFile _GEODBOutAnnotationUnits _GEODBOutReconcileAndPost _GEODBInArchiveWhereClause _GEODBMergeFeatLinkedAnnos _GEODBInCheckSimpleGeom _GEODBOutDeleteChildAfterReconcileAndPost _GEODBOutValidateFeatures _GEODBOutSimplifyNetworkFeatures _GEODBInPersistentConnection _GEODBOutPersistentConnection GEODATABASE_SDE_IN_SPLIT_MULTI_PART_ANNOS _GEODBSplitComplexAnnotations _GEODBOutCommitTransactionsAfterWrite _GEODBInBeginSql _GEODBInEndSql _GEODBOutBeginSql _GEODBOutEndSql _GEODBCacheMultipatchTextures"
+#! />
+#! </DATASET>
+#! <DATASET
+#! IS_SOURCE="false"
+#! ROLE="WRITER"
+#! FORMAT="SDE30"
+#! DATASET="$(DEST_INSTANCE)"
+#! KEYWORD="SDE30_1"
+#! MULTI_GEOM_ALLOWED="true"
+#! ATTR_MAX_LENGTH="30"
+#! ATTR_CASE="UPPER"
+#! ALLOWED_FEAT_TYPES=""
+#! WRITE_DEFS="true"
+#! DEFLINE_TEMPLATE="SDE_CONFIG_KEYWORD $(_OUT_SDE3Config) SDE_COORD_SYS_ID &quot;&quot; SDE_COORD_SYS_DESCRIPTION &quot;&quot; SDE_DROP_TABLE N SDE_TRUNCATE_TABLE N SDE_LAYER SHAPE SDE_PRECISION 64 SDE_GRID{0} $(_OUT_SDE3Grid0) SDE_GRID{1} $(_OUT_SDE3Grid1) SDE_GRID{2} $(_OUT_SDE3Grid2) SDE_DIMENSION $(_OUT_SDE3Dimension) SDE_MEASURED N SDE_ANNOTATED Y SDE_AREA Y SDE_LINE Y SDE_POINT Y SDE_SIMPLE_LINE Y SDE_NIL Y SDE_MULTIPART Y SDE_CAD N SDE_XORIGIN $(_OUT_SDE3XOrigin) SDE_YORIGIN $(_OUT_SDE3YOrigin) SDE_ZORIGIN 0 SDE_MEASURED_ORIGIN 0 SDE_SCALE $(_OUT_SDE3Scale) SDE_ZSCALE 1 SDE_MEASURED_SCALE 1 SDE_TOLERANCE &quot;&quot; SDE_ZTOLERANCE &quot;&quot; SDE_MEASURED_TOLERANCE &quot;&quot;"
+#! DEFLINE_ATTRS="true"
+#! EXPOSABLE_ATTRS="sde30_text_x double sde30_text_z_location char(50) sde30_text_y double sde30_text_z double fme_fill_color char(50) sde30_text_x_leader char(50) sde30_major_axis double sde30_text_string char(50) sde30_text_y_leader char(50) fme_text_string char(50) fme_dataset char(50) fme_type char(50) fme_basename char(50) fme_feature_type char(50) sde30_text_x_location char(50) fme_text_size double fme_color char(50) sde30_measures char(50) sde30_text_size double sde30_radius double fme_geometry fme_char(50) fme_start_angle double sde30_justification char(50) sde30_type char(50) sde30_minor_axis double sde30_text_symbol integer fme_sweep_angle double SE_ROW_ID integer sde30_text_level integer sde30_text_x_offset double sde30_num_points integer fme_primary_axis double sde30_text_z_leader char(50) sde30_text_y_offset double sde30_text_gap_ratio double sde30_rotation double fme_secondary_axis double fme_rotation double sde30_text_y_location char(50) fme_db_operation char(6)"
+#! DEFLINE_PARMS="&quot;GUI DISABLE disabled Table exists&quot; No &quot;GUI TEXT SDE_CONFIG_KEYWORD Configuration Keyword&quot; DEFAULTS &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_COORD_SYS_ID Coordsys ID&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_COORD_SYS_DESCRIPTION Coordsys Description&quot; &quot;&quot; &quot;GUI OPTIONAL ALWAYS_ENABLED CHOICE SDE_DROP_TABLE Y%N Drop Table First&quot; N &quot;GUI OPTIONAL DISABLED_ONLY CHOICE SDE_TRUNCATE_TABLE Y%N Truncate Table First&quot; N &quot;GUI OPTIONAL WHOLE_LINE DISABLED_ONLY FORCE_DEFS ATTRLIST_COMMAS SDE_UPDATE_FIELDS Update Key Fields&quot; &quot;&quot; &quot;GUI TEXT SDE_LAYER Layer Keyword&quot; SHAPE &quot;GUI CHOICE SDE_PRECISION 32%64 Layer Precision&quot; 64 &quot;GUI FLOAT SDE_GRID{0} Grid 0 Size&quot; 100 &quot;GUI OPTIONAL FLOAT SDE_GRID{1} Grid 1 Size&quot; 0 &quot;GUI OPTIONAL FLOAT SDE_GRID{2} Grid 2 Size&quot; 0 &quot;GUI CHOICE SDE_DIMENSION 2%3 Dimension&quot; 2 &quot;GUI CHOICE SDE_MEASURED Y%N Allow Measures&quot; N &quot;GUI CHOICE SDE_ANNOTATED Y%N Allow Annotation&quot; Y &quot;GUI CHOICE SDE_AREA Y%N Allow Areas&quot; Y &quot;GUI CHOICE SDE_LINE Y%N Allow Lines&quot; Y &quot;GUI CHOICE SDE_POINT Y%N Allow Points&quot; Y &quot;GUI CHOICE SDE_SIMPLE_LINE Y%N Allow Simple Lines&quot; Y &quot;GUI CHOICE SDE_NIL Y%N Allow NIL Geometry&quot; Y &quot;GUI CHOICE SDE_MULTIPART Y%N Allow Multi Part Geometry&quot; Y &quot;GUI CHOICE SDE_CAD Y%N Allow CAD Data&quot; N &quot;GUI FLOAT SDE_XORIGIN X Origin &quot; 0 &quot;GUI FLOAT SDE_YORIGIN Y Origin &quot; 0 &quot;GUI FLOAT SDE_ZORIGIN Z Origin &quot; 0 &quot;GUI FLOAT SDE_MEASURED_ORIGIN Measures Origin &quot; 0 &quot;GUI FLOAT SDE_SCALE Scaling Factor&quot; 100 &quot;GUI FLOAT SDE_ZSCALE Z Scaling Factor&quot; 1 &quot;GUI FLOAT SDE_MEASURED_SCALE Measures Scaling Factor&quot; 1 &quot;GUI OPTIONAL FLOAT SDE_TOLERANCE Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL FLOAT SDE_ZTOLERANCE Z Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL FLOAT SDE_MEASURED_TOLERANCE Measures Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE CHOICE SDE_STORAGE_TYPE SDE_BINARY%WKB%SQL%NORMALIZED Storage Type&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_DESCRIPTION Layer Description&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE INTEGER SDE_MINIMUM_FID Minimum FID&quot; &quot;&quot; "
+#! ATTR_INDEX_TYPES=""
+#! ATTR_NAME_INVALID_CHARS=". %-#[]&quot;()!?*&apos;&amp;+\/"
+#! SUPPORTS_FEATURE_TYPE_FANOUT="true"
+#! ENABLED="true"
+#! DYNAMIC_FEATURE_TYPES_LIST_ON_MERGE="true"
+#! DATASET_TYPE="DATABASE"
+#! GENERATE_FME_BUILD_NUM="5210"
+#! NAME="ganymede.bcgov [SDE30]"
+#! FANOUT_SUFFIX=""
+#! FANOUT_PREFIX=""
+#! COORDSYS="BCALB-83"
+#! FANOUT_DIRECTORY=""
+#! FANOUT_ID_ATTR=""
+#! FANOUT="No"
+#! >
+#! <METAFILE_PARAMETER
+#! NAME="ADVANCED_PARMS"
+#! VALUE="_IN_SDE3MINX _IN_SDE3MINY _IN_SDE3MAXX _IN_SDE3MAXY _IN_SDE3WhereClause _IN_SDE3CLIP _IN_SDE3SEARCH_ENVELOPE_COORDINATE_SYSTEM _IN_SDE3SearchMethod _IN_SDE3RemoveTableQualifier _IN_SDE3SearchOrder _IN_SDE3SearchMethodFilter _IN_SDE3PersistentConnection _IN_SDE3SearchFeature _IN_SDE3ChildVersionName _TRANSACTION_INTERVAL _ADD_LAYERS_TO_EXISTING_TABLES _WRITER_MODE _TRANSACTION _REJECTED_PIPELINE_DIRECTORY _CONTINUE_TRANSLATION_BAD_DATA _MAX_OPEN_TABLES _INTEGER_OVERRIDE_DEFINITION _STRICT_LOAD _FORCE_IN_AGGREGATES _DEFAULT_Z_VALUE _LEAVE_LAYER_EXTENTS _SPLIT_DONUTS SDE30_OUT_RECONCILE_AND_POST SDE30_OUT_TABLES_TO_RECONCILE SDE30_OUT_WRITE_TO_CURRENT_STATE SDE30_OUT_DELETE_CHILD_AFTER_RECONCILE_AND_POST"
+#! />
+#! </DATASET>
+#! </DATASETS>
+#! <DATA_TYPES>
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_varchar(width)"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(2048)"
+#! FME_TYPE="fme_buffer"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(1)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="blob"
+#! FME_TYPE="fme_buffer"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="date"
+#! FME_TYPE="fme_datetime"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="date"
+#! FME_TYPE="fme_date"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="date"
+#! FME_TYPE="fme_time"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="integer"
+#! FME_TYPE="fme_int32"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="integer"
+#! FME_TYPE="fme_uint16"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="smallint"
+#! FME_TYPE="fme_int16"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="smallint"
+#! FME_TYPE="fme_uint8"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="float"
+#! FME_TYPE="fme_real32"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="double"
+#! FME_TYPE="fme_real64"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="double"
+#! FME_TYPE="fme_uint32"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(20)"
+#! FME_TYPE="fme_int64"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="char(20)"
+#! FME_TYPE="fme_uint64"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="boolean"
+#! FME_TYPE="fme_boolean"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="double(width,decimal)"
+#! FME_TYPE="fme_decimal(width,decimal)"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="subtype(stringset)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="subtype_codes(stringmap)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="range_domain(range_domain)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="coded_domain(coded_domain)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_varchar(width)"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="blob"
+#! FME_TYPE="fme_buffer"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(255)"
+#! FME_TYPE="fme_buffer"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="guid"
+#! FME_TYPE="fme_buffer"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="double"
+#! FME_TYPE="fme_real64"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="double"
+#! FME_TYPE="fme_real32"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="float"
+#! FME_TYPE="fme_real32"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="integer"
+#! FME_TYPE="fme_int32"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="smallint"
+#! FME_TYPE="fme_int16"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="date"
+#! FME_TYPE="fme_datetime"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="date"
+#! FME_TYPE="fme_date"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="date"
+#! FME_TYPE="fme_time"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(8)"
+#! FME_TYPE="fme_boolean"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="double"
+#! FME_TYPE="fme_decimal(width,decimal)"
+#! FORMAT="SDE30"
+#! />
+#! </DATA_TYPES>
+#! <GEOM_TYPES>
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_point"
+#! FME_TYPE="fme_point"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_polygon"
+#! FME_TYPE="fme_area"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_polygon"
+#! FME_TYPE="fme_rounded_rectangle"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_polyline"
+#! FME_TYPE="fme_line"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_multipoint"
+#! FME_TYPE="fme_point"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_table"
+#! FME_TYPE="fme_no_geom"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_table"
+#! FME_TYPE="fme_collection"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_arc"
+#! FME_TYPE="fme_arc"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_ellipse"
+#! FME_TYPE="fme_ellipse"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_polygon"
+#! FME_TYPE="fme_rectangle"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_annotation"
+#! FME_TYPE="fme_text"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_dimension"
+#! FME_TYPE="fme_point"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_simple_junction"
+#! FME_TYPE="fme_point"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_simple_edge"
+#! FME_TYPE="fme_line"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_complex_junction"
+#! FME_TYPE="fme_point"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_complex_edge"
+#! FME_TYPE="fme_line"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_attributed_relationship"
+#! FME_TYPE="fme_no_geom"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_relationship"
+#! FME_TYPE="fme_no_geom"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_undefined"
+#! FME_TYPE="fme_no_geom"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_metadata"
+#! FME_TYPE="fme_no_geom"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_multipatch"
+#! FME_TYPE="fme_surface"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_multipatch"
+#! FME_TYPE="fme_solid"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_polygon"
+#! FME_TYPE="fme_raster"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="true"
+#! FORMAT_TYPE="geodb_polygon"
+#! FME_TYPE="fme_point_cloud"
+#! FORMAT="GEODATABASE_SDE"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_text"
+#! FME_TYPE="fme_text"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_point"
+#! FME_TYPE="fme_point"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_line"
+#! FME_TYPE="fme_line"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_simple_line"
+#! FME_TYPE="fme_line"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_area"
+#! FME_TYPE="fme_area"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_nil"
+#! FME_TYPE="fme_no_geom"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_point"
+#! FME_TYPE="fme_text"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_area"
+#! FME_TYPE="fme_ellipse"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_line"
+#! FME_TYPE="fme_arc"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_area"
+#! FME_TYPE="fme_rectangle"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_area"
+#! FME_TYPE="fme_rounded_rectangle"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_raster"
+#! FME_TYPE="fme_raster"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_line"
+#! FME_TYPE="fme_surface"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_line"
+#! FME_TYPE="fme_solid"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_nil"
+#! FME_TYPE="fme_collection"
+#! FORMAT="SDE30"
+#! />
+#! </GEOM_TYPES>
+#! <FEATURE_TYPES>
+#! <FEATURE_TYPE
+#! IS_SOURCE="false"
+#! NODE_NAME="$(DEST_SCHEMA).OG_ANCILLARY_OTHER_APPS_GOV_SP"
+#! FEATURE_TYPE_NAME="$(DEST_FEATURE_1)"
+#! FEATURE_TYPE_NAME_QUALIFIER="$(DEST_SCHEMA)"
+#! IS_EDITABLE="true"
+#! IDENTIFIER="20"
+#! FEAT_GEOMTYPE="All"
+#! POSITION="1612 -343.819"
+#! BOUNDING_RECT="1612 -343.819 0 0"
+#! ORDER="24"
+#! COLLAPSED="false"
+#! KEYWORD="SDE30_1"
+#! PARMS_EDITED="true"
+#! ENABLED="true"
+#! SCHEMA_ATTRIBUTE_SOURCE="1"
+#! >
+#! <FEAT_ATTRIBUTE ATTR_NAME="OG_ANCILLARY_OTHER_APP_GOV_ID" ATTR_TYPE="integer" ATTR_HAS_PORT="false" ATTR_VALUE="1"/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="EPASS_TRACKING_NUMBER" ATTR_TYPE="integer" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="OGC_FILE_NUMBER" ATTR_TYPE="char(8)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="WELL_AUTHORITY_NUMBER" ATTR_TYPE="char(6)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="PROJECT_NUMBER" ATTR_TYPE="char(9)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="FACILITY_SITE_NUMBER" ATTR_TYPE="char(9)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_RECEIVED_DATE" ATTR_TYPE="date" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_TYPE" ATTR_TYPE="char(100)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_STATUS" ATTR_TYPE="char(10)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_APPROVAL_DATE" ATTR_TYPE="date" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ANCILLARY_OTHER_APP_TYPE" ATTR_TYPE="char(5)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="LAND_TYPE" ATTR_TYPE="char(1)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="PROPONENT" ATTR_TYPE="char(60)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="MASTER_LICENSE_TO_CUT" ATTR_TYPE="char(30)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="CUTTING_PERMIT_ID" ATTR_TYPE="char(3)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="TIMBER_MARK" ATTR_TYPE="char(18)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ARCH_PERMIT_NUMBER" ATTR_TYPE="char(32)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ARCH_REQUIREMENT_TYPE" ATTR_TYPE="char(100)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ARCH_SITE_RECOVERED_FLAG" ATTR_TYPE="char(1)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="AREA_HECTARE" ATTR_TYPE="double" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ACCURACY_PERCENTILE" ATTR_TYPE="smallint" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ACCURACY_HORIZONTAL" ATTR_TYPE="smallint" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ACCURACY_VERTICAL" ATTR_TYPE="smallint" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="FEATURE_CODE" ATTR_TYPE="char(10)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="OBJECTID" ATTR_TYPE="integer" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_DROP_TABLE" PARM_VALUE="N"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_TOLERANCE" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED" PARM_VALUE="N"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{0}" PARM_VALUE="100"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_SCALE" PARM_VALUE="100"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_UPDATE_FIELDS" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_ORIGIN" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_AREA" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_CAD" PARM_VALUE="N"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MULTIPART" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MINIMUM_FID" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_LAYER" PARM_VALUE="SHAPE"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ZORIGIN" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_SCALE" PARM_VALUE="1"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ZSCALE" PARM_VALUE="1"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_PRECISION" PARM_VALUE="64"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_ID" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_YORIGIN" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_XORIGIN" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_CONFIG_KEYWORD" PARM_VALUE="DEFAULTS"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_SIMPLE_LINE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{2}" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_STORAGE_TYPE" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="disabled" PARM_VALUE="Yes"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_POINT" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_NIL" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_TOLERANCE" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_DIMENSION" PARM_VALUE="2"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_LINE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ZTOLERANCE" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_TRUNCATE_TABLE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{1}" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ANNOTATED" PARM_VALUE="Y"/>
+#! </FEATURE_TYPE>
+#! <FEATURE_TYPE
+#! IS_SOURCE="true"
+#! NODE_NAME="$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)"
+#! FEATURE_TYPE_NAME=""
+#! FEATURE_TYPE_NAME_QUALIFIER="$(SRC_ORA_SCHEMA)"
+#! IS_EDITABLE="false"
+#! IDENTIFIER="57"
+#! FEAT_GEOMTYPE="geodb_polygon"
+#! POSITION="226 -287"
+#! BOUNDING_RECT="226 -287 0 0"
+#! ORDER="27"
+#! COLLAPSED="false"
+#! KEYWORD="GEODATABASE_SDE_1"
+#! PARMS_EDITED="true"
+#! ENABLED="true"
+#! HIDDEN_USER_ATTRS=""
+#! MERGE_FILTER="*"
+#! MERGE_FILTER_TYPE="FILTER_TYPE_GLOB"
+#! MERGE_FILTER_CASE_SENSITIVE="false"
+#! DYNAMIC_SCHEMA="false"
+#! >
+#! <FEAT_ATTRIBUTE ATTR_NAME="geodb_oid" ATTR_TYPE="integer" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="EPASS_TRACKING_NUMBER" ATTR_TYPE="double" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="OGC_FILE_NUMBER" ATTR_TYPE="char(8)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="WELL_AUTHORITY_NUMBER" ATTR_TYPE="char(5)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="PROJECT_NUMBER" ATTR_TYPE="char(9)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="FACILITY_SITE_NUMBER" ATTR_TYPE="char(9)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_RECEIVED_DATE" ATTR_TYPE="date" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_TYPE" ATTR_TYPE="char(100)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_STATUS" ATTR_TYPE="char(9)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_APPROVAL_DATE" ATTR_TYPE="date" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="LAND_TYPE" ATTR_TYPE="char(1)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="CLIENT_NAME" ATTR_TYPE="char(60)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="MASTER_LICENSE_TO_CUT" ATTR_TYPE="char(30)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="CUTTING_PERMIT" ATTR_TYPE="char(3)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="TIMBER_MARK" ATTR_TYPE="char(18)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ARCH_PERMIT_NUMBER" ATTR_TYPE="char(32)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ARCH_REQUIREMENT_CODE" ATTR_TYPE="char(100)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ARCH_SITE_RECOVERED_FLAG" ATTR_TYPE="char(1)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="FCODE" ATTR_TYPE="char(10)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ANCILLARY_AND_OTHER_TYPE" ATTR_TYPE="char(5)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="AREA_HECTARE" ATTR_TYPE="double" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ACCURACY_PERCENTILE" ATTR_TYPE="smallint" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ACCURACY_HORIZONTAL" ATTR_TYPE="smallint" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="ACCURACY_VERTICAL" ATTR_TYPE="smallint" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! <FEAT_ATTRIBUTE ATTR_NAME="OBJECTID" ATTR_TYPE="integer" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
+#! </FEATURE_TYPE>
+#! </FEATURE_TYPES>
+#! <FMESERVER>
+#! <SERVICES>
+#! <SERVICE
+#! NAME="fmejobsubmitter"
+#! >
+#! <PROPERTIES>
+#! <PROPERTY
+#! CATEGORY="FMEUSERPROPDATA"
+#! NAME="FAILURE_TOPICS"
+#! VALUE=""
+#! />
+#! <PROPERTY
+#! CATEGORY="FMEUSERPROPDATA"
+#! NAME="HTTP_DATASET"
+#! VALUE=""
+#! />
+#! <PROPERTY
+#! CATEGORY="FMEUSERPROPDATA"
+#! NAME="NOTIFICATION_WRITER"
+#! VALUE=""
+#! />
+#! <PROPERTY
+#! CATEGORY="FMEUSERPROPDATA"
+#! NAME="PUBLISHER"
+#! VALUE=""
+#! />
+#! <PROPERTY
+#! CATEGORY="FMEUSERPROPDATA"
+#! NAME="SUCCESS_TOPICS"
+#! VALUE=""
+#! />
+#! </PROPERTIES>
+#! </SERVICE>
+#! </SERVICES>
+#! </FMESERVER>
+#! <GLOBAL_PARAMETERS>
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI TEXT DEST_SCHEMA Destination Schema:"
+#! DEFAULT_VALUE="&lt;DESTINATION SCHEMA&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI TEXT_OR_ATTR DEST_FEATURE_1 Destination Feature 1:"
+#! DEFAULT_VALUE="&lt;DESTINATION TABLE&gt;"
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL STRING_OR_CHOICE DEST_DB_ENV_KEY DLV%TST%PRD Destination Database Keyword (DLV|TST|PRD):"
+#! DEFAULT_VALUE="DLV"
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI TEXT SRC_ORA_INSTANCE Source Oracle Database instance:"
+#! DEFAULT_VALUE="&lt;SOURCE ORACLE INSTANCE&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI TEXT SRC_ORA_PROXY_SCHEMA Source schema used to access the database:"
+#! DEFAULT_VALUE="&lt;SOURCE ORACLE SCHEMA FOR DB CONNECTION&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI TEXT SRC_SERVER Source SDE Server:"
+#! DEFAULT_VALUE="&lt;SOURCE ORACLE SERVER&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI TEXT SRC_DIRECTCONNECT Direct connect string example: sde:oracle10g:inst.bcgov:"
+#! DEFAULT_VALUE="&lt;DIRECT CONNECT STRING, EXAMPLE: sde:oracle10g:ogcprod.ca&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL TEXT SRC_ORA_SCHEMA Source Database Schema that the source objects reside within:"
+#! DEFAULT_VALUE="&lt;SRC ORACLE SCHEMA&gt;"
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL TEXT SRC_FEATURE_1 Source table to be read and used in replication:"
+#! DEFAULT_VALUE="&lt;SOURCE TABLE&gt;"
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM SRC_ORA_PASSWORD Python Script:"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;srcPAss&lt;space&gt;=&lt;space&gt;params.getSourcePassword&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;srcPAss&lt;lf&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL IGNORE TEXT_EDIT_PYTHON_PARM DEST_SERVER Python Script:"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationServer&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_PORT Python Script:"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationSDEPort&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL IGNORE TEXT_EDIT_PYTHON_PARM DEST_PASSWORD Python Script:"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationPassword&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_INSTANCE Python Script:"
+#! DEFAULT_VALUE="&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationInstance&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL IGNORE TEXT_EDIT_PYTHON_PARM LOGFILE Python Script:"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getFMWLogFileRelativePath&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! </GLOBAL_PARAMETERS>
+#! <COMMENTS>
+#! <COMMENT
+#! IDENTIFIER="2"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;Source Types&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="100 0"
+#! TOP_LEFT="100 0"
+#! BOTTOM_RIGHT="100 0"
+#! BOUNDING_RECT="100 0 0 0"
+#! ORDER="10"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="SOURCE_HEADER"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="12"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;SOURCE DATA&#13;&lt;br&gt;&#13;&lt;br&gt;- Specify full UNC path name for file sources (no mappings)&#13;&lt;br&gt;- Delivery scripts should source delivery database instances&#13;&lt;br&gt;  where they exist.&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1308 -2113"
+#! TOP_LEFT="1308 -2113"
+#! BOTTOM_RIGHT="1308 -2113"
+#! BOUNDING_RECT="1308 -2113 0 0"
+#! ORDER="11"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="13"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;DESTINATION DATA: DataBC Warehouse&#13;&lt;br&gt;&#13;&lt;br&gt;Use one of the following writers for populating the warehouse:&#13;&lt;br&gt; - SDE30 (ESRI ArcSDE)&#13;&lt;br&gt; - ORACLE8I_DB (Oracle Non Spatial)&#13;&lt;br&gt; - ORACLE8I (Oracle Spatial Object) - by permission&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1297 -2357"
+#! TOP_LEFT="1297 -2357"
+#! BOTTOM_RIGHT="1297 -2357"
+#! BOUNDING_RECT="1297 -2357 0 0"
+#! ORDER="12"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="15"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;ORACLE NON SPATIAL AND SPATIAL OBJECT fast facts&#13;&lt;br&gt;&#13;&lt;br&gt; - Destination Oracle Service: idwprod1.bcgov&#13;&lt;br&gt; - Username: &amp;lt;destination schema&amp;gt;&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="2335 -2440"
+#! TOP_LEFT="2335 -2440"
+#! BOTTOM_RIGHT="2335 -2440"
+#! BOUNDING_RECT="2335 -2440 0 0"
+#! ORDER="13"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="14"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;ESRI ArcSDE (SDE30) WRITER fast facts&#13;&lt;br&gt;&#13;&lt;br&gt; - Coordinate System: BCALB-83&#13;&lt;br&gt; - ArcSDE Dataset: idwprod1.bcgov&#13;&lt;br&gt; - ArcSDE Server name: bcgwtst.bcgov&#13;&lt;br&gt; - Instance: port:5153&#13;&lt;br&gt; - User ID: &amp;lt;destination schema&amp;gt;&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="2501 -2110"
+#! TOP_LEFT="2501 -2110"
+#! BOTTOM_RIGHT="2501 -2110"
+#! BOUNDING_RECT="2501 -2110 0 0"
+#! ORDER="14"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="21"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;FILE NAMING CONVENTION&#13;&lt;br&gt;&#13;&lt;br&gt;Components, separated by underscore characters ( _ )&#13;&lt;br&gt;&#13;&lt;br&gt;Components:&#13;&lt;br&gt;   Destination layer name (warehouse name in full)&#13;&lt;br&gt; _Source location&#13;&lt;br&gt; _Source format&#13;&lt;br&gt; _Destination location&#13;&lt;br&gt;  .fmw&#13;&lt;br&gt;&#13;&lt;br&gt;Examples:&#13;&lt;br&gt; cbm_intgd_cadastral_fabric_sp_icfprd_sde_idwdlvr1.fmw&#13;&lt;br&gt; raad_aoa_provincial_staging_shp_idwprod1.fmw&#13;&lt;br&gt; spi_wildlife_nonsensitive_sp_idwprod1_svw_idwprod1.fmw&#13;&lt;br&gt; site_env_remediation_sites_sp_idwprod1_odb_idwprod1.fmw&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="181 -2886"
+#! TOP_LEFT="181 -2886"
+#! BOTTOM_RIGHT="181 -2886"
+#! BOUNDING_RECT="181 -2886 0 0"
+#! ORDER="15"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="8"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;DELIVERY PACKAGE&#13;&lt;br&gt;&#13;&lt;br&gt;Container structure&#13;&lt;br&gt;       &amp;lt;container&amp;gt;&#13;&lt;br&gt;                 this workbench.fmw&#13;&lt;br&gt;                 &amp;lt;bin&amp;gt;&#13;&lt;br&gt;                       DataBCWhse.py&#13;&lt;br&gt;                  &amp;lt;docs&amp;gt;&#13;&lt;br&gt;                       fme2012template.docx&#13;&lt;br&gt;                  &amp;lt;outputs&amp;gt;&#13;&lt;br&gt;                        &amp;lt;audt&amp;gt; &#13;&lt;br&gt;                                etlFileChangeLog.txt&#13;&lt;br&gt;                                etlPopulationLog.txt&#13;&lt;br&gt;                        &amp;lt;failed_features&amp;gt;&#13;&lt;br&gt;                                {tester outputs}&#13;&lt;br&gt;                        &amp;lt;log&amp;gt;&#13;&lt;br&gt;                                 this workbench.log&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="186 -2111"
+#! TOP_LEFT="186 -2111"
+#! BOTTOM_RIGHT="186 -2111"
+#! BOUNDING_RECT="186 -2111 0 0"
+#! ORDER="16"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="10"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;WORKSPACE PROPERTIES&#13;&lt;br&gt;&#13;&lt;br&gt;Complete workspace properties according to the instructions&#13;&lt;br&gt;provided as template values at the bottom of the Navigator widow&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="147 -3587"
+#! TOP_LEFT="147 -3587"
+#! BOTTOM_RIGHT="147 -3587"
+#! BOUNDING_RECT="147 -3587 0 0"
+#! ORDER="17"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="24"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;PRIVATE PARAMETERS&#13;&lt;br&gt;&#13;&lt;br&gt;Publish the following parameters:&#13;&lt;br&gt; - Any data source name&#13;&lt;br&gt; - Any destination data service name&#13;&lt;br&gt;&#13;&lt;br&gt;Add new published parameters for any&#13;&lt;br&gt;destination dataset being populated, with&#13;&lt;br&gt;the following characteristics:&#13;&lt;br&gt; - Type: text&#13;&lt;br&gt; - Name: DestFeature*&#13;&lt;br&gt; - Prompt: Destination Feature *&#13;&lt;br&gt; - Default Value: &amp;lt;name of destination feature&amp;gt;&#13;&lt;br&gt;&#13;&lt;br&gt;* a number to distinguish between &#13;&lt;br&gt;  multiple destination features.&#13;&lt;br&gt;&#13;&lt;br&gt;Template includes private parameters:&#13;&lt;br&gt; - LogURL: URL to centralized logging service&#13;&lt;br&gt; - NotificationEmail: contact email&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="2453 -2914"
+#! TOP_LEFT="2453 -2914"
+#! BOTTOM_RIGHT="2453 -2914"
+#! BOUNDING_RECT="2453 -2914 0 0"
+#! ORDER="18"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="23"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;WORKSPACE PARAMETERS&#13;&lt;br&gt;&#13;&lt;br&gt; - Workspace Title: name of script, less file extension&#13;&lt;br&gt; - Log File: .\outputs\log\&amp;lt;Workspace Title&amp;gt;.log&#13;&lt;br&gt; - Password: &amp;lt;no password&amp;gt;&#13;&lt;br&gt; - Startup Python Script: &amp;lt;provided&amp;gt;&#13;&lt;br&gt; - Shutdown Python Script: &amp;lt;provided&amp;gt;&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1411 -3351"
+#! TOP_LEFT="1411 -3351"
+#! BOTTOM_RIGHT="1411 -3351"
+#! BOUNDING_RECT="1411 -3351 0 0"
+#! ORDER="19"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="22"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;DESTINATION FEATURE PARAMETERS&#13;&lt;br&gt;&#13;&lt;br&gt;Available on the properties pagefor each Destination Feature:&#13;&lt;br&gt; - Table Exists: Yes&#13;&lt;br&gt; - Drop Table First: N&#13;&lt;br&gt; - Truncate Table First: Y&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1339 -2973"
+#! TOP_LEFT="1339 -2973"
+#! BOTTOM_RIGHT="1339 -2973"
+#! BOUNDING_RECT="1339 -2973 0 0"
+#! ORDER="20"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="4"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;Data Flow&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1056 0"
+#! TOP_LEFT="1056 0"
+#! BOTTOM_RIGHT="1056 0"
+#! BOUNDING_RECT="1056 0 0 0"
+#! ORDER="21"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="56"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;Destination Types&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1612 -11"
+#! TOP_LEFT="1612 -11"
+#! BOTTOM_RIGHT="1612 -11"
+#! BOUNDING_RECT="1612 -11 0 0"
+#! ORDER="25"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="DEST_HEADER"
+#! ANCHORED_NODE="0"
+#! />
+#! </COMMENTS>
+#! <CONSTANTS>
+#! </CONSTANTS>
+#! <BOOKMARKS>
+#! <BOOKMARK
+#! IDENTIFIER="17"
+#! NAME="Setup and Configuration"
+#! DESCRIPTION="&lt;html&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;"
+#! TOP_LEFT="107 -2014"
+#! BOTTOM_RIGHT="1232 -3883"
+#! BOUNDING_RECT="107 -2014 1125 1869"
+#! STICKY="true"
+#! COLOUR="0.0784314,0.0784314,0.756863"
+#! CONTENTS="21 8 10 "
+#! />
+#! <BOOKMARK
+#! IDENTIFIER="16"
+#! NAME="Readers and Writers"
+#! DESCRIPTION="&lt;html&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;"
+#! TOP_LEFT="1268 -2021"
+#! BOTTOM_RIGHT="3356 -2703"
+#! BOUNDING_RECT="1268 -2021 2088 682"
+#! STICKY="true"
+#! COLOUR="1,0.501961,0"
+#! CONTENTS="13 15 12 14 "
+#! />
+#! <BOOKMARK
+#! IDENTIFIER="25"
+#! NAME="Parameters and Settings"
+#! DESCRIPTION="&lt;html&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;"
+#! TOP_LEFT="1276 -2753"
+#! BOTTOM_RIGHT="3373 -3887"
+#! BOUNDING_RECT="1276 -2753 2097 1134"
+#! STICKY="true"
+#! COLOUR="0.819608,0.501961,0.976471"
+#! CONTENTS="24 22 23 "
+#! />
+#! </BOOKMARKS>
+#! <TRANSFORMERS>
+#! </TRANSFORMERS>
+#! <FEAT_LINKS>
+#! </FEAT_LINKS>
+#! <BREAKPOINTS>
+#! </BREAKPOINTS>
+#! <ATTR_LINKS>
+#! </ATTR_LINKS>
+#! <SUBDOCUMENTS>
+#! <SUBDOCUMENT
+#! NAME="ArcSDELockRemover"
+#! FME_PROCESS_COUNT="NO_PARALLELISM"
+#! HISTORY=""
+#! FME_DOCUMENT_PRIORGUID=""
+#! DOC_TOP_LEFT="0 0"
+#! USAGE=""
+#! DOC_DYNAMIC_INPUT_ATTRS="0"
+#! DOC_EXTENTS="0 0"
+#! TITLE="ArcSDELockRemover"
+#! FME_PROCESS_GROUPS_ORDERED="No"
+#! IS_VISIBLE="false"
+#! REQUIREMENTS_KEYWORD=""
+#! CATEGORY="DataBC"
+#! VIEW_POSITION="0 0"
+#! DESCRIPTION="Test description&#10;"
+#! REQUIREMENTS=""
+#! SUPPRESS_UPGRADE="false"
+#! XFORM_DEPRECATED="No"
+#! FME_DOCUMENT_GUID=""
+#! ZOOM_SCALE="99"
+#! FME_PROCESS_GROUP_BY=""
+#! LEGAL_TERMS_CONDITIONS=""
+#! >
+#! <GLOBAL_PARAMETERS>
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI TEXT Data_Source Destination Instance:"
+#! DEFAULT_VALUE="idwprod1.bcgov"
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI TEXT User_ID User ID:"
+#! DEFAULT_VALUE=""
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI PASSWORD Password Password:"
+#! DEFAULT_VALUE=""
+#! IS_STAND_ALONE="true"
+#! />
+#! </GLOBAL_PARAMETERS>
+#! <COMMENTS>
+#! </COMMENTS>
+#! <CONSTANTS>
+#! </CONSTANTS>
+#! <BOOKMARKS>
+#! </BOOKMARKS>
+#! <TRANSFORMERS>
+#! </TRANSFORMERS>
+#! <FEAT_LINKS>
+#! </FEAT_LINKS>
+#! <BREAKPOINTS>
+#! </BREAKPOINTS>
+#! <ATTR_LINKS>
+#! </ATTR_LINKS>
+#! </SUBDOCUMENT>
+#! </SUBDOCUMENTS>
+#! <LOOKUP_TABLES>
+#! </LOOKUP_TABLES>
+#! </WORKSPACE>
+#! 
+GUI IGNORE SourceDataset_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_SERVER_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_USERID_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_PASSWORD_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_INSTANCE_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_VERSION_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_WHERE_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_TRANSLATE_SPATIAL_DATA_ONLY_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_RESOLVE_DOMAINS_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_RESOLVE_SUBTYPE_NAMES_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_IGNORE_NETWORK_INFO_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_IGNORE_RELATIONSHIP_INFO_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_SPLIT_COMPLEX_EDGES_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_SPLIT_MULTI_PART_ANNOS_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MINX_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MINY_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MAXX_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MAXY_GEODATABASE_SDE_1,GEODATABASE_SDE_IN_CLIP_TO_ENVELOPE_GEODATABASE_SDE_1,_GEODBSplitComplexAnnotations_GEODATABASE_SDE_1,_GEODBCacheMultipatchTextures_GEODATABASE_SDE_1,_GEODB_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM_GEODATABASE_SDE_1,_GEODBInSearchFeature_GEODATABASE_SDE_1,_GEODBInSearchOrder_GEODATABASE_SDE_1,_GEODBInSearchMethod_GEODATABASE_SDE_1,_GEODBInChildVersionName_GEODATABASE_SDE_1,_GEODBInFeatureReadMode_GEODATABASE_SDE_1,_GEODBInArchiveWhereClause_GEODATABASE_SDE_1,_GEODBInCheckSimpleGeom_GEODATABASE_SDE_1,_GEODBMergeFeatLinkedAnnos_GEODATABASE_SDE_1,_GEODBInPersistentConnection_GEODATABASE_SDE_1,_GEODBInBeginSql_GEODATABASE_SDE_1,_GEODBInEndSql_GEODATABASE_SDE_1,DestDataset_SDE30_1,_OUT_SDE3Server_SDE30_1,_OUT_SDE3Instance_SDE30_1,_OUT_SDE3UserName_SDE30_1,_OUT_SDE3Password_SDE30_1,_OUT_SDE3Version_SDE30_1,_ADD_LAYERS_TO_EXISTING_TABLES_SDE30_1,_TRANSACTION_INTERVAL_SDE30_1,_WRITER_MODE_SDE30_1,_TRANSACTION_SDE30_1,_BUFFERED_WRITES_SDE30_1,_REJECTED_PIPELINE_DIRECTORY_SDE30_1,_CONTINUE_TRANSLATION_BAD_DATA_SDE30_1,_MAX_OPEN_TABLES_SDE30_1,_INTEGER_OVERRIDE_DEFINITION_SDE30_1,_STRICT_LOAD_SDE30_1,_FORCE_IN_AGGREGATES_SDE30_1,_DEFAULT_Z_VALUE_SDE30_1,_LEAVE_LAYER_EXTENTS_SDE30_1,_SPLIT_DONUTS_SDE30_1,SDE30_OUT_RECONCILE_AND_POST_SDE30_1,SDE30_OUT_TABLES_TO_RECONCILE_SDE30_1,SDE30_OUT_DELETE_CHILD_AFTER_RECONCILE_AND_POST_SDE30_1,SDE30_OUT_WRITE_TO_CURRENT_STATE_SDE30_1
+DEFAULT_MACRO DEST_SCHEMA <DESTINATION SCHEMA>
+GUI TEXT DEST_SCHEMA Destination Schema:
+DEFAULT_MACRO DEST_FEATURE_1 <DESTINATION TABLE>
+GUI TEXT DEST_FEATURE_1 Destination Feature 1:
+DEFAULT_MACRO DEST_DB_ENV_KEY DLV
+GUI OPTIONAL STRING_OR_CHOICE DEST_DB_ENV_KEY DLV%TST%PRD Destination Database Keyword (DLV|TST|PRD):
+DEFAULT_MACRO SRC_ORA_INSTANCE <SOURCE ORACLE INSTANCE>
+GUI TEXT SRC_ORA_INSTANCE Source Oracle Database instance:
+DEFAULT_MACRO SRC_ORA_PROXY_SCHEMA <SOURCE ORACLE SCHEMA FOR DB CONNECTION>
+GUI TEXT SRC_ORA_PROXY_SCHEMA Source schema used to access the database:
+DEFAULT_MACRO SRC_SERVER <SOURCE ORACLE SERVER>
+GUI TEXT SRC_SERVER Source SDE Server:
+DEFAULT_MACRO SRC_DIRECTCONNECT <DIRECT CONNECT STRING, EXAMPLE: sde:oracle10g:ogcprod.ca>
+GUI TEXT SRC_DIRECTCONNECT Direct connect string example: sde:oracle10g:inst.bcgov:
+DEFAULT_MACRO SRC_ORA_SCHEMA <SRC ORACLE SCHEMA>
+GUI OPTIONAL TEXT SRC_ORA_SCHEMA Source Database Schema that the source objects reside within:
+DEFAULT_MACRO SRC_FEATURE_1 <SOURCE TABLE>
+GUI OPTIONAL TEXT SRC_FEATURE_1 Source table to be read and used in replication:
+INCLUDE PYTHON
+def ParamFunc():
+  import DataBCFMWTemplate
+  params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
+  srcPAss = params.getSourcePassword()
+  return srcPAss
+  
+value = ParamFunc()
+macroName = 'SRC_ORA_PASSWORD'
+if value == None:
+  return { macroName : '' }
+else:
+  return { macroName : str(value) }
+END_INCLUDE
+INCLUDE PYTHON
+def ParamFunc():
+  import DataBCFMWTemplate
+  params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
+  return params.getDestinationServer()
+  
+value = ParamFunc()
+macroName = 'DEST_SERVER'
+if value == None:
+  return { macroName : '' }
+else:
+  return { macroName : str(value) }
+END_INCLUDE
+INCLUDE PYTHON
+def ParamFunc():
+  import DataBCFMWTemplate
+  params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
+  return params.getDestinationSDEPort()
+  
+value = ParamFunc()
+macroName = 'DEST_PORT'
+if value == None:
+  return { macroName : '' }
+else:
+  return { macroName : str(value) }
+END_INCLUDE
+INCLUDE PYTHON
+def ParamFunc():
+  import DataBCFMWTemplate
+  params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
+  return params.getDestinationPassword()
+  
+value = ParamFunc()
+macroName = 'DEST_PASSWORD'
+if value == None:
+  return { macroName : '' }
+else:
+  return { macroName : str(value) }
+END_INCLUDE
+INCLUDE PYTHON
+def ParamFunc():
+  
+  import DataBCFMWTemplate
+  params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
+  return params.getDestinationInstance()
+  
+value = ParamFunc()
+macroName = 'DEST_INSTANCE'
+if value == None:
+  return { macroName : '' }
+else:
+  return { macroName : str(value) }
+END_INCLUDE
+INCLUDE PYTHON
+def ParamFunc():
+  import DataBCFMWTemplate
+  params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
+  return params.getFMWLogFileRelativePath()
+  
+value = ParamFunc()
+macroName = 'LOGFILE'
+if value == None:
+  return { macroName : '' }
+else:
+  return { macroName : str(value) }
+END_INCLUDE
+INCLUDE [ if {{$(DEST_SCHEMA)} == {}} { puts_real {Parameter 'DEST_SCHEMA' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(DEST_FEATURE_1)} == {}} { puts_real {Parameter 'DEST_FEATURE_1' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(SRC_ORA_INSTANCE)} == {}} { puts_real {Parameter 'SRC_ORA_INSTANCE' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(SRC_ORA_PROXY_SCHEMA)} == {}} { puts_real {Parameter 'SRC_ORA_PROXY_SCHEMA' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(SRC_SERVER)} == {}} { puts_real {Parameter 'SRC_SERVER' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(SRC_DIRECTCONNECT)} == {}} { puts_real {Parameter 'SRC_DIRECTCONNECT' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(SRC_ORA_PASSWORD)} == {}} { puts_real {Parameter 'SRC_ORA_PASSWORD' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(DEST_PORT)} == {}} { puts_real {Parameter 'DEST_PORT' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(DEST_INSTANCE)} == {}} { puts_real {Parameter 'DEST_INSTANCE' must be given a value.}; exit 1; }; ]
+#! START_HEADER
+# ============================================================================
+# The following line defines the title presented to the user when this
+# mapping file is run through the FME GUI.  You may modify this
+# if a more meaningful title would be appropriate.
+GUI TITLE DBF to ORACLE8I_DB Translation
+# ============================================================================
+# The following line names the log file to which useful statistics about
+# the translation will be written.  This line can be uncommented and
+# updated if you do wish to keep these statistics.
+# LOG_FILENAME translation.log
+# LOG_APPEND NO
+# ============================================================================
+# The following line instructs the FME to log any features that do not
+# match any of the source feature patterns listed further down in
+# this file.  If you are modifying this mapping file, this will be
+# useful to describe to you exactly which features you are losing
+# during translation, if the statistics indicate that features are
+# not being correlated or grouped.  Uncorrelated features do not
+# match any source specification, ungrouped features do not have
+# any corresponding _DEF line.
+# FME_DEBUG UNGROUPED UNCORRELATED
+# ============================================================================
+# The following two lines define the type of reader and writer to be
+# used for this translation.  If you want to translate your data
+# back into its original format, you may make a copy of this file
+# and switch the reader and writer types.  If you rerun the FME, you
+# will get your original data back again (together with any modifications
+# you made in the meantime).  Note that several formats are NOT
+# bi-directional (for example, GIF can only be used as a WRITER)
+# so a reverse translation may not always be possible.
+#! START_WB_HEADER
+READER_TYPE GEODATABASE_SDE
+READER_KEYWORD GEODATABASE_SDE_1
+READER_GEN_DIRECTIVES INSTANCE,sde:oracle11g:ogistest.bcogc.ca,SEARCH_ENVELOPE_MINX,0,SEARCH_ENVELOPE_MINY,0,USERID,lrdw_acquirer,_MERGE_SCHEMAS,YES,HISTORICAL_VERSION_NAME,,VERSION,SDE.DEFAULT,HISTORICAL_VERSION_TIMESTAMP,,CONNECTION_FILE,,VERSION_TYPE,Connect<space>using<space>a<space>Transactional<space>Version,CONNECTION,Parameters,WHERE,,USE_SEARCH_ENVELOPE,NO,SERVER,142.31.212.39,TRANSLATE_SPATIAL_DATA_ONLY,no,REMOVE_TABLE_QUALIFIER,NO,IGNORE_RELATIONSHIP_INFO,yes,SPLIT_COMPLEX_EDGES,no,CLIP_TO_ENVELOPE,NO,SPLIT_MULTI_PART_ANNOS,no,GEODATABASE_SDE_EXPOSE_FORMAT_ATTRS,,RESOLVE_DOMAINS,no,TABLELIST,LRDWOWNER.OG_ANCILLARY_AND_OTHER_GOV_SVW,IGNORE_NETWORK_INFO,yes,SEARCH_ENVELOPE_MAXX,0,SEARCH_ENVELOPE_MAXY,0,RESOLVE_SUBTYPE_NAMES,yes
+WRITER_TYPE MULTI_WRITER
+MULTI_WRITER_DATASET_ORDER BY_ID
+MULTI_WRITER_FIRST_WRITER_ID 0
+MULTI_WRITER_TYPE{0} SDE30
+MULTI_WRITER_KEYWORD{0} SDE30_1
+#! END_WB_HEADER
+#! START_WB_HEADER
+MACRO WB_KEYWORD "GEODATABASE_SDE_1"
+#! END_WB_HEADER
+#! START_SOURCE_HEADER GEODATABASE_SDE GEODATABASE_SDE_1
+# ============================================================================
+# The following GUI line prompts for a source dataset, sometimes this is not
+# used by SDE.
+# The dataset this mapping file was generated from was:
+#! END_SOURCE_HEADER
+#! START_WB_HEADER
+DEFAULT_MACRO SourceDataset
+INCLUDE [ if {{$(SourceDataset)} != ""} {                        \
+ puts {DEFAULT_MACRO SourceDataset_GEODATABASE_SDE_1 $(SourceDataset)}     \
+ } ]
+#! END_WB_HEADER
+#! START_SOURCE_HEADER GEODATABASE_SDE GEODATABASE_SDE_1
+DEFAULT_MACRO SourceDataset_GEODATABASE_SDE_1 $(SRC_ORA_INSTANCE)
+GUI TEXT SourceDataset_GEODATABASE_SDE_1 Source Esri ArcSDE Geodatabase Dataset:
+# ============================================================================
+# Reader connection file stuff.
+# If you manually change this value for whether or not to use connection files,
+# you must also make sure the correct directives appear below this to support your
+# choice.
+# i.e. The GEODB_SDE_CONNECTION_FILE directive should exist and not
+# be commented if you set _GEODBInUsingConnFile to YES.
+# _GEODBInUsingConnFile
+DEFAULT_MACRO _GEODBInUsingConnFile_GEODATABASE_SDE_1 no
+#=============================================================================
+# READER CONNECTION PARAMETERS: Either these or the connection file should be specified.
+# ============================================================================
+# END OF CONNECTION PARAMETERS
+#==============================================================================
+# Translation flags.
+#
+# =============================================================================
+#
+DEFAULT_MACRO GEODATABASE_SDE_IN_SERVER_GEODATABASE_SDE_1 $(SRC_SERVER)
+GUI TEXT GEODATABASE_SDE_IN_SERVER_GEODATABASE_SDE_1 Server:
+GEODATABASE_SDE_1_SERVER "$(GEODATABASE_SDE_IN_SERVER_GEODATABASE_SDE_1)"
+# =============================================================================
+#
+DEFAULT_MACRO GEODATABASE_SDE_IN_USERID_GEODATABASE_SDE_1 $(SRC_ORA_PROXY_SCHEMA)
+GUI TEXT GEODATABASE_SDE_IN_USERID_GEODATABASE_SDE_1 Username:
+GEODATABASE_SDE_1_USERID "$(GEODATABASE_SDE_IN_USERID_GEODATABASE_SDE_1)"
+# =============================================================================
+#
+DEFAULT_MACRO GEODATABASE_SDE_IN_PASSWORD_GEODATABASE_SDE_1 $(SRC_ORA_PASSWORD)
+GUI PASSWORD GEODATABASE_SDE_IN_PASSWORD_GEODATABASE_SDE_1 Password:
+GEODATABASE_SDE_1_PASSWORD "$(GEODATABASE_SDE_IN_PASSWORD_GEODATABASE_SDE_1)"
+# =============================================================================
+#
+DEFAULT_MACRO GEODATABASE_SDE_IN_INSTANCE_GEODATABASE_SDE_1 $(SRC_DIRECTCONNECT)
+GUI TEXT GEODATABASE_SDE_IN_INSTANCE_GEODATABASE_SDE_1 Instance Name:
+GEODATABASE_SDE_1_INSTANCE "$(GEODATABASE_SDE_IN_INSTANCE_GEODATABASE_SDE_1)"
+# =============================================================================
+#
+DEFAULT_MACRO GEODATABASE_SDE_IN_VERSION_GEODATABASE_SDE_1 SDE.DEFAULT
+GUI TEXT GEODATABASE_SDE_IN_VERSION_GEODATABASE_SDE_1 Transactional Version:
+GEODATABASE_SDE_1_VERSION "$(GEODATABASE_SDE_IN_VERSION_GEODATABASE_SDE_1)"
+# ============================================================================
+# The following GUI line prompts for the name of the host machine on which
+# the SDE Server runs.
+GEODATABASE_SDE_1_SERVER "$(GEODATABASE_SDE_IN_SERVER_GEODATABASE_SDE_1)"
+# ============================================================================
+# The following GUI line prompts for the username to use for
+# accessing the SDE dataset.
+GEODATABASE_SDE_1_USERID "$(GEODATABASE_SDE_IN_USERID_GEODATABASE_SDE_1)"
+# ============================================================================
+# The following GUI line prompts for the user password.
+GEODATABASE_SDE_1_PASSWORD "$(GEODATABASE_SDE_IN_PASSWORD_GEODATABASE_SDE_1)"
+# ============================================================================
+# The following GUI line prompts for the instance
+GEODATABASE_SDE_1_INSTANCE "$(GEODATABASE_SDE_IN_INSTANCE_GEODATABASE_SDE_1)"
+# ============================================================================
+DEFAULT_MACRO GEODATABASE_SDE_IN_CONNECTION_FILE_GEODATABASE_SDE_1
+GEODATABASE_SDE_1_CONNECTION_FILE "$(GEODATABASE_SDE_IN_CONNECTION_FILE_GEODATABASE_SDE_1)"
+# ============================================================================
+# The following GUI line prompts for the version.
+# ========================================================================
+# The following GUI line prompts for the historical version name.
+# ========================================================================
+# The following GUI line prompts for the historical version timestamp.
+# ========================================================================
+# ========================================================================
+# ========================================================================
+DEFAULT_MACRO GEODATABASE_SDE_IN_WHERE_GEODATABASE_SDE_1 
+GEODATABASE_SDE_1_WHERE "$(GEODATABASE_SDE_IN_WHERE_GEODATABASE_SDE_1)"
+GUI OPTIONAL TEXT GEODATABASE_SDE_IN_WHERE_GEODATABASE_SDE_1 WHERE Clause:
+# ========================================================================
+# Determines whether non-spatial data, such as tables, subtypes, domains,
+# and relationship classes, get translated
+DEFAULT_MACRO GEODATABASE_SDE_IN_TRANSLATE_SPATIAL_DATA_ONLY_GEODATABASE_SDE_1 no
+GEODATABASE_SDE_1_TRANSLATE_SPATIAL_DATA_ONLY "$(GEODATABASE_SDE_IN_TRANSLATE_SPATIAL_DATA_ONLY_GEODATABASE_SDE_1)"
+GUI CHECKBOX GEODATABASE_SDE_IN_TRANSLATE_SPATIAL_DATA_ONLY_GEODATABASE_SDE_1 yes%no Spatial Data Only
+# ========================================================================
+# Determines whether to resolve domains
+DEFAULT_MACRO GEODATABASE_SDE_IN_RESOLVE_DOMAINS_GEODATABASE_SDE_1 no
+GEODATABASE_SDE_1_RESOLVE_DOMAINS "$(GEODATABASE_SDE_IN_RESOLVE_DOMAINS_GEODATABASE_SDE_1)"
+GUI CHECKBOX GEODATABASE_SDE_IN_RESOLVE_DOMAINS_GEODATABASE_SDE_1 yes%no Resolve Domains
+# ========================================================================
+# Determines whether to resolve the subtype associated with a feature to the
+# text description linked to the subtype value. The text description will
+# be added as an attribute on the feature.
+DEFAULT_MACRO GEODATABASE_SDE_IN_RESOLVE_SUBTYPE_NAMES_GEODATABASE_SDE_1 yes
+GEODATABASE_SDE_1_RESOLVE_SUBTYPE_NAMES "$(GEODATABASE_SDE_IN_RESOLVE_SUBTYPE_NAMES_GEODATABASE_SDE_1)"
+GUI CHECKBOX GEODATABASE_SDE_IN_RESOLVE_SUBTYPE_NAMES_GEODATABASE_SDE_1 yes%no Resolve Subtypes
+# ========================================================================
+# Determines whether to ignore the network info associated with a feature
+# coming from a network feature class. When set to 'yes', junctions will be
+# treated as point features, and edges will be treated as polyline features,
+# with the geodb_type being set to geodb_point and geodb_polyline, respectively.
+# Caution should be taken when changing the value for this keyword to a different
+# value than was specified when creating the mapping file/workspace.
+DEFAULT_MACRO GEODATABASE_SDE_IN_IGNORE_NETWORK_INFO_GEODATABASE_SDE_1 yes
+GEODATABASE_SDE_1_IGNORE_NETWORK_INFO "$(GEODATABASE_SDE_IN_IGNORE_NETWORK_INFO_GEODATABASE_SDE_1)"
+GUI CHECKBOX GEODATABASE_SDE_IN_IGNORE_NETWORK_INFO_GEODATABASE_SDE_1 yes%no Ignore Network Info
+# ========================================================================
+# Determines whether to ignore the relationship info associated with a feature
+# coming from a feature class containing relationships. When set to 'yes', simple
+# relationships will not be read, and attributed relationships will be read as
+# tables. Caution should be taken when changing the value for this keyword to a
+# different value than was specified when creating the mapping file/workspace.
+DEFAULT_MACRO GEODATABASE_SDE_IN_IGNORE_RELATIONSHIP_INFO_GEODATABASE_SDE_1 yes
+GEODATABASE_SDE_1_IGNORE_RELATIONSHIP_INFO "$(GEODATABASE_SDE_IN_IGNORE_RELATIONSHIP_INFO_GEODATABASE_SDE_1)"
+GUI CHECKBOX GEODATABASE_SDE_IN_IGNORE_RELATIONSHIP_INFO_GEODATABASE_SDE_1 yes%no Ignore Relationship Info
+# ========================================================================
+# Determines whether complex edge features should be split up and each edge
+# element read as a separate feature. The default behaviour is to treat an
+# entire edge *feature* as an FME feature, rather than an edge *element* as an
+# FME feature. Returning edge elements ensures that all network connectivity
+# information on complex edges is read.
+DEFAULT_MACRO GEODATABASE_SDE_IN_SPLIT_COMPLEX_EDGES_GEODATABASE_SDE_1 no
+GEODATABASE_SDE_1_SPLIT_COMPLEX_EDGES "$(GEODATABASE_SDE_IN_SPLIT_COMPLEX_EDGES_GEODATABASE_SDE_1)"
+GUI CHECKBOX GEODATABASE_SDE_IN_SPLIT_COMPLEX_EDGES_GEODATABASE_SDE_1 yes%no Split Complex Edges
+#==============================================================================
+# Determines whether annotation features should be split up and each part
+# element read as a separate feature. The default behaviour is to treat an
+# entire annotation *feature* as an FME feature, rather than an annotation
+# *element* as an FME feature. Returning edge elements ensures that all
+# rotation and positional information for each element is preserved.
+DEFAULT_MACRO GEODATABASE_SDE_IN_SPLIT_MULTI_PART_ANNOS_GEODATABASE_SDE_1 no
+GEODATABASE_SDE_1_SPLIT_MULTI_PART_ANNOS "$(GEODATABASE_SDE_IN_SPLIT_MULTI_PART_ANNOS_GEODATABASE_SDE_1)"
+GUI CHECKBOX GEODATABASE_SDE_IN_SPLIT_MULTI_PART_ANNOS_GEODATABASE_SDE_1 yes%no Split Multi-Part Annotations
+# Include this file in source setting section to add native search envelope processing
+# Zero as a default means we don't do any search -- this makes workbench happier
+# ===========================================================================
+DEFAULT_MACRO GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MINX_GEODATABASE_SDE_1 0
+GEODATABASE_SDE_1_SEARCH_ENVELOPE "$(GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MINX_GEODATABASE_SDE_1)"
+GUI OPTIONAL FLOAT GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MINX_GEODATABASE_SDE_1 Minimum X:
+# ===========================================================================
+DEFAULT_MACRO GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MINY_GEODATABASE_SDE_1 0
+GEODATABASE_SDE_1_SEARCH_ENVELOPE "$(GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MINY_GEODATABASE_SDE_1)"
+GUI OPTIONAL FLOAT GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MINY_GEODATABASE_SDE_1 Minimum Y:
+# ===========================================================================
+DEFAULT_MACRO GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MAXX_GEODATABASE_SDE_1 0
+GEODATABASE_SDE_1_SEARCH_ENVELOPE "$(GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MAXX_GEODATABASE_SDE_1)"
+GUI OPTIONAL FLOAT GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MAXX_GEODATABASE_SDE_1 Maximum X:
+# ===========================================================================
+DEFAULT_MACRO GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MAXY_GEODATABASE_SDE_1 0
+GEODATABASE_SDE_1_SEARCH_ENVELOPE "$(GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MAXY_GEODATABASE_SDE_1)"
+GUI OPTIONAL FLOAT GEODATABASE_SDE_IN_SEARCH_ENVELOPE_MAXY_GEODATABASE_SDE_1 Maximum Y:
+# ===========================================================================
+DEFAULT_MACRO GEODATABASE_SDE_IN_CLIP_TO_ENVELOPE_GEODATABASE_SDE_1 NO
+GEODATABASE_SDE_1_CLIP_TO_ENVELOPE "$(GEODATABASE_SDE_IN_CLIP_TO_ENVELOPE_GEODATABASE_SDE_1)"
+GUI OPTIONAL CHECKBOX GEODATABASE_SDE_IN_CLIP_TO_ENVELOPE_GEODATABASE_SDE_1 YES%NO Clip to Search Envelope
+#==============================================================================
+# The following specifies that complex representations for annotation should
+# be split into simpler representations.
+DEFAULT_MACRO _GEODBSplitComplexAnnotations_GEODATABASE_SDE_1 no
+GUI CHOICE _GEODBSplitComplexAnnotations_GEODATABASE_SDE_1 yes%no Split Complex Annotations:
+GEODATABASE_SDE_1_SPLIT_COMPLEX_ANNOS $(_GEODBSplitComplexAnnotations_GEODATABASE_SDE_1)
+#==============================================================================
+# The following specifies whether to keep (YES) or clean up (NO) Esri's
+# multipatch texture caches.
+DEFAULT_MACRO _GEODBCacheMultipatchTextures_GEODATABASE_SDE_1 yes
+GUI CHOICE _GEODBCacheMultipatchTextures_GEODATABASE_SDE_1 yes%no Cache Multipatch Textures:
+GEODATABASE_SDE_1_CACHE_MULTIPATCH_TEXTURES $(_GEODBCacheMultipatchTextures_GEODATABASE_SDE_1)
+# ============================================================================
+# Search Envelope Coordinate System
+DEFAULT_MACRO _GEODB_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM_GEODATABASE_SDE_1 
+GUI OPTIONAL COORDSYS _GEODB_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM_GEODATABASE_SDE_1 Search Envelope Coordinate System:
+GEODATABASE_SDE_1_SEARCH_ENVELOPE_COORDINATE_SYSTEM "$(_GEODB_IN_SEARCH_ENVELOPE_COORDINATE_SYSTEM_GEODATABASE_SDE_1)"
+# ========================================================================
+# The following determines whether to vectorize arcs. If SPLIT_AT_ARCS
+# is set to yes, then arcs do not get vectorized and lines/polygons
+# containing arcs get split up into line segments and arc segments.
+#
+# Update: This keyword is not applicable when using rich geometry. Since
+# all new mapping files/workspaces have FME_USE_RICH_GEOMETRY set to YES then
+# we do not need to expose this keyword.
+#DEFAULT_MACRO _GEODBInSplitAtArcs no
+#DEFAULT_MACRO _GEODBInSplitAtArcs NO
+#GUI OPTIONAL CHOICE _GEODBInSplitAtArcs yes%no Split at Arcs
+#GEODATABASE_SDE_SPLIT_AT_ARCS "$(_GEODBInSplitAtArcs_GEODATABASE_SDE_1)"
+#
+# ========================================================================
+# The following defines the search feature for the query. It defines an
+# arbitrarily complex search feature as a spatial contraint. It is in the
+# form <keyword>_SEARCH_FEATURE [<xCoord> <yCoord>]+.
+DEFAULT_MACRO _GEODBInSearchFeature_GEODATABASE_SDE_1 
+GUI OPTIONAL TEXT _GEODBInSearchFeature_GEODATABASE_SDE_1 Search Feature:
+GEODATABASE_SDE_1_SEARCH_FEATURE $(_GEODBInSearchFeature_GEODATABASE_SDE_1)
+# ========================================================================
+# Determines whether the spatial component or the attribute component of a
+# query is performed first. This is only applicable when both spatial and
+# non-spatial searches are being performed.
+DEFAULT_MACRO _GEODBInSearchOrder_GEODATABASE_SDE_1 SPATIAL_FIRST
+GUI OPTIONAL CHOICE _GEODBInSearchOrder_GEODATABASE_SDE_1 SPATIAL_FIRST%ATTRIBUTE_FIRST Search Order:
+GEODATABASE_SDE_1_SEARCH_ORDER $(_GEODBInSearchOrder_GEODATABASE_SDE_1)
+# ========================================================================
+# Determines which type of search method to use. This keyword is only applicable
+# when either the keyword SEARCH_ENVELOPE or the keyword SEARCH_FEATURE is specified.
+DEFAULT_MACRO _GEODBInSearchMethod_GEODATABASE_SDE_1 GEODB_INTERSECTS
+GUI OPTIONAL CHOICE _GEODBInSearchMethod_GEODATABASE_SDE_1 GEODB_INTERSECTS%GEODB_ENVELOPE_INTERSECTS%GEODB_TOUCHES%GEODB_OVERLAPS%GEODB_CROSSES%GEODB_WITHIN%GEODB_CONTAINS Search Method:
+GEODATABASE_SDE_1_SEARCH_METHOD $(_GEODBInSearchMethod_GEODATABASE_SDE_1)
+# ========================================================================
+# The following specifies the name of a child version to be created. After
+# the version has been created, tables will be read using this version
+# rather than the version specified by the VERSION keyword.
+DEFAULT_MACRO _GEODBInChildVersionName_GEODATABASE_SDE_1 
+GUI OPTIONAL TEXT _GEODBInChildVersionName_GEODATABASE_SDE_1 Child Version Name:
+GEODATABASE_SDE_1_CHILD_VERSION_NAME $(_GEODBInChildVersionName_GEODATABASE_SDE_1)
+# ========================================================================
+# The following determines whether to read features from the geodatabase
+# tables/feature classes or to read metadata from those tables/feature
+# classes.
+DEFAULT_MACRO _GEODBInFeatureReadMode_GEODATABASE_SDE_1 Features
+GUI CHOICE _GEODBInFeatureReadMode_GEODATABASE_SDE_1 Features%Metadata Feature Read Mode:
+GEODATABASE_SDE_1_FEATURE_READ_MODE "$(_GEODBInFeatureReadMode_GEODATABASE_SDE_1)"
+# ========================================================================
+# The following specifies the archive where clause to be used when retrieving
+# features from an archived table in geodb.
+DEFAULT_MACRO _GEODBInArchiveWhereClause_GEODATABASE_SDE_1 
+GUI OPTIONAL TEXT _GEODBInArchiveWhereClause_GEODATABASE_SDE_1 Archive WHERE Clause:
+GEODATABASE_SDE_1_ARCHIVE_WHERE $(_GEODBInArchiveWhereClause_GEODATABASE_SDE_1)
+# ========================================================================
+# The following specifies that simple geometry should be checked for
+# when reading features.
+DEFAULT_MACRO _GEODBInCheckSimpleGeom_GEODATABASE_SDE_1 no
+GUI CHOICE _GEODBInCheckSimpleGeom_GEODATABASE_SDE_1 yes%no Check for Simple Geometry:
+GEODATABASE_SDE_1_CHECK_SIMPLE_GEOM $(_GEODBInCheckSimpleGeom_GEODATABASE_SDE_1)
+# ========================================================================
+# The following specifies whether feature-linked annotations should
+# be merged onto the main feature as a text list attribute when reading.
+DEFAULT_MACRO _GEODBMergeFeatLinkedAnnos_GEODATABASE_SDE_1 no
+GUI CHOICE _GEODBMergeFeatLinkedAnnos_GEODATABASE_SDE_1 yes%no Merge Feature Linked Annotations:
+GEODATABASE_SDE_1_MERGE_FEAT_LINKED_ANNOS $(_GEODBMergeFeatLinkedAnnos_GEODATABASE_SDE_1)
+#==============================================================================
+# Determines whether the connection should persist after the reader/writer
+# has been shut down. The default is 'no'.
+DEFAULT_MACRO _GEODBInPersistentConnection_GEODATABASE_SDE_1 no
+GUI CHOICE _GEODBInPersistentConnection_GEODATABASE_SDE_1 yes%no Make Connection Persistent
+GEODATABASE_SDE_1_PERSISTENT_CONNECTION $(_GEODBInPersistentConnection_GEODATABASE_SDE_1)
+# ==============================================================================
+# The following specifies an SQL command to execute before opening the first
+# Geodatabase table.
+DEFAULT_MACRO _GEODBInBeginSql_GEODATABASE_SDE_1 
+GUI OPTIONAL TEXT_EDIT_SQL _GEODBInBeginSql_GEODATABASE_SDE_1 SQL Statement To Execute Before Translation:
+GEODATABASE_SDE_1_BEGIN_SQL{0} "$(_GEODBInBeginSql_GEODATABASE_SDE_1)"
+# ==============================================================================
+# The following specifies an SQL command to execute after closing all the
+# Geodatabase tables.
+DEFAULT_MACRO _GEODBInEndSql_GEODATABASE_SDE_1 
+GUI OPTIONAL TEXT_EDIT_SQL _GEODBInEndSql_GEODATABASE_SDE_1 SQL Statement To Execute After Translation:
+GEODATABASE_SDE_1_END_SQL{0} "$(_GEODBInEndSql_GEODATABASE_SDE_1)"
+GEODATABASE_SDE_1_DATASET "$(SourceDataset_GEODATABASE_SDE_1)"
+#! END_SOURCE_HEADER
+#! START_WB_HEADER
+MACRO WB_KEYWORD "SDE30_1"
+#! END_WB_HEADER
+#! START_DEST_HEADER SDE30 SDE30_1
+# ============================================================================
+# The following GUI line prompts for the name of the SDE dataset.
+# to which data will be written.
+#! END_DEST_HEADER
+#! START_WB_HEADER
+DEFAULT_MACRO DestDataset
+INCLUDE [ if {"$(DestDataset)" != ""} {                          \
+ puts {DEFAULT_MACRO DestDataset_SDE30_1 $(DestDataset)}         \
+ } ]
+#! END_WB_HEADER
+#! START_DEST_HEADER SDE30 SDE30_1
+DEFAULT_MACRO DestDataset_SDE30_1 $(DEST_INSTANCE)
+GUI TEXT DestDataset_SDE30_1 Destination ArcSDE Dataset:
+# ============================================================================
+# The following GUI line prompts for the name of the host machine on which.
+# the SDE Server runs.
+DEFAULT_MACRO _OUT_SDE3Server_SDE30_1 $(DEST_SERVER)
+GUI OPTIONAL TEXT _OUT_SDE3Server_SDE30_1 Server Name:
+SDE30_1_SERVER "$(_OUT_SDE3Server_SDE30_1)"
+# ============================================================================
+# The following GUI line prompts for the instance
+DEFAULT_MACRO _OUT_SDE3Instance_SDE30_1 $(DEST_PORT)
+GUI TEXT _OUT_SDE3Instance_SDE30_1 Instance:
+SDE30_1_INSTANCE "$(_OUT_SDE3Instance_SDE30_1)"
+# ============================================================================
+# The following GUI line prompts for the user name to use for
+# accessing the SDE dataset.
+DEFAULT_MACRO _OUT_SDE3UserName_SDE30_1 $(DEST_SCHEMA)
+GUI OPTIONAL TEXT _OUT_SDE3UserName_SDE30_1 User ID:
+SDE30_1_USERID "$(_OUT_SDE3UserName_SDE30_1)"
+# ============================================================================
+# The following GUI line prompts for the user password.
+DEFAULT_MACRO _OUT_SDE3Password_SDE30_1 $(DEST_PASSWORD)
+GUI OPTIONAL PASSWORD _OUT_SDE3Password_SDE30_1 Password:
+SDE30_1_PASSWORD "$(_OUT_SDE3Password_SDE30_1)"
+# ============================================================================
+# The following GUI line prompts for the SDE version.
+DEFAULT_MACRO _OUT_SDE3Version_SDE30_1 SDE.DEFAULT
+GUI TEXT _OUT_SDE3Version_SDE30_1 Version:
+SDE30_1_VERSION_NAME "$(_OUT_SDE3Version_SDE30_1)"
+# ============================================================================
+# The following GUI line prompts for the SDE version.
+DEFAULT_MACRO _ADD_LAYERS_TO_EXISTING_TABLES_SDE30_1 NO
+GUI CHOICE _ADD_LAYERS_TO_EXISTING_TABLES_SDE30_1 YES%NO Add Layers to Existing Tables
+SDE30_1_ADD_LAYERS_TO_EXISTING_TABLES "$(_ADD_LAYERS_TO_EXISTING_TABLES_SDE30_1)"
+# ============================================================================
+# This option specifies how many features will be written to the SDE on each
+# transaction.
+DEFAULT_MACRO _TRANSACTION_INTERVAL_SDE30_1 100
+GUI INT_OR_CHOICE _TRANSACTION_INTERVAL_SDE30_1 VARIABLE Features to Write Per Transaction:
+SDE30_1_TRANSACTION_INTERVAL $(_TRANSACTION_INTERVAL_SDE30_1)
+# ============================================================================
+# The following specifies what mode the SDE writer will use. INSERT (thedefault)
+# results in the writer not checking SDE for duplicate key values in the database,
+# which is useful when loading new data into the SDE. UPDATE will cause the writer
+# to check update attributes for duplicates.
+DEFAULT_MACRO _WRITER_MODE_SDE30_1 INSERT
+GUI CHOICE _WRITER_MODE_SDE30_1 INSERT%UPDATE Writer Mode:
+SDE30_1_WRITER_MODE $(_WRITER_MODE_SDE30_1)
+# ============================================================================
+# This option specifies the start transaction for the SDE writer. Normally
+# this will be zero, which will write every feature to the SDE, but it might
+# be another value if a previous translation was interrupted.
+DEFAULT_MACRO _TRANSACTION_SDE30_1 0
+GUI OPTIONAL INTEGER _TRANSACTION_SDE30_1 Last Successful Transaction:
+SDE30_1_TRANSACTION $(_TRANSACTION_SDE30_1)
+# ============================================================================
+# This option specifies whether the FME should use buffered writes or not.
+DEFAULT_MACRO _BUFFERED_WRITES_SDE30_1 NO
+GUI CHOICE _BUFFERED_WRITES_SDE30_1 YES%NO Use Buffered Writes:
+SDE30_1_BUFFERED_WRITES $(_BUFFERED_WRITES_SDE30_1)
+# ============================================================================
+# This option specifies the directory for rejected pipeline files.
+DEFAULT_MACRO _REJECTED_PIPELINE_DIRECTORY_SDE30_1 
+GUI OPTIONAL DIRNAME _REJECTED_PIPELINE_DIRECTORY_SDE30_1 Rejected Pipeline Directory:
+SDE30_1_REJECTED_PIPELINE_DIRECTORY "$(_REJECTED_PIPELINE_DIRECTORY_SDE30_1)"
+# ============================================================================
+# This option specifies whether FME should keep writing data when it runs
+# into bad data.
+DEFAULT_MACRO _CONTINUE_TRANSLATION_BAD_DATA_SDE30_1 NO
+GUI CHOICE _CONTINUE_TRANSLATION_BAD_DATA_SDE30_1 YES%NO%ROLLBACK_THEN_CONTINUE Skip Bad Data:
+SDE30_1_CONTINUE_TRANSLATION_BAD_DATA $(_CONTINUE_TRANSLATION_BAD_DATA_SDE30_1)
+# ============================================================================
+# This option specifies the maximum number of streams that can be open to
+# the SDE simultaneously.
+DEFAULT_MACRO _MAX_OPEN_TABLES_SDE30_1 
+GUI OPTIONAL INTEGER _MAX_OPEN_TABLES_SDE30_1 Maximum Num of Open Tables:
+SDE30_1_MAX_OPEN_TABLES $(_MAX_OPEN_TABLES_SDE30_1)
+# ============================================================================
+# This option specifies the definition to use for an integer field
+# when creating a new table.
+DEFAULT_MACRO _INTEGER_OVERRIDE_DEFINITION_SDE30_1 
+GUI OPTIONAL TEXT _INTEGER_OVERRIDE_DEFINITION_SDE30_1 Integer Definition:
+SDE30_1_INTEGER_OVERRIDE_DEFINITION $(_INTEGER_OVERRIDE_DEFINITION_SDE30_1)
+# ============================================================================
+# This option specifies whether the FME should be strict when loading data into SDE.
+# If this is set to true, the FME will stop translating on the first sign of
+# trouble from the SDE.
+DEFAULT_MACRO _STRICT_LOAD_SDE30_1 NO
+GUI CHOICE _STRICT_LOAD_SDE30_1 YES%NO Strict SDE Load:
+SDE30_1_STRICT_LOAD $(_STRICT_LOAD_SDE30_1)
+# ============================================================================
+# This option specifies whether the FME will make extra effort to store
+# aggregates in the SDE. This may break apart aggregates.
+DEFAULT_MACRO _FORCE_IN_AGGREGATES_SDE30_1 NO
+GUI CHOICE _FORCE_IN_AGGREGATES_SDE30_1 YES%NO Force In Aggregates:
+SDE30_1_FORCE_IN_AGGREGATES $(_FORCE_IN_AGGREGATES_SDE30_1)
+# ============================================================================
+# This option specifies what z-value should be given to two-dimensional features.
+DEFAULT_MACRO _DEFAULT_Z_VALUE_SDE30_1 0
+GUI INTEGER _DEFAULT_Z_VALUE_SDE30_1 Default Z Value:
+SDE30_1_DEFAULT_Z_VALUE $(_DEFAULT_Z_VALUE_SDE30_1)
+# ============================================================================
+# This option specifies whether FME should update the layer extents when
+# writing to the SDE
+DEFAULT_MACRO _LEAVE_LAYER_EXTENTS_SDE30_1 NO
+GUI CHOICE _LEAVE_LAYER_EXTENTS_SDE30_1 YES%NO Leave Layer Extents:
+SDE30_1_LEAVE_LAYER_EXTENTS $(_LEAVE_LAYER_EXTENTS_SDE30_1)
+# ============================================================================
+# This option specifies whether FME should split donuts into simple polygons
+# when writing to the SDE
+DEFAULT_MACRO _SPLIT_DONUTS_SDE30_1 NO
+GUI CHOICE _SPLIT_DONUTS_SDE30_1 YES%NO Store Donuts as Polygons:
+SDE30_1_SPLIT_DONUTS $(_SPLIT_DONUTS_SDE30_1)
+# ============================================================================
+# This option specifies whether we are to reconcile the changes between the
+# version specified by VERSION_NAME and its parent version and then post those
+# changes to the parent version. If the directive TABLES_TO_RECONCILE is not
+# specified, then only those tables that were edited during the current
+# translation will be reconciled and posted.
+DEFAULT_MACRO SDE30_OUT_RECONCILE_AND_POST_SDE30_1 
+GUI OPTIONAL LISTBOX SDE30_OUT_RECONCILE_AND_POST_SDE30_1 ALL%INSERTS%UPDATES%DELETES Reconcile and Post:
+SDE30_1_RECONCILE_AND_POST $(SDE30_OUT_RECONCILE_AND_POST_SDE30_1)
+# ============================================================================
+# This option specifies which tables to reconcile, when the directive
+# RECONCILE_AND_POST has been specified. Using this keyword it is possible
+# to specify tables that were not edited during the current translation.
+DEFAULT_MACRO SDE30_OUT_TABLES_TO_RECONCILE_SDE30_1 
+GUI OPTIONAL TEXT SDE30_OUT_TABLES_TO_RECONCILE_SDE30_1 Tables to Reconcile:
+SDE30_1_TABLES_TO_RECONCILE $(SDE30_OUT_TABLES_TO_RECONCILE_SDE30_1)
+# ============================================================================
+# Decide whether or not to delete the child state after a reconcile and post operation
+DEFAULT_MACRO SDE30_OUT_DELETE_CHILD_AFTER_RECONCILE_AND_POST_SDE30_1 YES
+GUI CHOICE SDE30_OUT_DELETE_CHILD_AFTER_RECONCILE_AND_POST_SDE30_1 YES%NO Delete child state following reconcile and post:
+SDE30_1_DELETE_CHILD_AFTER_RECONCILE_AND_POST $(SDE30_OUT_DELETE_CHILD_AFTER_RECONCILE_AND_POST_SDE30_1)
+# ============================================================================
+# Decide whether or not to write features to the current state or child state
+DEFAULT_MACRO SDE30_OUT_WRITE_TO_CURRENT_STATE_SDE30_1 NO
+GUI CHOICE SDE30_OUT_WRITE_TO_CURRENT_STATE_SDE30_1 YES%NO Write To Current State:
+SDE30_1_WRITE_TO_CURRENT_STATE $(SDE30_OUT_WRITE_TO_CURRENT_STATE_SDE30_1)
+SDE30_1_DATASET "$(DestDataset_SDE30_1)"
+#! END_DEST_HEADER
+#! END_HEADER
+
+LOG_FILENAME "$(LOGFILE)"
+LOG_APPEND NO
+LOG_MAX_FEATURES 200
+LOG_MAX_RECORDED_FEATURES 200
+LOG_MAX_PRECISION Yes
+FME_REPROJECTION_ENGINE FME
+FME_IMPLICIT_CSMAP_REPROJECTION_MODE Datum
+FME_GEOMETRY_HANDLING Classic
+FME_STROKE_MAX_DEVIATION 0
+MAPPING_FILE_ID SDEGEODB_TO_BCGW
+LOG_FILTER_MASK -1
+DEFAULT_MACRO DATASET_KEYWORD_GEODATABASE_SDE_1 GEODATABASE_SDE_1
+DEFAULT_MACRO DATASET_KEYWORD_SDE30_1 SDE30_1
+# -------------------------------------------------------------------------
+
+GEODATABASE_SDE_1_READER_META_ATTRIBUTES fme_feature_type
+
+# -------------------------------------------------------------------------
+
+SDE30_1_COORDINATE_SYSTEM BCALB-83
+MULTI_READER_CONTINUE_ON_READER_FAILURE No
+FME_BEGIN_PYTHON_ENC import<space>fme<lf>import<space>DataBCFMWTemplate<lf>start<space>=<space>DataBCFMWTemplate.Start<openparen>fme<closeparen><lf>start.startup<openparen><closeparen><lf><lf>
+FME_END_PYTHON_ENC import<space>fme<lf>import<space>DataBCFMWTemplate<lf>shutIt<space>=<space>DataBCFMWTemplate.Shutdown<openparen>fme<closeparen><lf>shutIt.shutdown<openparen><closeparen><lf>
+
+# -------------------------------------------------------------------------
+
+MACRO WORKSPACE_NAME SDEDC_TO_BCGW
+MACRO FME_VIEWER_APP fmedatainspector
+# -------------------------------------------------------------------------
+GEODATABASE_SDE_1_DEF "$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)"   geodb_type                   geodb_polygon   geodb_oid                    integer   EPASS_TRACKING_NUMBER        double   OGC_FILE_NUMBER              char(8)   WELL_AUTHORITY_NUMBER        char(5)   PROJECT_NUMBER               char(9)   FACILITY_SITE_NUMBER         char(9)   APPLICATION_RECEIVED_DATE    date   APPLICATION_TYPE             char(100)   APPLICATION_STATUS           char(9)   APPLICATION_APPROVAL_DATE    date   LAND_TYPE                    char(1)   CLIENT_NAME                  char(60)   MASTER_LICENSE_TO_CUT        char(30)   CUTTING_PERMIT               char(3)   TIMBER_MARK                  char(18)   ARCH_PERMIT_NUMBER           char(32)   ARCH_REQUIREMENT_CODE        char(100)   ARCH_SITE_RECOVERED_FLAG     char(1)   FCODE                        char(10)   ANCILLARY_AND_OTHER_TYPE     char(5)   AREA_HECTARE                 double   ACCURACY_PERCENTILE          smallint   ACCURACY_HORIZONTAL          smallint   ACCURACY_VERTICAL            smallint   OBJECTID                     integer
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * RoutingFactory   FACTORY_NAME "Router and Unexpected Input Remover"   INPUT FEATURE_TYPE *       @SupplyAttributes(multi_reader_keyword,GEODATABASE_SDE_1)    ROUTE GEODATABASE_SDE "GEODATABASE_SDE_1::$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)" TO FME_GENERIC "::$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)" ALIAS_GEOMETRY    MERGE_INPUT Yes   OUTPUT ROUTED FEATURE_TYPE *
+GEODATABASE_SDE_1_MERGE_DEF "GEODATABASE_SDE_1::$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)" EXACT $(SRC_ORA_SCHEMA$encode).$(SRC_FEATURE_1$encode)
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * TeeFactory    FACTORY_NAME "$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1) (GEODATABASE_SDE_1) Splitter"    INPUT FEATURE_TYPE "$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)"
+DEFAULT_MACRO WB_CURRENT_CONTEXT
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * RoutingFactory FACTORY_NAME "Destination Feature Type Routing Correlator"   INPUT FEATURE_TYPE *   OUTPUT ROUTED FEATURE_TYPE * @FeatureType(ENCODED,@Value(__wb_out_feat_type__)) @RemoveAttributes(__wb_out_feat_type__)   OUTPUT NOT_ROUTED FEATURE_TYPE __nuke_me__ @Tcl2("FME_StatMessage 818059 [FME_GetAttribute fme_template_feature_type] 818060 818061 fme_warn")
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * TeeFactory   FACTORY_NAME "Final Output Nuker"   INPUT FEATURE_TYPE __nuke_me__
+
+# -------------------------------------------------------------------------
+SDE30_1_DEF "$(DEST_SCHEMA).OG_ANCILLARY_OTHER_APPS_GOV_SP"   SDE_DROP_TABLE               N   SDE_TRUNCATE_TABLE           Y
