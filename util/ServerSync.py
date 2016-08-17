@@ -62,9 +62,9 @@ class LogFilter(logging.Filter):
 
 class Params(object):
     
-    FmeServerUrl = 'http://fenite.dmz'
-    FmeServerAuthKey = '93978b32c457984ac4bb1912ed27e7fcade6e3ec'
-    FmeServerRepository = 'GuyLaFleur'
+    FmeServerUrl = 'http://arneb.dmz' #'http://fenite.dmz'
+    FmeServerAuthKey = 'd8c7340cc774160cbfec7823607d2cfe682e8813' #'93978b32c457984ac4bb1912ed27e7fcade6e3ec'
+    FmeServerRepository = "TemplateV2_TEST" #'GuyLaFleur'
     
     FmeServerResources_EngineDirType = 'FME_SHAREDRESOURCE_ENGINE'
     
@@ -102,7 +102,7 @@ class FMWDeployment(object):
         self.logger = logging.getLogger(modDotClass)
 
         self.params = Params()
-        self.fmeServ = FMEUtil.PyFMEServerV2.FMEServer(self.params.FmeServerUrl, self.params.FmeServerAuthKey)
+        #self.fmeServ = FMEUtil.PyFMEServerV2.FMEServer(self.params.FmeServerUrl, self.params.FmeServerAuthKey)
         
         self.fmwSrcDir = r'\\data.bcgov\work\Workspace\kjnether\proj\FMETemplateRevision\data\templateImplementation\BCGW_REP_SCHEDULED'
         self.fmeServ = FMEUtil.PyFMEServerV2.FMEServer(self.params.FmeServerUrl, self.params.FmeServerAuthKey)
@@ -154,6 +154,8 @@ class BaseDeployment(object):
         self.templateDestDir = str(posixpath.sep).join(self.params.pythonDirs)
         
     def deploy(self, deploymentList, overWrite):
+        self.logger.debug("deploy overwrite param: {0}".format(overWrite))
+        self.logger.debug("deployment list: {0}".format(deploymentList))
         for deployment in deploymentList:
             writeFile = False
             if overWrite:
@@ -417,12 +419,20 @@ class ConfigsDepolyment(BaseDeployment):
         for dirName, subdirList, fileList in os.walk(srcDir):
             for curFile in fileList:
                 if curFile not in self.ignoreList:
+                    self.logger.debug("curFile: {0}".format(curFile) )
+
                     srcFile = os.path.join(dirName, curFile)
-                    destDir = posixpath.join(destDir, dirName, curFile)
-                    destDir = posixpath.normpath(destDir)
+                    destFile = posixpath.join(destDir, curFile)
+                    destFile = posixpath.normpath(destFile)
                     deployment = Deployment(self.params.FmeServerResources_EngineDirType, 
                                             srcFile, 
-                                            destDirStr=destDir)
+                                            destDirStr=destFile)
+                    deploymentList.append(deployment)
+                    self.logger.debug("srcFile: {0}".format(srcFile) )
+                    self.logger.debug("destDir: {0}".format(destFile) )
+
+                    
+        self.logger.debug("overwrite param : {0}".format(overwrite))
         self.deploy(deploymentList, overwrite)
 
 if __name__ == '__main__':
@@ -430,17 +440,26 @@ if __name__ == '__main__':
     ConfigLogging()
     deploy = Deploy()
     #deploy.deployAll()
+    deployPy = PythonDeployment()
+    #deployPy.CopyPythonFiles(overwrite=True)
+    
+    deployConf = ConfigsDepolyment()
+    deployConf.CopyConfig(overwrite=True)
+
+    #deployPy.CopyDataBCModules(overwrite=True)
+
     
     fmwFile = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\testFMWs\none2none.fmw'
+    #fmwFile = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\testFMWs\og_ancillary_other_apps_gov_sp_ogis_sde_bcgw.fmw'
+
     #fmwFile = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\testFMWs\acdf_ownership_codes_staging_csv_bcgw.fmw'
-    #fmwFile = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\testFMWs\og_water_management_basins_sp_ogis_sde_bcgw.fmw'
     
-    fmwFile = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\templateImplementation\BCGW_REP_SCHEDULED\fadm_public_sustained_yield_un_geoprd_sde_bcgw\fadm_public_sustained_yield_un_geoprd_sde_bcgw.fmw'
-    
+    #fmwFile = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\templateImplementation\BCGW_REP_SCHEDULED\fadm_public_sustained_yield_un_geoprd_sde_bcgw\fadm_public_sustained_yield_un_geoprd_sde_bcgw.fmw'
+    #fmwFile = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\templateImplementation\BCGW_REP_SCHEDULED\og_ancillary_other_apps_gov_sp_ogis_sde_bcgw\og_ancillary_other_apps_gov_sp_ogis_sde_bcgw.fmw'
     fmwDeploy = FMWDeployment()
     
-    #fmwDeploy.copyFMWs()
-    fmwDeploy.copyFMW(fmwFile, Params.FmeServerRepository)
+    fmwDeploy.copyFMWs()
+    #fmwDeploy.copyFMW(fmwFile, Params.FmeServerRepository)
     
     
             

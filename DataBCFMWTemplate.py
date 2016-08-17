@@ -989,9 +989,11 @@ class CalcParamsDevelopment(object):
         
     def getDestinationPassword(self):
         retVal = None
-        
+        self.logger.debug("getting password in development mode")
         destSchema = self.parent.fmeMacroVals[self.const.FMWParams_DestSchema]
         destInstance = self.parent.getDestinationInstance()
+        self.logger.debug("destSchema: {0}".format(destSchema))
+        self.logger.debug("destInstance: {0}".format(destInstance))
         
         msg = 'getting password for the schema ({0}) / instance ({1})'
         msg = msg.format(destSchema, destInstance)
@@ -1011,12 +1013,14 @@ class CalcParamsDevelopment(object):
                 self.logger.info(msg)
                 retVal =  dbPass
                 break
+            
         if not retVal:
             msg = 'DevMod: Was unable to find a password in the credential file {0} for ' + \
                   'the destSchema: {1} and the instance {2}'
             msg = msg.format(self.credsFileFullPath, destSchema, destInstance)
             self.logger.error(msg)
             raise ValueError, msg
+        
         return retVal
     
     def getSourcePassword(self, position=None):
@@ -1142,7 +1146,7 @@ class CalcParamsDataBC(object):
         
         fmwDir = self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
         fmwName = self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWName]
-        ModuleLogConfig(fmwDir, fmwName)
+        #ModuleLogConfig(fmwDir, fmwName)
         
         #ModuleLogConfig()
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
@@ -1156,15 +1160,19 @@ class CalcParamsDataBC(object):
         else: 
             self.paramObj.validateKey(destKey)
             destKey = self.paramObj.getDestinationDatabaseKey(destKey)
+        self.logger.debug("destination key used in password retrieval: {0}".format(destKey) )
         if not schema:
-            schema = self.fmeMacroVals[self.const.FMWParams_DestSchema]            
+            schema = self.fmeMacroVals[self.const.FMWParams_DestSchema]   
+                 
         pmpRes = self.paramObj.getDestinationPmpResource(destKey)
         computerName = Util.getComputerName()
+        self.logger.debug("computer name; {0}".format(computerName))
         pmpDict = {'token': self.paramObj.getPmpToken(computerName),
                    'baseurl': self.paramObj.getPmpBaseUrl(), 
                    'restdir': self.paramObj.getPmpRestDir()}
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
-
+        self.logger.debug("TESTING SIMPLE MESSAGE")
+        self.logger.debug("pmp dict used to contruct pmp obj: {0}".format(pmpDict))
         msg = 'retrieving the destination password for schame: ({0}) db env key: ({1})'
         msg = msg.format(schema, destKey)
         self.logger.debug(msg)

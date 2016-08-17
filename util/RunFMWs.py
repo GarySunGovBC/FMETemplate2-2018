@@ -10,6 +10,11 @@ class Params(object):
     FmeServerUrl = 'http://fenite.dmz'
     FmeServerAuthKey = '93978b32c457984ac4bb1912ed27e7fcade6e3ec'
     FmeServerRepository = 'GuyLaFleur'
+    
+    FmeServerUrl = 'http://arneb.dmz'
+    FmeServerAuthKey = 'd8c7340cc774160cbfec7823607d2cfe682e8813'
+    FmeServerRepository = 'TemplateV2_TEST'
+
 
 
 class RunFMWs(object):
