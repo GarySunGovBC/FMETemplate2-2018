@@ -18,4 +18,6 @@ if platform.node().lower() == 'matar':
 # adding the lib_ext path
 rootDir = os.path.dirname(__file__)
 lib_extPath = os.path.join(rootDir, 'lib_ext')
+lib_intPath = os.path.join(rootDir, 'lib_int')
 site.addsitedir(lib_extPath)
+site.addsitedir(lib_intPath)
