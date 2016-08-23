@@ -479,7 +479,7 @@ class TemplateConfigFileReader(object):
     
     def getDestinationDatabaseKey(self, inkey):
         '''
-        recieves a value that indicates the destination database and
+        receives a value that indicates the destination database and
         returns the authoritative key for that destination.  The 
         authoritative key is necessary to retrieve the associated
         parameters / values.
@@ -966,10 +966,18 @@ class CalcParamsDevelopment(object):
         self.logger = logging.getLogger(modDotClass)
         
         self.logger.debug("constructing a CalcParamsDevelopment object")
-        confDirName = self.paramObj.getConfigDirName()
-        credsFileName = self.paramObj.getDevelopmentModeCredentialsFileName()        
-        # expects the creds file to be ./$(confDirName)/$(credsFileName)
-        credsFileFullPath = os.path.join(self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory], confDirName, credsFileName)
+        credsFileName = self.paramObj.getDevelopmentModeCredentialsFileName() 
+        # can have a creds file in the local directory as the fmw.  In this case it will 
+        # take precidence over the global version
+        credsFileFullPath = os.path.join(self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory], credsFileName)
+        # if a local version of the creds file does not exist try to find one in the config dir.
+        if not os.path.exists(credsFileFullPath):
+            # try the default creds file
+            templateRootDir = self.paramObj.getTemplateRootDirectory()
+            confDirName = self.paramObj.getConfigDirName()
+            credsFileFullPath = os.path.join(templateRootDir, confDirName, credsFileName)
+        
+        # getTemplateRootDirectory
         self.credsFileFullPath = os.path.realpath(credsFileFullPath)
         self.logger.info("using the credentials file: {0}".format(credsFileFullPath))
         if not os.path.exists(self.credsFileFullPath):
