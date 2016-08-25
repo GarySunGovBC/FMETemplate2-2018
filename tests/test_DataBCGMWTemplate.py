@@ -571,7 +571,7 @@ if __name__ == "__main__":
     #                       'Test_TemplateConfigFileReader.test_validateKey']
     #sys.argv = ['', 'Test_Shutdown.test_dbConn']
     #sys.argv = ['', 'Test_Shutdown.test_shutdown']
-    sys.argv = ['','Test_CalcParamsDevel.test_getSourcePassword']
+    sys.argv = ['','Test_Shutdown.test_shutdown']
     #sys.argv = ['','Test_CalcParamsDevel.test_getSourcePassword']
 
     # 'Test_CalcParams.test_getFailedFeaturesFile',

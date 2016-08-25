@@ -317,24 +317,27 @@ class Shutdown(object):
         
     def shutdown(self):
         self.shutdownObj.shutdown()
-     
+        
+# TODO: should define abstract classes that all shutdown and startup classes should inherit from.
+
 class DefaultShutdown(object):
+
     def __init__(self, fme):
         self.fme = fme
-        self.params = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
         self.const = TemplateConstants()
+        self.params = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
         
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
         
     def shutdown(self):
-        self.params.getDestinationDatabaseKey() == self.const.ConfFileDestKey_Devel
+        destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
         if not self.params.isDataBCNode():
             # either not being run on a databc computer, or is being run in development mode, either way
             # should not be writing to to the DWM logger.
             msg = "DWM record is not being writen as script is being run external to databc firewalls."
             self.logger.info(msg)
-        elif self.params.getDestinationDatabaseKey() == self.const.ConfFileDestKey_Devel:
+        elif self.params.getDestinationDatabaseKey(destKey) == self.const.ConfFileDestKey_Devel:
             msg = 'DWM record is not being written because the script is being run in development mode'
             self.logger.info(msg)
         else:
