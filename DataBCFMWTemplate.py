@@ -296,7 +296,7 @@ class Shutdown(object):
         customScriptLocal = os.path.join(self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory], justScript + '.py')
         
         # test to see if the custom script exists, if it does import it, and 
-        # set the plugin parameter = to the Start() object.
+        # set the plugin parameter = to the Shutdown() object.
         shutdownScriptDirPath = None
         if os.path.exists(customScriptLocal):
             shutdownScriptDirPath = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
@@ -321,14 +321,27 @@ class Shutdown(object):
 class DefaultShutdown(object):
     def __init__(self, fme):
         self.fme = fme
+        self.params = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
+        self.const = TemplateConstants()
+        
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
         
     def shutdown(self):
-        self.logger.info("Enabling the DWMWriter")
-        dwmWriter = DWMWriter(self.fme)
-        #dwmWriter.printParams()
-        dwmWriter.writeRecord()
+        self.params.getDestinationDatabaseKey() == self.const.ConfFileDestKey_Devel
+        if not self.params.isDataBCNode():
+            # either not being run on a databc computer, or is being run in development mode, either way
+            # should not be writing to to the DWM logger.
+            msg = "DWM record is not being writen as script is being run external to databc firewalls."
+            self.logger.info(msg)
+        elif self.params.getDestinationDatabaseKey() == self.const.ConfFileDestKey_Devel:
+            msg = 'DWM record is not being written because the script is being run in development mode'
+            self.logger.info(msg)
+        else:
+            self.logger.info("DWM record is being created")
+            dwmWriter = DWMWriter(self.fme)
+            #dwmWriter.printParams()
+            dwmWriter.writeRecord()
         
 class TemplateConfigFileReader(object):
     
