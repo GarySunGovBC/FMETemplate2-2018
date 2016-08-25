@@ -967,6 +967,7 @@ class CalcParamsDevelopment(object):
         
         self.logger.debug("constructing a CalcParamsDevelopment object")
         credsFileName = self.paramObj.getDevelopmentModeCredentialsFileName() 
+        self.logger.debug("Credentials file being used is: {0}".format(credsFileName))
         # can have a creds file in the local directory as the fmw.  In this case it will 
         # take precidence over the global version
         credsFileFullPath = os.path.join(self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory], credsFileName)
@@ -992,6 +993,7 @@ class CalcParamsDevelopment(object):
             msg = msg.format(self.credsFileFullPath, self.const.svn_DevelopmentJSONFile_Url)
             self.logger.error(msg)
             raise ValueError, msg
+        self.logger.debug( 'using the creds file {0}'.format(credsFileFullPath))
         with open(credsFileFullPath, 'r') as jsonFile:
             self.data = json.load(jsonFile)
         
