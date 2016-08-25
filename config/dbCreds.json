@@ -1,7 +1,7 @@
 {
  "_comment": [
  "  DestinationCreds ", 
- "          The template is designed to recieve a database key word "
+ "          The template is designed to recieve a database key word ",
  "			 like PROD|TEST|DELIV.  Then based on the value of the keyword the config  ", 
  "			 file identifies what the destination database is.  When in production  ", 
  "			 the template will retrieve the password from Password Manager Pro via ", 
