@@ -1,0 +1,252 @@
+#! <?xml version="1.0" encoding="utf-8" ?>
+#! <WORKSPACE
+#    
+#    
+#    Command-line to run this workspace:
+#    
+#    
+#    E:\sw_nt\FME\fme.exe Y:\scripts\python\DataBCFmeTemplate2\FMWTemplates\NOSRC_TO_BCGW.fmw
+#          --DEST_DB_ENV_KEY "DLV"
+#          --DEST_SCHEMA ""
+#          --DEST_FEATURE_1 ""
+#          --FILE_CHANGE_DETECTION "TRUE"
+#    
+#    
+#! SHOW_INFO_NODES="true"
+#! FME_GEOMETRY_HANDLING="Enhanced"
+#! IGNORE_READER_FAILURE="No"
+#! REQUIREMENTS_KEYWORD=""
+#! SOURCE_ROUTING_FILE=""
+#! WARN_INVALID_XFORM_PARAM="Yes"
+#! LOG_MAX_RECORDED_FEATURES="200"
+#! HISTORY=""
+#! END_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;shutIt&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Shutdown&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;shutIt.shutdown&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! FME_IMPLICIT_CSMAP_REPROJECTION_MODE="Auto"
+#! TITLE=""
+#! FME_REPROJECTION_ENGINE="FME"
+#! PASSWORD=""
+#! FME_DOCUMENT_GUID="0e872846-578d-4998-935b-28f13b6fe43c"
+#! REQUIREMENTS=""
+#! ZOOM_SCALE="100"
+#! CATEGORY=""
+#! DESTINATION="NONE"
+#! END_TCL=""
+#! DESCRIPTION=""
+#! LAST_SAVE_DATE="2016-08-22T15:53:42"
+#! FME_STROKE_MAX_DEVIATION="0"
+#! BEGIN_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;start&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Start&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;start.startup&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! LEGAL_TERMS_CONDITIONS=""
+#! FME_BUILD_NUM="15573"
+#! MAX_LOG_FEATURES="200"
+#! ATTR_TYPE_ENCODING="SDF"
+#! REDIRECT_TERMINATORS="NONE"
+#! FME_DOCUMENT_PRIORGUID=""
+#! USAGE=""
+#! LOG_MAX_PRECISION="Yes"
+#! DOC_TOP_LEFT="0 0"
+#! SHOW_ANNOTATIONS="true"
+#! WORKSPACE_VERSION="1"
+#! BEGIN_TCL=""
+#! VIEW_POSITION="0 0"
+#! DESTINATION_ROUTING_FILE=""
+#! LOG_FILE="$(LOG_FILE)"
+#! LAST_SAVE_BUILD="FME(R) 2015.1.3.1 (20151117 - Build 15573 - WIN32)"
+#! MULTI_WRITER_DATASET_ORDER="BY_ID"
+#! SOURCE="NONE"
+#! FME_SERVER_SERVICES=""
+#! DOC_EXTENTS="0 0"
+#! >
+#! <DATASETS>
+#! </DATASETS>
+#! <DATA_TYPES>
+#! </DATA_TYPES>
+#! <GEOM_TYPES>
+#! </GEOM_TYPES>
+#! <FEATURE_TYPES>
+#! </FEATURE_TYPES>
+#! <FMESERVER>
+#! </FMESERVER>
+#! <GLOBAL_PARAMETERS>
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL STRING_OR_CHOICE DEST_DB_ENV_KEY DLV%TST%PRD Destination Database Keyword (DLV|TST|PRD):"
+#! DEFAULT_VALUE="DLV"
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL TEXT DEST_SCHEMA Destination Schema (upper case please):"
+#! DEFAULT_VALUE=""
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL TEXT DEST_FEATURE_1 Destination Feature 1:"
+#! DEFAULT_VALUE=""
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL CHOICE FILE_CHANGE_DETECTION TRUE%FALSE Whether to use file change detection or not:"
+#! DEFAULT_VALUE="TRUE"
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_SERVER Python Script:"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationServer&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_PORT Python Script:"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationSDEPort&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_PASSWORD Python Script:"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationPassword&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_INSTANCE Python Script:"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationInstance&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL IGNORE TEXT_EDIT_PYTHON_PARM LOG_FILE Python Script:"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getFMWLogFileRelativePath&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! </GLOBAL_PARAMETERS>
+#! <COMMENTS>
+#! </COMMENTS>
+#! <CONSTANTS>
+#! </CONSTANTS>
+#! <BOOKMARKS>
+#! </BOOKMARKS>
+#! <TRANSFORMERS>
+#! </TRANSFORMERS>
+#! <FEAT_LINKS>
+#! </FEAT_LINKS>
+#! <BREAKPOINTS>
+#! </BREAKPOINTS>
+#! <ATTR_LINKS>
+#! </ATTR_LINKS>
+#! <SUBDOCUMENTS>
+#! </SUBDOCUMENTS>
+#! <LOOKUP_TABLES>
+#! </LOOKUP_TABLES>
+#! </WORKSPACE>
+#! 
+DEFAULT_MACRO DEST_DB_ENV_KEY DLV
+GUI OPTIONAL STRING_OR_CHOICE DEST_DB_ENV_KEY DLV%TST%PRD Destination Database Keyword (DLV|TST|PRD):
+DEFAULT_MACRO DEST_SCHEMA 
+GUI OPTIONAL TEXT DEST_SCHEMA Destination Schema (upper case please):
+DEFAULT_MACRO DEST_FEATURE_1 
+GUI OPTIONAL TEXT DEST_FEATURE_1 Destination Feature 1:
+DEFAULT_MACRO FILE_CHANGE_DETECTION TRUE
+GUI OPTIONAL CHOICE FILE_CHANGE_DETECTION TRUE%FALSE Whether to use file change detection or not:
+INCLUDE PYTHON
+def ParamFunc():
+  import DataBCFMWTemplate
+  params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
+  return params.getDestinationServer()
+  
+value = ParamFunc()
+macroName = 'DEST_SERVER'
+if value == None:
+  return { macroName : '' }
+else:
+  return { macroName : str(value) }
+END_INCLUDE
+INCLUDE PYTHON
+def ParamFunc():
+  import DataBCFMWTemplate
+  params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
+  return params.getDestinationSDEPort()
+  
+  
+value = ParamFunc()
+macroName = 'DEST_PORT'
+if value == None:
+  return { macroName : '' }
+else:
+  return { macroName : str(value) }
+END_INCLUDE
+INCLUDE PYTHON
+def ParamFunc():
+  import DataBCFMWTemplate
+  params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
+  return params.getDestinationPassword()
+  
+value = ParamFunc()
+macroName = 'DEST_PASSWORD'
+if value == None:
+  return { macroName : '' }
+else:
+  return { macroName : str(value) }
+END_INCLUDE
+INCLUDE PYTHON
+def ParamFunc():
+  import DataBCFMWTemplate
+  params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
+  return params.getDestinationInstance()
+  
+value = ParamFunc()
+macroName = 'DEST_INSTANCE'
+if value == None:
+  return { macroName : '' }
+else:
+  return { macroName : str(value) }
+END_INCLUDE
+INCLUDE PYTHON
+def ParamFunc():
+  import DataBCFMWTemplate
+  params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
+  return params.getFMWLogFileRelativePath()
+  
+value = ParamFunc()
+macroName = 'LOG_FILE'
+if value == None:
+  return { macroName : '' }
+else:
+  return { macroName : str(value) }
+END_INCLUDE
+INCLUDE [ if {{$(DEST_SERVER)} == {}} { puts_real {Parameter 'DEST_SERVER' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(DEST_PORT)} == {}} { puts_real {Parameter 'DEST_PORT' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(DEST_PASSWORD)} == {}} { puts_real {Parameter 'DEST_PASSWORD' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(DEST_INSTANCE)} == {}} { puts_real {Parameter 'DEST_INSTANCE' must be given a value.}; exit 1; }; ]
+#! START_HEADER
+#! START_WB_HEADER
+READER_TYPE NULL
+READER_KEYWORD NULL_SOURCE
+NULL_SOURCE_DATASET null
+WRITER_TYPE NULL
+WRITER_KEYWORD NULL_DEST
+NULL_DEST_DATASET null
+#! END_WB_HEADER
+#! END_HEADER
+
+LOG_FILENAME "$(LOG_FILE)"
+LOG_APPEND NO
+LOG_MAX_FEATURES 200
+LOG_MAX_RECORDED_FEATURES 200
+LOG_MAX_PRECISION Yes
+FME_REPROJECTION_ENGINE FME
+FME_IMPLICIT_CSMAP_REPROJECTION_MODE Auto
+FME_GEOMETRY_HANDLING Enhanced
+FME_STROKE_MAX_DEVIATION 0
+LOG_FILTER_MASK -1
+# -------------------------------------------------------------------------
+
+MULTI_READER_CONTINUE_ON_READER_FAILURE No
+FME_BEGIN_PYTHON_ENC import<space>fme<lf>import<space>DataBCFMWTemplate<lf>start<space>=<space>DataBCFMWTemplate.Start<openparen>fme<closeparen><lf>start.startup<openparen><closeparen><lf>
+FME_END_PYTHON_ENC import<space>fme<lf>import<space>DataBCFMWTemplate<lf>shutIt<space>=<space>DataBCFMWTemplate.Shutdown<openparen>fme<closeparen><lf>shutIt.shutdown<openparen><closeparen><lf>
+
+# -------------------------------------------------------------------------
+
+MACRO WORKSPACE_NAME NOSRC_TO_BCGW
+MACRO FME_VIEWER_APP fmedatainspector
+DEFAULT_MACRO WB_CURRENT_CONTEXT
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * RoutingFactory FACTORY_NAME "Destination Feature Type Routing Correlator"   INPUT FEATURE_TYPE *   OUTPUT ROUTED FEATURE_TYPE * @FeatureType(ENCODED,@Value(__wb_out_feat_type__)) @RemoveAttributes(__wb_out_feat_type__)   OUTPUT NOT_ROUTED FEATURE_TYPE __nuke_me__ @Tcl2("FME_StatMessage 818059 [FME_GetAttribute fme_template_feature_type] 818060 818061 fme_warn")
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * TeeFactory   FACTORY_NAME "Final Output Nuker"   INPUT FEATURE_TYPE __nuke_me__
+
