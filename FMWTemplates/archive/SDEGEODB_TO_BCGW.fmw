@@ -5,7 +5,7 @@
 #    Command-line to run this workspace:
 #    
 #    
-#    E:\sw_nt\FME2015\fme.exe Z:\scripts\python\DataBCFmeTemplate2\FMWTemplates\SDEDC_TO_BCGW.fmw
+#    E:\sw_nt\FME2015\fme.exe Z:\scripts\python\DataBCFmeTemplate2\FMWTemplates\archive\SDEGEODB_TO_BCGW.fmw
 #          --DEST_SCHEMA "<DESTINATION SCHEMA>"
 #          --DEST_FEATURE_1 "<DESTINATION TABLE>"
 #          --DEST_DB_ENV_KEY "DLV"
@@ -17,50 +17,50 @@
 #          --SRC_FEATURE_1 "<SOURCE TABLE>"
 #    
 #    
+#! ATTR_TYPE_ENCODING="SDF"
+#! LOG_FILE="$(LOGFILE)"
+#! MAX_LOG_FEATURES="200"
+#! LAST_SAVE_BUILD="FME(R) 2015.1.2.0 (20150911 - Build 15538 - WIN32)"
+#! FME_DOCUMENT_PRIORGUID="2c011f65-c579-45c9-9da8-8d3b2e3c0014,a56a6293-df80-43ab-83b6-7068a543836f,59238750-f6c9-4bbe-8573-05485dacd91d"
+#! DOC_EXTENTS="3273 3887"
+#! LOG_MAX_RECORDED_FEATURES="200"
+#! HISTORY=""
+#! SHOW_ANNOTATIONS="true"
+#! BEGIN_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;start&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Start&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;start.startup&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;lf&gt;"
+#! SHOW_INFO_NODES="true"
+#! LOG_MAX_PRECISION="Yes"
+#! DESTINATION_ROUTING_FILE=""
 #! BEGIN_TCL=""
-#! FME_STROKE_MAX_DEVIATION="0"
-#! FME_DOCUMENT_GUID="59238750-f6c9-4bbe-8573-05485dacd91d"
+#! WORKSPACE_VERSION="1"
+#! ZOOM_SCALE="77"
+#! TITLE="SDEGEODB_TO_BCGW"
+#! END_TCL=""
+#! FME_GEOMETRY_HANDLING="Classic"
+#! FME_SERVER_SERVICES=""
 #! LEGAL_TERMS_CONDITIONS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Any portion of this document, or any information supplied by the Province in relation to this document may not be used or disclosed for any purpose other than for DataBC Warehouse Population Services. Without limiting the generality of the foregoing, the User agrees to hold in confidence all information supplied by the Province in relation to this document. &lt;/p&gt;&#10;"
 #! WARN_INVALID_XFORM_PARAM="No"
-#! END_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;shutIt&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Shutdown&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;shutIt.shutdown&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
-#! END_TCL=""
-#! SOURCE="NONE"
-#! TITLE="SDEGEODB_TO_BCGW"
-#! FME_IMPLICIT_CSMAP_REPROJECTION_MODE="Datum"
-#! DESTINATION_ROUTING_FILE=""
-#! FME_SERVER_SERVICES=""
-#! LOG_FILE="$(LOGFILE)"
-#! FME_GEOMETRY_HANDLING="Classic"
 #! CATEGORY="DataBC Warehouse Replication"
-#! DOC_EXTENTS="3273 3887"
-#! LOG_MAX_PRECISION="Yes"
-#! LOG_MAX_RECORDED_FEATURES="200"
 #! SOURCE_ROUTING_FILE=""
-#! DOC_TOP_LEFT="100 -3887"
-#! WORKSPACE_VERSION="1"
-#! MAX_LOG_FEATURES="200"
-#! REQUIREMENTS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List dependencies specific to this replication &lt;/p&gt;&#10;"
-#! LAST_SAVE_DATE="2016-08-17T14:41:17"
-#! FME_DOCUMENT_PRIORGUID="2c011f65-c579-45c9-9da8-8d3b2e3c0014,a56a6293-df80-43ab-83b6-7068a543836f"
-#! SHOW_ANNOTATIONS="true"
-#! LAST_SAVE_BUILD="FME(R) 2015.1.2.0 (20150911 - Build 15538 - WIN32)"
-#! USAGE="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Describe expected replication schedule &lt;/p&gt;&#10;"
-#! MULTI_WRITER_DATASET_ORDER="BY_ID"
-#! ZOOM_SCALE="77"
-#! BEGIN_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;start&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Start&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;start.startup&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;lf&gt;"
-#! REQUIREMENTS_KEYWORD="none"
-#! FME_BUILD_NUM="15538"
-#! SHOW_INFO_NODES="true"
-#! PASSWORD=""
-#! FME_REPROJECTION_ENGINE="FME"
-#! STRICT_PARAMETER_VALIDATION="false"
 #! DESTINATION="NONE"
-#! IGNORE_READER_FAILURE="No"
-#! ATTR_TYPE_ENCODING="SDF"
-#! REDIRECT_TERMINATORS="NONE"
-#! HISTORY=""
-#! VIEW_POSITION="7.79229 -70.1306"
+#! FME_IMPLICIT_CSMAP_REPROJECTION_MODE="Datum"
+#! LAST_SAVE_DATE="2016-08-26T10:33:12"
+#! MULTI_WRITER_DATASET_ORDER="BY_ID"
 #! DESCRIPTION="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List Source and Destination datasets and describe any inline data manipulations &lt;/p&gt;&#10;"
+#! SOURCE="NONE"
+#! END_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;shutIt&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Shutdown&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;shutIt.shutdown&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! REQUIREMENTS_KEYWORD="none"
+#! FME_REPROJECTION_ENGINE="FME"
+#! FME_DOCUMENT_GUID="af965862-1c5d-453a-80fa-5dd1e02a4500"
+#! FME_BUILD_NUM="15538"
+#! USAGE="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Describe expected replication schedule &lt;/p&gt;&#10;"
+#! REDIRECT_TERMINATORS="NONE"
+#! STRICT_PARAMETER_VALIDATION="false"
+#! IGNORE_READER_FAILURE="No"
+#! DOC_TOP_LEFT="100 -3887"
+#! VIEW_POSITION="7.79229 0"
+#! FME_STROKE_MAX_DEVIATION="0"
+#! REQUIREMENTS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List dependencies specific to this replication &lt;/p&gt;&#10;"
+#! PASSWORD=""
 #! >
 #! <DATASETS>
 #! <DATASET
@@ -76,7 +76,7 @@
 #! WRITE_DEFS="true"
 #! DEFLINE_TEMPLATE="geodb_type {FME_GEN_GEOMETRY}"
 #! DEFLINE_ATTRS="true"
-#! EXPOSABLE_ATTRS="fme_start_angle double multi_reader_id integer geodb_color char(50) geodb_text_lc_margin_bottom double geodb_text_angle double geodb_junction_feature_count integer geodb_dim_begin_dimension_x double geodb_dim_begin_dimension_y double geodb_dim_begin_dimension_z double geodb_element_id integer geodb_feature_is_simple boolean geodb_measures char(254) geodb_dim_extn_line_angle double geodb_text_leader_line_tolerance double geodb_rotation double geodb_rel_destination_oid integer geodb_text_clip boolean geodb_dim_line_display smallint multi_reader_full_id integer geodb_text_leader_line char(254) geodb_font_size double fme_text_string char(50) fme_rotation double geodb_sweep_angle double geodb_primary_axis double geodb_original_arc_direction char(17) geodb_dim_end_dimension_x double geodb_dim_type smallint geodb_element_index integer geodb_dim_end_dimension_y double geodb_dim_end_dimension_z double geodb_text_point_scale_factor double geodb_junction_element_count integer geodb_font_weight smallint geodb_text_string_with_format_tags char(254) geodb_text_lc_style char(20) geodb_text_leader_line_anchor_point char(254) geodb_type char(25) geodb_secondary_axis double geodb_font_name char(254) geodb_text_break_char integer fme_geometry fme_char(50) geodb_text_lc_textbox_x1 double geodb_text_lc_textbox_x2 double geodb_text_lc_textbox_x3 double geodb_dim_text_angle double geodb_ancillary_role char(7) geodb_text_lc_textbox_x4 double geodb_text_leader_line_width double geodb_text_lc_accent_bar_width double geodb_font_charset smallint geodb_text_color char(254) geodb_text_scale boolean fme_dataset char(50) geodb_text_y_offset double geodb_v_align char(50) geodb_dim_style_id integer geodb_feature_dataset char(254) geodb_raster_pyramid_level integer geodb_font_italic boolean multi_reader_keyword char(50) geodb_h_align char(50) geodb_dim_line_x double geodb_dim_line_y double geodb_text_ref_scale double geodb_to_junction_element_id integer fme_primary_axis double geodb_dim_line_z double geodb_start_angle double geodb_raster_pyramid_resample_type char(100) geodb_dim_marker_display smallint geodb_text_lc_margin_left double fme_feature_type char(50) geodb_text_lc_textbox_y1 double fme_sweep_angle double geodb_text_lc_textbox_y2 double geodb_topological_configuration char(6) geodb_text_character_width double geodb_text_lc_textbox_y3 double geodb_text_lc_textbox_y4 double geodb_font_underline boolean geodb_edge_feature_count integer geodb_text_lc_margin_right double geodb_text_size double geodb_dim_extn_line_display smallint geodb_linked_feature_id integer geodb_text_string char(254) geodb_dim_text_x double geodb_raster_compression_type char(100) geodb_right_to_left boolean geodb_dim_text_y double geodb_text_x_offset double geodb_dim_text_z double geodb_arc_start_x double geodb_raster_compression_quality integer geodb_arc_start_y double geodb_arc_start_z double geodb_text_part_count integer geodb_dim_custom_length double geodb_text_word_spacing double geodb_text_lc_margin_top double geodb_text_line_spacing double fme_secondary_axis double geodb_metadata_string char(254) fme_color char(50) geodb_from_junction_element_id integer multi_reader_type char(50) fme_text_size double geodb_arc_end_x double geodb_font_bold boolean geodb_arc_end_y double geodb_arc_end_z double geodb_text_char_spacing double fme_basename char(50) geodb_edge_element_count integer fme_type char(50) geodb_text_leader_line_color char(50) geodb_text_lc_accent_bar_color char(50) geodb_dim_using_custom_length boolean geodb_font_strikethrough boolean geodb_rel_origin_oid integer fme_fill_color char(50) geodb_dim_length double geodb_feature_has_relationships boolean geodb_text_lc_gap double"
+#! EXPOSABLE_ATTRS="geodb_rel_origin_oid integer geodb_start_angle double geodb_dim_marker_display smallint fme_color char(50) geodb_element_index integer geodb_text_lc_textbox_y1 double fme_secondary_axis double geodb_junction_element_count integer geodb_text_lc_textbox_y2 double geodb_text_lc_textbox_y3 double geodb_text_color char(254) geodb_font_italic boolean geodb_text_lc_margin_left double geodb_text_lc_textbox_y4 double geodb_text_scale boolean geodb_edge_feature_count integer geodb_text_break_char integer geodb_text_lc_style char(20) geodb_text_size double geodb_raster_compression_quality integer fme_type char(50) geodb_topological_configuration char(6) geodb_arc_start_x double geodb_dim_line_x double geodb_arc_start_y double fme_basename char(50) geodb_dim_line_y double geodb_arc_start_z double geodb_text_lc_margin_top double fme_primary_axis double geodb_dim_line_z double geodb_raster_pyramid_resample_type char(100) fme_sweep_angle double geodb_text_lc_accent_bar_color char(50) geodb_text_point_scale_factor double geodb_text_leader_line_width double multi_reader_full_id integer geodb_color char(50) geodb_text_string char(254) fme_feature_type char(50) multi_reader_type char(50) geodb_text_y_offset double geodb_dim_text_x double geodb_dim_text_y double geodb_edge_element_count integer geodb_dim_text_z double geodb_arc_end_x double geodb_font_bold boolean geodb_arc_end_y double geodb_arc_end_z double geodb_to_junction_element_id integer geodb_dim_extn_line_display smallint geodb_linked_feature_id integer geodb_font_strikethrough boolean geodb_feature_dataset char(254) geodb_dim_line_display smallint geodb_secondary_axis double geodb_text_leader_line char(254) geodb_dim_custom_length double geodb_text_lc_gap double multi_reader_id integer geodb_v_align char(50) fme_start_angle double geodb_type char(25) geodb_feature_has_relationships boolean fme_rotation double geodb_h_align char(50) geodb_primary_axis double geodb_rel_destination_oid integer geodb_text_x_offset double geodb_text_word_spacing double geodb_text_leader_line_tolerance double geodb_text_line_spacing double geodb_text_leader_line_anchor_point char(254) geodb_raster_compression_type char(100) geodb_dim_extn_line_angle double geodb_dim_length double geodb_ancillary_role char(7) geodb_dim_text_angle double geodb_raster_pyramid_level integer multi_reader_keyword char(50) geodb_dim_end_dimension_x double geodb_dim_end_dimension_y double geodb_text_clip boolean geodb_dim_end_dimension_z double geodb_text_angle double geodb_right_to_left boolean geodb_text_part_count integer fme_geometry fme_char(50) geodb_font_size double geodb_metadata_string char(254) geodb_sweep_angle double geodb_text_lc_margin_bottom double fme_text_string char(50) geodb_text_char_spacing double geodb_dim_begin_dimension_x double geodb_dim_begin_dimension_y double geodb_text_leader_line_color char(50) geodb_dim_begin_dimension_z double geodb_text_lc_accent_bar_width double geodb_text_ref_scale double geodb_font_charset smallint fme_dataset char(50) geodb_feature_is_simple boolean fme_text_size double geodb_element_id integer geodb_dim_style_id integer geodb_text_character_width double geodb_text_lc_textbox_x1 double geodb_font_name char(254) geodb_text_lc_textbox_x2 double geodb_junction_feature_count integer geodb_text_lc_textbox_x3 double geodb_font_weight smallint geodb_font_underline boolean fme_fill_color char(50) geodb_text_lc_textbox_x4 double geodb_text_lc_margin_right double geodb_rotation double geodb_dim_using_custom_length boolean geodb_original_arc_direction char(17) geodb_text_string_with_format_tags char(254) geodb_measures char(254) geodb_from_junction_element_id integer geodb_dim_type smallint"
 #! DEFLINE_PARMS=""
 #! ATTR_INDEX_TYPES=""
 #! ATTR_NAME_INVALID_CHARS=""
@@ -86,8 +86,8 @@
 #! DATASET_TYPE="NONE"
 #! GENERATE_FME_BUILD_NUM="13450"
 #! START_FEATURE=""
-#! MIN_FEATURES=""
 #! COORDSYS=""
+#! MIN_FEATURES=""
 #! MAX_FEATURES=""
 #! MAX_FEATURES_PER_FEATURE_TYPE=""
 #! FEATURE_TYPES=""
@@ -110,7 +110,7 @@
 #! WRITE_DEFS="true"
 #! DEFLINE_TEMPLATE="SDE_CONFIG_KEYWORD $(_OUT_SDE3Config) SDE_COORD_SYS_ID &quot;&quot; SDE_COORD_SYS_DESCRIPTION &quot;&quot; SDE_DROP_TABLE N SDE_TRUNCATE_TABLE N SDE_LAYER SHAPE SDE_PRECISION 64 SDE_GRID{0} $(_OUT_SDE3Grid0) SDE_GRID{1} $(_OUT_SDE3Grid1) SDE_GRID{2} $(_OUT_SDE3Grid2) SDE_DIMENSION $(_OUT_SDE3Dimension) SDE_MEASURED N SDE_ANNOTATED Y SDE_AREA Y SDE_LINE Y SDE_POINT Y SDE_SIMPLE_LINE Y SDE_NIL Y SDE_MULTIPART Y SDE_CAD N SDE_XORIGIN $(_OUT_SDE3XOrigin) SDE_YORIGIN $(_OUT_SDE3YOrigin) SDE_ZORIGIN 0 SDE_MEASURED_ORIGIN 0 SDE_SCALE $(_OUT_SDE3Scale) SDE_ZSCALE 1 SDE_MEASURED_SCALE 1 SDE_TOLERANCE &quot;&quot; SDE_ZTOLERANCE &quot;&quot; SDE_MEASURED_TOLERANCE &quot;&quot;"
 #! DEFLINE_ATTRS="true"
-#! EXPOSABLE_ATTRS="sde30_text_x double sde30_text_z_location char(50) sde30_text_y double sde30_text_z double fme_fill_color char(50) sde30_text_x_leader char(50) sde30_major_axis double sde30_text_string char(50) sde30_text_y_leader char(50) fme_text_string char(50) fme_dataset char(50) fme_type char(50) fme_basename char(50) fme_feature_type char(50) sde30_text_x_location char(50) fme_text_size double fme_color char(50) sde30_measures char(50) sde30_text_size double sde30_radius double fme_geometry fme_char(50) fme_start_angle double sde30_justification char(50) sde30_type char(50) sde30_minor_axis double sde30_text_symbol integer fme_sweep_angle double SE_ROW_ID integer sde30_text_level integer sde30_text_x_offset double sde30_num_points integer fme_primary_axis double sde30_text_z_leader char(50) sde30_text_y_offset double sde30_text_gap_ratio double sde30_rotation double fme_secondary_axis double fme_rotation double sde30_text_y_location char(50) fme_db_operation char(6)"
+#! EXPOSABLE_ATTRS="sde30_text_z_location char(50) sde30_minor_axis double fme_fill_color char(50) fme_color char(50) sde30_text_x_leader char(50) sde30_text_level integer sde30_major_axis double sde30_text_y_leader char(50) sde30_num_points integer fme_primary_axis double sde30_text_symbol integer sde30_rotation double fme_rotation double sde30_measures char(50) sde30_text_y_location char(50) sde30_text_x double fme_secondary_axis double sde30_text_y double fme_sweep_angle double sde30_text_z double sde30_type char(50) sde30_justification char(50) fme_text_string char(50) sde30_text_gap_ratio double fme_basename char(50) sde30_text_x_offset double sde30_text_z_leader char(50) sde30_text_y_offset double sde30_text_x_location char(50) sde30_text_size double SE_ROW_ID integer fme_text_size double sde30_radius double fme_feature_type char(50) fme_geometry fme_char(50) sde30_text_string char(50) fme_start_angle double fme_type char(50) fme_dataset char(50) fme_db_operation char(6)"
 #! DEFLINE_PARMS="&quot;GUI DISABLE disabled Table exists&quot; No &quot;GUI TEXT SDE_CONFIG_KEYWORD Configuration Keyword&quot; DEFAULTS &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_COORD_SYS_ID Coordsys ID&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_COORD_SYS_DESCRIPTION Coordsys Description&quot; &quot;&quot; &quot;GUI OPTIONAL ALWAYS_ENABLED CHOICE SDE_DROP_TABLE Y%N Drop Table First&quot; N &quot;GUI OPTIONAL DISABLED_ONLY CHOICE SDE_TRUNCATE_TABLE Y%N Truncate Table First&quot; N &quot;GUI OPTIONAL WHOLE_LINE DISABLED_ONLY FORCE_DEFS ATTRLIST_COMMAS SDE_UPDATE_FIELDS Update Key Fields&quot; &quot;&quot; &quot;GUI TEXT SDE_LAYER Layer Keyword&quot; SHAPE &quot;GUI CHOICE SDE_PRECISION 32%64 Layer Precision&quot; 64 &quot;GUI FLOAT SDE_GRID{0} Grid 0 Size&quot; 100 &quot;GUI OPTIONAL FLOAT SDE_GRID{1} Grid 1 Size&quot; 0 &quot;GUI OPTIONAL FLOAT SDE_GRID{2} Grid 2 Size&quot; 0 &quot;GUI CHOICE SDE_DIMENSION 2%3 Dimension&quot; 2 &quot;GUI CHOICE SDE_MEASURED Y%N Allow Measures&quot; N &quot;GUI CHOICE SDE_ANNOTATED Y%N Allow Annotation&quot; Y &quot;GUI CHOICE SDE_AREA Y%N Allow Areas&quot; Y &quot;GUI CHOICE SDE_LINE Y%N Allow Lines&quot; Y &quot;GUI CHOICE SDE_POINT Y%N Allow Points&quot; Y &quot;GUI CHOICE SDE_SIMPLE_LINE Y%N Allow Simple Lines&quot; Y &quot;GUI CHOICE SDE_NIL Y%N Allow NIL Geometry&quot; Y &quot;GUI CHOICE SDE_MULTIPART Y%N Allow Multi Part Geometry&quot; Y &quot;GUI CHOICE SDE_CAD Y%N Allow CAD Data&quot; N &quot;GUI FLOAT SDE_XORIGIN X Origin &quot; 0 &quot;GUI FLOAT SDE_YORIGIN Y Origin &quot; 0 &quot;GUI FLOAT SDE_ZORIGIN Z Origin &quot; 0 &quot;GUI FLOAT SDE_MEASURED_ORIGIN Measures Origin &quot; 0 &quot;GUI FLOAT SDE_SCALE Scaling Factor&quot; 100 &quot;GUI FLOAT SDE_ZSCALE Z Scaling Factor&quot; 1 &quot;GUI FLOAT SDE_MEASURED_SCALE Measures Scaling Factor&quot; 1 &quot;GUI OPTIONAL FLOAT SDE_TOLERANCE Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL FLOAT SDE_ZTOLERANCE Z Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL FLOAT SDE_MEASURED_TOLERANCE Measures Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE CHOICE SDE_STORAGE_TYPE SDE_BINARY%WKB%SQL%NORMALIZED Storage Type&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_DESCRIPTION Layer Description&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE INTEGER SDE_MINIMUM_FID Minimum FID&quot; &quot;&quot; "
 #! ATTR_INDEX_TYPES=""
 #! ATTR_NAME_INVALID_CHARS=". %-#[]&quot;()!?*&apos;&amp;+\/"
@@ -120,10 +120,10 @@
 #! DATASET_TYPE="DATABASE"
 #! GENERATE_FME_BUILD_NUM="5210"
 #! NAME="ganymede.bcgov [SDE30]"
-#! FANOUT_SUFFIX=""
-#! FANOUT_PREFIX=""
 #! COORDSYS="BCALB-83"
 #! FANOUT_DIRECTORY=""
+#! FANOUT_SUFFIX=""
+#! FANOUT_PREFIX=""
 #! FANOUT_ID_ATTR=""
 #! FANOUT="No"
 #! >
@@ -617,66 +617,41 @@
 #! ENABLED="true"
 #! SCHEMA_ATTRIBUTE_SOURCE="1"
 #! >
-#! <FEAT_ATTRIBUTE ATTR_NAME="OG_ANCILLARY_OTHER_APP_GOV_ID" ATTR_TYPE="integer" ATTR_HAS_PORT="false" ATTR_VALUE="1"/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="EPASS_TRACKING_NUMBER" ATTR_TYPE="integer" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="OGC_FILE_NUMBER" ATTR_TYPE="char(8)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="WELL_AUTHORITY_NUMBER" ATTR_TYPE="char(6)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="PROJECT_NUMBER" ATTR_TYPE="char(9)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="FACILITY_SITE_NUMBER" ATTR_TYPE="char(9)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_RECEIVED_DATE" ATTR_TYPE="date" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_TYPE" ATTR_TYPE="char(100)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_STATUS" ATTR_TYPE="char(10)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_APPROVAL_DATE" ATTR_TYPE="date" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ANCILLARY_OTHER_APP_TYPE" ATTR_TYPE="char(5)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="LAND_TYPE" ATTR_TYPE="char(1)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="PROPONENT" ATTR_TYPE="char(60)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="MASTER_LICENSE_TO_CUT" ATTR_TYPE="char(30)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="CUTTING_PERMIT_ID" ATTR_TYPE="char(3)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="TIMBER_MARK" ATTR_TYPE="char(18)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ARCH_PERMIT_NUMBER" ATTR_TYPE="char(32)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ARCH_REQUIREMENT_TYPE" ATTR_TYPE="char(100)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ARCH_SITE_RECOVERED_FLAG" ATTR_TYPE="char(1)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="AREA_HECTARE" ATTR_TYPE="double" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ACCURACY_PERCENTILE" ATTR_TYPE="smallint" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ACCURACY_HORIZONTAL" ATTR_TYPE="smallint" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ACCURACY_VERTICAL" ATTR_TYPE="smallint" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="FEATURE_CODE" ATTR_TYPE="char(10)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="OBJECTID" ATTR_TYPE="integer" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <DEFLINE_PARM PARM_NAME="SDE_DROP_TABLE" PARM_VALUE="N"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_TOLERANCE" PARM_VALUE=""/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED" PARM_VALUE="N"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_GRID{0}" PARM_VALUE="100"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_SCALE" PARM_VALUE="100"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_UPDATE_FIELDS" PARM_VALUE=""/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_ORIGIN" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_AREA" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_CAD" PARM_VALUE="N"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MULTIPART" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MINIMUM_FID" PARM_VALUE="&lt;Unused&gt;"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_LAYER" PARM_VALUE="SHAPE"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_ZORIGIN" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_SCALE" PARM_VALUE="1"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_ZSCALE" PARM_VALUE="1"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_PRECISION" PARM_VALUE="64"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_ID" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{0}" PARM_VALUE="100"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_DROP_TABLE" PARM_VALUE="N"/>
+#! <DEFLINE_PARM PARM_NAME="disabled" PARM_VALUE="Yes"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_SIMPLE_LINE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_LINE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_STORAGE_TYPE" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_PRECISION" PARM_VALUE="64"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_TOLERANCE" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_POINT" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ZSCALE" PARM_VALUE="1"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_SCALE" PARM_VALUE="1"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_TOLERANCE" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ANNOTATED" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ZORIGIN" PARM_VALUE="0"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_YORIGIN" PARM_VALUE="0"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_XORIGIN" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_CONFIG_KEYWORD" PARM_VALUE="DEFAULTS"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_SIMPLE_LINE" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_GRID{2}" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_STORAGE_TYPE" PARM_VALUE="&lt;Unused&gt;"/>
-#! <DEFLINE_PARM PARM_NAME="disabled" PARM_VALUE="Yes"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_POINT" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_NIL" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_TOLERANCE" PARM_VALUE=""/>
 #! <DEFLINE_PARM PARM_NAME="SDE_DIMENSION" PARM_VALUE="2"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_LINE" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_ZTOLERANCE" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_AREA" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_NIL" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_SCALE" PARM_VALUE="100"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_CONFIG_KEYWORD" PARM_VALUE="DEFAULTS"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_ORIGIN" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{2}" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED" PARM_VALUE="N"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_TRUNCATE_TABLE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MINIMUM_FID" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_LAYER" PARM_VALUE="SHAPE"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_CAD" PARM_VALUE="N"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_GRID{1}" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_ANNOTATED" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MULTIPART" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ZTOLERANCE" PARM_VALUE=""/>
 #! </FEATURE_TYPE>
 #! <FEATURE_TYPE
 #! IS_SOURCE="true"
@@ -699,31 +674,6 @@
 #! MERGE_FILTER_CASE_SENSITIVE="false"
 #! DYNAMIC_SCHEMA="false"
 #! >
-#! <FEAT_ATTRIBUTE ATTR_NAME="geodb_oid" ATTR_TYPE="integer" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="EPASS_TRACKING_NUMBER" ATTR_TYPE="double" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="OGC_FILE_NUMBER" ATTR_TYPE="char(8)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="WELL_AUTHORITY_NUMBER" ATTR_TYPE="char(5)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="PROJECT_NUMBER" ATTR_TYPE="char(9)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="FACILITY_SITE_NUMBER" ATTR_TYPE="char(9)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_RECEIVED_DATE" ATTR_TYPE="date" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_TYPE" ATTR_TYPE="char(100)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_STATUS" ATTR_TYPE="char(9)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="APPLICATION_APPROVAL_DATE" ATTR_TYPE="date" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="LAND_TYPE" ATTR_TYPE="char(1)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="CLIENT_NAME" ATTR_TYPE="char(60)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="MASTER_LICENSE_TO_CUT" ATTR_TYPE="char(30)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="CUTTING_PERMIT" ATTR_TYPE="char(3)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="TIMBER_MARK" ATTR_TYPE="char(18)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ARCH_PERMIT_NUMBER" ATTR_TYPE="char(32)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ARCH_REQUIREMENT_CODE" ATTR_TYPE="char(100)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ARCH_SITE_RECOVERED_FLAG" ATTR_TYPE="char(1)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="FCODE" ATTR_TYPE="char(10)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ANCILLARY_AND_OTHER_TYPE" ATTR_TYPE="char(5)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="AREA_HECTARE" ATTR_TYPE="double" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ACCURACY_PERCENTILE" ATTR_TYPE="smallint" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ACCURACY_HORIZONTAL" ATTR_TYPE="smallint" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="ACCURACY_VERTICAL" ATTR_TYPE="smallint" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="OBJECTID" ATTR_TYPE="integer" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
 #! </FEATURE_TYPE>
 #! </FEATURE_TYPES>
 #! <FMESERVER>
@@ -1047,7 +997,7 @@
 #! BOUNDING_RECT="107 -2014 1125 1869"
 #! STICKY="true"
 #! COLOUR="0.0784314,0.0784314,0.756863"
-#! CONTENTS="21 8 10 "
+#! CONTENTS="10 8 21 "
 #! />
 #! <BOOKMARK
 #! IDENTIFIER="16"
@@ -1058,7 +1008,7 @@
 #! BOUNDING_RECT="1268 -2021 2088 682"
 #! STICKY="true"
 #! COLOUR="1,0.501961,0"
-#! CONTENTS="13 15 12 14 "
+#! CONTENTS="14 12 15 13 "
 #! />
 #! <BOOKMARK
 #! IDENTIFIER="25"
@@ -1069,7 +1019,7 @@
 #! BOUNDING_RECT="1276 -2753 2097 1134"
 #! STICKY="true"
 #! COLOUR="0.819608,0.501961,0.976471"
-#! CONTENTS="24 22 23 "
+#! CONTENTS="24 23 22 "
 #! />
 #! </BOOKMARKS>
 #! <TRANSFORMERS>
@@ -1083,27 +1033,27 @@
 #! <SUBDOCUMENTS>
 #! <SUBDOCUMENT
 #! NAME="ArcSDELockRemover"
+#! XFORM_DEPRECATED="No"
 #! FME_PROCESS_COUNT="NO_PARALLELISM"
 #! HISTORY=""
-#! FME_DOCUMENT_PRIORGUID=""
-#! DOC_TOP_LEFT="0 0"
-#! USAGE=""
-#! DOC_DYNAMIC_INPUT_ATTRS="0"
-#! DOC_EXTENTS="0 0"
-#! TITLE="ArcSDELockRemover"
-#! FME_PROCESS_GROUPS_ORDERED="No"
-#! IS_VISIBLE="false"
-#! REQUIREMENTS_KEYWORD=""
-#! CATEGORY="DataBC"
 #! VIEW_POSITION="0 0"
-#! DESCRIPTION="Test description&#10;"
-#! REQUIREMENTS=""
-#! SUPPRESS_UPGRADE="false"
-#! XFORM_DEPRECATED="No"
-#! FME_DOCUMENT_GUID=""
-#! ZOOM_SCALE="99"
 #! FME_PROCESS_GROUP_BY=""
+#! DOC_EXTENTS="0 0"
+#! USAGE=""
+#! FME_PROCESS_GROUPS_ORDERED="No"
+#! TITLE="ArcSDELockRemover"
 #! LEGAL_TERMS_CONDITIONS=""
+#! IS_VISIBLE="false"
+#! REQUIREMENTS=""
+#! FME_DOCUMENT_PRIORGUID=""
+#! ZOOM_SCALE="99"
+#! DESCRIPTION="Test description&#10;"
+#! DOC_DYNAMIC_INPUT_ATTRS="0"
+#! FME_DOCUMENT_GUID=""
+#! CATEGORY="DataBC"
+#! DOC_TOP_LEFT="0 0"
+#! REQUIREMENTS_KEYWORD=""
+#! SUPPRESS_UPGRADE="false"
 #! >
 #! <GLOBAL_PARAMETERS>
 #! <GLOBAL_PARAMETER
@@ -1742,10 +1692,10 @@ FME_END_PYTHON_ENC import<space>fme<lf>import<space>DataBCFMWTemplate<lf>shutIt<
 
 # -------------------------------------------------------------------------
 
-MACRO WORKSPACE_NAME SDEDC_TO_BCGW
+MACRO WORKSPACE_NAME SDEGEODB_TO_BCGW
 MACRO FME_VIEWER_APP fmedatainspector
 # -------------------------------------------------------------------------
-GEODATABASE_SDE_1_DEF "$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)"   geodb_type                   geodb_polygon   geodb_oid                    integer   EPASS_TRACKING_NUMBER        double   OGC_FILE_NUMBER              char(8)   WELL_AUTHORITY_NUMBER        char(5)   PROJECT_NUMBER               char(9)   FACILITY_SITE_NUMBER         char(9)   APPLICATION_RECEIVED_DATE    date   APPLICATION_TYPE             char(100)   APPLICATION_STATUS           char(9)   APPLICATION_APPROVAL_DATE    date   LAND_TYPE                    char(1)   CLIENT_NAME                  char(60)   MASTER_LICENSE_TO_CUT        char(30)   CUTTING_PERMIT               char(3)   TIMBER_MARK                  char(18)   ARCH_PERMIT_NUMBER           char(32)   ARCH_REQUIREMENT_CODE        char(100)   ARCH_SITE_RECOVERED_FLAG     char(1)   FCODE                        char(10)   ANCILLARY_AND_OTHER_TYPE     char(5)   AREA_HECTARE                 double   ACCURACY_PERCENTILE          smallint   ACCURACY_HORIZONTAL          smallint   ACCURACY_VERTICAL            smallint   OBJECTID                     integer
+GEODATABASE_SDE_1_DEF "$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)"   geodb_type                   geodb_polygon
 # -------------------------------------------------------------------------
 
 FACTORY_DEF * RoutingFactory   FACTORY_NAME "Router and Unexpected Input Remover"   INPUT FEATURE_TYPE *       @SupplyAttributes(multi_reader_keyword,GEODATABASE_SDE_1)    ROUTE GEODATABASE_SDE "GEODATABASE_SDE_1::$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)" TO FME_GENERIC "::$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)" ALIAS_GEOMETRY    MERGE_INPUT Yes   OUTPUT ROUTED FEATURE_TYPE *

@@ -5,112 +5,692 @@
 #    Command-line to run this workspace:
 #    
 #    
-#    E:\sw_nt\FME\fme.exe Y:\scripts\python\DataBCFmeTemplate2\FMWTemplates\NOSRC_TO_BCGW.fmw
+#    E:\sw_nt\FME2015\fme.exe Z:\scripts\python\DataBCFmeTemplate2\FMWTemplates\NOSRC_TO_BCGW.fmw
+#          --DEST_SCHEMA "<DESTINATION SCHEMA>"
+#          --DEST_FEATURE_1 "<DESTINATION TABLE>"
 #          --DEST_DB_ENV_KEY "DLV"
-#          --DEST_SCHEMA ""
-#          --DEST_FEATURE_1 ""
-#          --FILE_CHANGE_DETECTION "TRUE"
 #    
 #    
-#! SHOW_INFO_NODES="true"
-#! FME_GEOMETRY_HANDLING="Enhanced"
-#! IGNORE_READER_FAILURE="No"
-#! REQUIREMENTS_KEYWORD=""
-#! SOURCE_ROUTING_FILE=""
-#! WARN_INVALID_XFORM_PARAM="Yes"
-#! LOG_MAX_RECORDED_FEATURES="200"
-#! HISTORY=""
-#! END_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;shutIt&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Shutdown&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;shutIt.shutdown&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
-#! FME_IMPLICIT_CSMAP_REPROJECTION_MODE="Auto"
-#! TITLE=""
-#! FME_REPROJECTION_ENGINE="FME"
-#! PASSWORD=""
-#! FME_DOCUMENT_GUID="0e872846-578d-4998-935b-28f13b6fe43c"
-#! REQUIREMENTS=""
-#! ZOOM_SCALE="100"
-#! CATEGORY=""
-#! DESTINATION="NONE"
-#! END_TCL=""
-#! DESCRIPTION=""
-#! LAST_SAVE_DATE="2016-08-22T15:53:42"
-#! FME_STROKE_MAX_DEVIATION="0"
-#! BEGIN_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;start&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Start&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;start.startup&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
-#! LEGAL_TERMS_CONDITIONS=""
-#! FME_BUILD_NUM="15573"
-#! MAX_LOG_FEATURES="200"
-#! ATTR_TYPE_ENCODING="SDF"
-#! REDIRECT_TERMINATORS="NONE"
-#! FME_DOCUMENT_PRIORGUID=""
-#! USAGE=""
-#! LOG_MAX_PRECISION="Yes"
-#! DOC_TOP_LEFT="0 0"
-#! SHOW_ANNOTATIONS="true"
-#! WORKSPACE_VERSION="1"
-#! BEGIN_TCL=""
-#! VIEW_POSITION="0 0"
-#! DESTINATION_ROUTING_FILE=""
-#! LOG_FILE="$(LOG_FILE)"
-#! LAST_SAVE_BUILD="FME(R) 2015.1.3.1 (20151117 - Build 15573 - WIN32)"
-#! MULTI_WRITER_DATASET_ORDER="BY_ID"
 #! SOURCE="NONE"
+#! HISTORY=""
+#! FME_DOCUMENT_GUID="e2fe7d06-21d0-4ae2-a1b4-9bfc3d52d1ba"
+#! LOG_MAX_RECORDED_FEATURES="200"
+#! DOC_EXTENTS="3273 3887"
+#! MULTI_WRITER_DATASET_ORDER="BY_ID"
+#! LAST_SAVE_BUILD="FME(R) 2015.1.2.0 (20150911 - Build 15538 - WIN32)"
+#! TITLE="SDEGEODB_TO_BCGW"
+#! REQUIREMENTS_KEYWORD="none"
+#! LEGAL_TERMS_CONDITIONS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Any portion of this document, or any information supplied by the Province in relation to this document may not be used or disclosed for any purpose other than for DataBC Warehouse Population Services. Without limiting the generality of the foregoing, the User agrees to hold in confidence all information supplied by the Province in relation to this document. &lt;/p&gt;&#10;"
+#! END_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;shutIt&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Shutdown&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;shutIt.shutdown&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! LOG_FILE="$(LOGFILE)"
+#! CATEGORY="DataBC Warehouse Replication"
+#! SHOW_INFO_NODES="true"
+#! MAX_LOG_FEATURES="200"
+#! FME_DOCUMENT_PRIORGUID="2c011f65-c579-45c9-9da8-8d3b2e3c0014,a56a6293-df80-43ab-83b6-7068a543836f,59238750-f6c9-4bbe-8573-05485dacd91d,af965862-1c5d-453a-80fa-5dd1e02a4500,2ee443c8-7d8b-4019-9be4-78c770b3c0f6"
+#! REDIRECT_TERMINATORS="NONE"
+#! REQUIREMENTS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List dependencies specific to this replication &lt;/p&gt;&#10;"
+#! SHOW_ANNOTATIONS="true"
+#! IGNORE_READER_FAILURE="No"
+#! FME_BUILD_NUM="15538"
+#! WARN_INVALID_XFORM_PARAM="No"
+#! LOG_MAX_PRECISION="Yes"
+#! STRICT_PARAMETER_VALIDATION="false"
+#! WORKSPACE_VERSION="1"
+#! BEGIN_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;start&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Start&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;start.startup&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;lf&gt;"
+#! DESTINATION="NONE"
+#! VIEW_POSITION="7.79229 0"
+#! DESCRIPTION="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List Source and Destination datasets and describe any inline data manipulations &lt;/p&gt;&#10;"
+#! USAGE="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Describe expected replication schedule &lt;/p&gt;&#10;"
+#! ATTR_TYPE_ENCODING="SDF"
+#! END_TCL=""
+#! FME_REPROJECTION_ENGINE="FME"
+#! DESTINATION_ROUTING_FILE=""
+#! PASSWORD=""
+#! BEGIN_TCL=""
 #! FME_SERVER_SERVICES=""
-#! DOC_EXTENTS="0 0"
+#! DOC_TOP_LEFT="100 -3887"
+#! ZOOM_SCALE="77"
+#! FME_IMPLICIT_CSMAP_REPROJECTION_MODE="Datum"
+#! FME_STROKE_MAX_DEVIATION="0"
+#! LAST_SAVE_DATE="2016-08-26T10:37:20"
+#! SOURCE_ROUTING_FILE=""
+#! FME_GEOMETRY_HANDLING="Classic"
 #! >
 #! <DATASETS>
+#! <DATASET
+#! IS_SOURCE="false"
+#! ROLE="WRITER"
+#! FORMAT="SDE30"
+#! DATASET="$(DEST_INSTANCE)"
+#! KEYWORD="SDE30_1"
+#! MULTI_GEOM_ALLOWED="true"
+#! ATTR_MAX_LENGTH="30"
+#! ATTR_CASE="UPPER"
+#! ALLOWED_FEAT_TYPES=""
+#! WRITE_DEFS="true"
+#! DEFLINE_TEMPLATE="SDE_CONFIG_KEYWORD $(_OUT_SDE3Config) SDE_COORD_SYS_ID &quot;&quot; SDE_COORD_SYS_DESCRIPTION &quot;&quot; SDE_DROP_TABLE N SDE_TRUNCATE_TABLE N SDE_LAYER SHAPE SDE_PRECISION 64 SDE_GRID{0} $(_OUT_SDE3Grid0) SDE_GRID{1} $(_OUT_SDE3Grid1) SDE_GRID{2} $(_OUT_SDE3Grid2) SDE_DIMENSION $(_OUT_SDE3Dimension) SDE_MEASURED N SDE_ANNOTATED Y SDE_AREA Y SDE_LINE Y SDE_POINT Y SDE_SIMPLE_LINE Y SDE_NIL Y SDE_MULTIPART Y SDE_CAD N SDE_XORIGIN $(_OUT_SDE3XOrigin) SDE_YORIGIN $(_OUT_SDE3YOrigin) SDE_ZORIGIN 0 SDE_MEASURED_ORIGIN 0 SDE_SCALE $(_OUT_SDE3Scale) SDE_ZSCALE 1 SDE_MEASURED_SCALE 1 SDE_TOLERANCE &quot;&quot; SDE_ZTOLERANCE &quot;&quot; SDE_MEASURED_TOLERANCE &quot;&quot;"
+#! DEFLINE_ATTRS="true"
+#! EXPOSABLE_ATTRS="sde30_type char(50) sde30_text_z_location char(50) fme_feature_type char(50) fme_color char(50) sde30_text_x_offset double sde30_text_gap_ratio double sde30_text_z_leader char(50) sde30_text_y_offset double fme_type char(50) sde30_text_string char(50) fme_rotation double fme_geometry fme_char(50) fme_db_operation char(6) sde30_minor_axis double sde30_text_x double sde30_text_y double sde30_text_z double sde30_major_axis double sde30_text_size double sde30_text_level integer fme_fill_color char(50) sde30_text_y_location char(50) sde30_num_points integer fme_start_angle double fme_primary_axis double sde30_text_x_leader char(50) fme_sweep_angle double sde30_text_symbol integer sde30_text_y_leader char(50) fme_basename char(50) fme_secondary_axis double fme_text_string char(50) sde30_rotation double sde30_radius double sde30_measures char(50) SE_ROW_ID integer sde30_text_x_location char(50) sde30_justification char(50) fme_dataset char(50) fme_text_size double"
+#! DEFLINE_PARMS="&quot;GUI DISABLE disabled Table exists&quot; No &quot;GUI TEXT SDE_CONFIG_KEYWORD Configuration Keyword&quot; DEFAULTS &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_COORD_SYS_ID Coordsys ID&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_COORD_SYS_DESCRIPTION Coordsys Description&quot; &quot;&quot; &quot;GUI OPTIONAL ALWAYS_ENABLED CHOICE SDE_DROP_TABLE Y%N Drop Table First&quot; N &quot;GUI OPTIONAL DISABLED_ONLY CHOICE SDE_TRUNCATE_TABLE Y%N Truncate Table First&quot; N &quot;GUI OPTIONAL WHOLE_LINE DISABLED_ONLY FORCE_DEFS ATTRLIST_COMMAS SDE_UPDATE_FIELDS Update Key Fields&quot; &quot;&quot; &quot;GUI TEXT SDE_LAYER Layer Keyword&quot; SHAPE &quot;GUI CHOICE SDE_PRECISION 32%64 Layer Precision&quot; 64 &quot;GUI FLOAT SDE_GRID{0} Grid 0 Size&quot; 100 &quot;GUI OPTIONAL FLOAT SDE_GRID{1} Grid 1 Size&quot; 0 &quot;GUI OPTIONAL FLOAT SDE_GRID{2} Grid 2 Size&quot; 0 &quot;GUI CHOICE SDE_DIMENSION 2%3 Dimension&quot; 2 &quot;GUI CHOICE SDE_MEASURED Y%N Allow Measures&quot; N &quot;GUI CHOICE SDE_ANNOTATED Y%N Allow Annotation&quot; Y &quot;GUI CHOICE SDE_AREA Y%N Allow Areas&quot; Y &quot;GUI CHOICE SDE_LINE Y%N Allow Lines&quot; Y &quot;GUI CHOICE SDE_POINT Y%N Allow Points&quot; Y &quot;GUI CHOICE SDE_SIMPLE_LINE Y%N Allow Simple Lines&quot; Y &quot;GUI CHOICE SDE_NIL Y%N Allow NIL Geometry&quot; Y &quot;GUI CHOICE SDE_MULTIPART Y%N Allow Multi Part Geometry&quot; Y &quot;GUI CHOICE SDE_CAD Y%N Allow CAD Data&quot; N &quot;GUI FLOAT SDE_XORIGIN X Origin &quot; 0 &quot;GUI FLOAT SDE_YORIGIN Y Origin &quot; 0 &quot;GUI FLOAT SDE_ZORIGIN Z Origin &quot; 0 &quot;GUI FLOAT SDE_MEASURED_ORIGIN Measures Origin &quot; 0 &quot;GUI FLOAT SDE_SCALE Scaling Factor&quot; 100 &quot;GUI FLOAT SDE_ZSCALE Z Scaling Factor&quot; 1 &quot;GUI FLOAT SDE_MEASURED_SCALE Measures Scaling Factor&quot; 1 &quot;GUI OPTIONAL FLOAT SDE_TOLERANCE Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL FLOAT SDE_ZTOLERANCE Z Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL FLOAT SDE_MEASURED_TOLERANCE Measures Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE CHOICE SDE_STORAGE_TYPE SDE_BINARY%WKB%SQL%NORMALIZED Storage Type&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_DESCRIPTION Layer Description&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE INTEGER SDE_MINIMUM_FID Minimum FID&quot; &quot;&quot; "
+#! ATTR_INDEX_TYPES=""
+#! ATTR_NAME_INVALID_CHARS=". %-#[]&quot;()!?*&apos;&amp;+\/"
+#! SUPPORTS_FEATURE_TYPE_FANOUT="true"
+#! ENABLED="true"
+#! DYNAMIC_FEATURE_TYPES_LIST_ON_MERGE="true"
+#! DATASET_TYPE="DATABASE"
+#! GENERATE_FME_BUILD_NUM="5210"
+#! NAME="ganymede.bcgov [SDE30]"
+#! FANOUT_SUFFIX=""
+#! FANOUT_PREFIX=""
+#! COORDSYS="BCALB-83"
+#! FANOUT_DIRECTORY=""
+#! FANOUT_ID_ATTR=""
+#! FANOUT="No"
+#! >
+#! <METAFILE_PARAMETER
+#! NAME="ADVANCED_PARMS"
+#! VALUE="_IN_SDE3MINX _IN_SDE3MINY _IN_SDE3MAXX _IN_SDE3MAXY _IN_SDE3WhereClause _IN_SDE3CLIP _IN_SDE3SEARCH_ENVELOPE_COORDINATE_SYSTEM _IN_SDE3SearchMethod _IN_SDE3RemoveTableQualifier _IN_SDE3SearchOrder _IN_SDE3SearchMethodFilter _IN_SDE3PersistentConnection _IN_SDE3SearchFeature _IN_SDE3ChildVersionName _TRANSACTION_INTERVAL _ADD_LAYERS_TO_EXISTING_TABLES _WRITER_MODE _TRANSACTION _REJECTED_PIPELINE_DIRECTORY _CONTINUE_TRANSLATION_BAD_DATA _MAX_OPEN_TABLES _INTEGER_OVERRIDE_DEFINITION _STRICT_LOAD _FORCE_IN_AGGREGATES _DEFAULT_Z_VALUE _LEAVE_LAYER_EXTENTS _SPLIT_DONUTS SDE30_OUT_RECONCILE_AND_POST SDE30_OUT_TABLES_TO_RECONCILE SDE30_OUT_WRITE_TO_CURRENT_STATE SDE30_OUT_DELETE_CHILD_AFTER_RECONCILE_AND_POST"
+#! />
+#! </DATASET>
 #! </DATASETS>
 #! <DATA_TYPES>
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_char(width)"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(width)"
+#! FME_TYPE="fme_varchar(width)"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="blob"
+#! FME_TYPE="fme_buffer"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(255)"
+#! FME_TYPE="fme_buffer"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="guid"
+#! FME_TYPE="fme_buffer"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="double"
+#! FME_TYPE="fme_real64"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="double"
+#! FME_TYPE="fme_real32"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="float"
+#! FME_TYPE="fme_real32"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="integer"
+#! FME_TYPE="fme_int32"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="smallint"
+#! FME_TYPE="fme_int16"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="date"
+#! FME_TYPE="fme_datetime"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="date"
+#! FME_TYPE="fme_date"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="date"
+#! FME_TYPE="fme_time"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="char(8)"
+#! FME_TYPE="fme_boolean"
+#! FORMAT="SDE30"
+#! />
+#! <DATA_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="double"
+#! FME_TYPE="fme_decimal(width,decimal)"
+#! FORMAT="SDE30"
+#! />
 #! </DATA_TYPES>
 #! <GEOM_TYPES>
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_text"
+#! FME_TYPE="fme_text"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_point"
+#! FME_TYPE="fme_point"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_line"
+#! FME_TYPE="fme_line"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_simple_line"
+#! FME_TYPE="fme_line"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_area"
+#! FME_TYPE="fme_area"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_nil"
+#! FME_TYPE="fme_no_geom"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_point"
+#! FME_TYPE="fme_text"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_area"
+#! FME_TYPE="fme_ellipse"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_line"
+#! FME_TYPE="fme_arc"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_area"
+#! FME_TYPE="fme_rectangle"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_area"
+#! FME_TYPE="fme_rounded_rectangle"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_raster"
+#! FME_TYPE="fme_raster"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_line"
+#! FME_TYPE="fme_surface"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_line"
+#! FME_TYPE="fme_solid"
+#! FORMAT="SDE30"
+#! />
+#! <GEOM_TYPE
+#! IS_SOURCE="false"
+#! FORMAT_TYPE="sde30_nil"
+#! FME_TYPE="fme_collection"
+#! FORMAT="SDE30"
+#! />
 #! </GEOM_TYPES>
 #! <FEATURE_TYPES>
+#! <FEATURE_TYPE
+#! IS_SOURCE="false"
+#! NODE_NAME="$(DEST_SCHEMA).OG_ANCILLARY_OTHER_APPS_GOV_SP"
+#! FEATURE_TYPE_NAME="$(DEST_FEATURE_1)"
+#! FEATURE_TYPE_NAME_QUALIFIER="$(DEST_SCHEMA)"
+#! IS_EDITABLE="true"
+#! IDENTIFIER="20"
+#! FEAT_GEOMTYPE="All"
+#! POSITION="1612 -316.546"
+#! BOUNDING_RECT="1612 -316.546 0 0"
+#! ORDER="24"
+#! COLLAPSED="false"
+#! KEYWORD="SDE30_1"
+#! PARMS_EDITED="true"
+#! ENABLED="true"
+#! SCHEMA_ATTRIBUTE_SOURCE="1"
+#! >
+#! <DEFLINE_PARM PARM_NAME="SDE_LAYER" PARM_VALUE="SHAPE"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_DROP_TABLE" PARM_VALUE="N"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_TRUNCATE_TABLE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_XORIGIN" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_LINE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_NIL" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_PRECISION" PARM_VALUE="64"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{2}" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED" PARM_VALUE="N"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ZSCALE" PARM_VALUE="1"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MINIMUM_FID" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_AREA" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_ID" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_POINT" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{1}" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_TOLERANCE" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_DIMENSION" PARM_VALUE="2"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_CAD" PARM_VALUE="N"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_TOLERANCE" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_STORAGE_TYPE" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_SCALE" PARM_VALUE="1"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ANNOTATED" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{0}" PARM_VALUE="100"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_SIMPLE_LINE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_ORIGIN" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_SCALE" PARM_VALUE="100"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_CONFIG_KEYWORD" PARM_VALUE="DEFAULTS"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_UPDATE_FIELDS" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MULTIPART" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ZTOLERANCE" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ZORIGIN" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="disabled" PARM_VALUE="Yes"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_YORIGIN" PARM_VALUE="0"/>
+#! </FEATURE_TYPE>
 #! </FEATURE_TYPES>
 #! <FMESERVER>
+#! <SERVICES>
+#! <SERVICE
+#! NAME="fmejobsubmitter"
+#! >
+#! <PROPERTIES>
+#! <PROPERTY
+#! CATEGORY="FMEUSERPROPDATA"
+#! NAME="FAILURE_TOPICS"
+#! VALUE=""
+#! />
+#! <PROPERTY
+#! CATEGORY="FMEUSERPROPDATA"
+#! NAME="HTTP_DATASET"
+#! VALUE=""
+#! />
+#! <PROPERTY
+#! CATEGORY="FMEUSERPROPDATA"
+#! NAME="NOTIFICATION_WRITER"
+#! VALUE=""
+#! />
+#! <PROPERTY
+#! CATEGORY="FMEUSERPROPDATA"
+#! NAME="PUBLISHER"
+#! VALUE=""
+#! />
+#! <PROPERTY
+#! CATEGORY="FMEUSERPROPDATA"
+#! NAME="SUCCESS_TOPICS"
+#! VALUE=""
+#! />
+#! </PROPERTIES>
+#! </SERVICE>
+#! </SERVICES>
 #! </FMESERVER>
 #! <GLOBAL_PARAMETERS>
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI TEXT DEST_SCHEMA Destination Schema:"
+#! DEFAULT_VALUE="&lt;DESTINATION SCHEMA&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI TEXT_OR_ATTR DEST_FEATURE_1 Destination Feature 1:"
+#! DEFAULT_VALUE="&lt;DESTINATION TABLE&gt;"
+#! IS_STAND_ALONE="true"
+#! />
 #! <GLOBAL_PARAMETER
 #! GUI_LINE="GUI OPTIONAL STRING_OR_CHOICE DEST_DB_ENV_KEY DLV%TST%PRD Destination Database Keyword (DLV|TST|PRD):"
 #! DEFAULT_VALUE="DLV"
 #! IS_STAND_ALONE="true"
 #! />
 #! <GLOBAL_PARAMETER
-#! GUI_LINE="GUI OPTIONAL TEXT DEST_SCHEMA Destination Schema (upper case please):"
-#! DEFAULT_VALUE=""
-#! IS_STAND_ALONE="true"
-#! />
-#! <GLOBAL_PARAMETER
-#! GUI_LINE="GUI OPTIONAL TEXT DEST_FEATURE_1 Destination Feature 1:"
-#! DEFAULT_VALUE=""
-#! IS_STAND_ALONE="true"
-#! />
-#! <GLOBAL_PARAMETER
-#! GUI_LINE="GUI OPTIONAL CHOICE FILE_CHANGE_DETECTION TRUE%FALSE Whether to use file change detection or not:"
-#! DEFAULT_VALUE="TRUE"
-#! IS_STAND_ALONE="true"
-#! />
-#! <GLOBAL_PARAMETER
-#! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_SERVER Python Script:"
+#! GUI_LINE="GUI OPTIONAL IGNORE TEXT_EDIT_PYTHON_PARM DEST_SERVER Python Script:"
 #! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationServer&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
-#! IS_STAND_ALONE="true"
+#! IS_STAND_ALONE="false"
 #! />
 #! <GLOBAL_PARAMETER
 #! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_PORT Python Script:"
-#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationSDEPort&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;lf&gt;"
-#! IS_STAND_ALONE="true"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationSDEPort&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="false"
 #! />
 #! <GLOBAL_PARAMETER
-#! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_PASSWORD Python Script:"
+#! GUI_LINE="GUI OPTIONAL IGNORE TEXT_EDIT_PYTHON_PARM DEST_PASSWORD Python Script:"
 #! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationPassword&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
-#! IS_STAND_ALONE="true"
+#! IS_STAND_ALONE="false"
 #! />
 #! <GLOBAL_PARAMETER
 #! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_INSTANCE Python Script:"
-#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationInstance&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! DEFAULT_VALUE="&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationInstance&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI OPTIONAL IGNORE TEXT_EDIT_PYTHON_PARM LOGFILE Python Script:"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getFMWLogFileRelativePath&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! </GLOBAL_PARAMETERS>
+#! <COMMENTS>
+#! <COMMENT
+#! IDENTIFIER="2"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;Source Types&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="100 0"
+#! TOP_LEFT="100 0"
+#! BOTTOM_RIGHT="100 0"
+#! BOUNDING_RECT="100 0 0 0"
+#! ORDER="10"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="SOURCE_HEADER"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="12"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;SOURCE DATA&#13;&lt;br&gt;&#13;&lt;br&gt;- Specify full UNC path name for file sources (no mappings)&#13;&lt;br&gt;- Delivery scripts should source delivery database instances&#13;&lt;br&gt;  where they exist.&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1308 -2113"
+#! TOP_LEFT="1308 -2113"
+#! BOTTOM_RIGHT="1308 -2113"
+#! BOUNDING_RECT="1308 -2113 0 0"
+#! ORDER="11"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="13"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;DESTINATION DATA: DataBC Warehouse&#13;&lt;br&gt;&#13;&lt;br&gt;Use one of the following writers for populating the warehouse:&#13;&lt;br&gt; - SDE30 (ESRI ArcSDE)&#13;&lt;br&gt; - ORACLE8I_DB (Oracle Non Spatial)&#13;&lt;br&gt; - ORACLE8I (Oracle Spatial Object) - by permission&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1297 -2357"
+#! TOP_LEFT="1297 -2357"
+#! BOTTOM_RIGHT="1297 -2357"
+#! BOUNDING_RECT="1297 -2357 0 0"
+#! ORDER="12"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="15"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;ORACLE NON SPATIAL AND SPATIAL OBJECT fast facts&#13;&lt;br&gt;&#13;&lt;br&gt; - Destination Oracle Service: idwprod1.bcgov&#13;&lt;br&gt; - Username: &amp;lt;destination schema&amp;gt;&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="2335 -2440"
+#! TOP_LEFT="2335 -2440"
+#! BOTTOM_RIGHT="2335 -2440"
+#! BOUNDING_RECT="2335 -2440 0 0"
+#! ORDER="13"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="14"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;ESRI ArcSDE (SDE30) WRITER fast facts&#13;&lt;br&gt;&#13;&lt;br&gt; - Coordinate System: BCALB-83&#13;&lt;br&gt; - ArcSDE Dataset: idwprod1.bcgov&#13;&lt;br&gt; - ArcSDE Server name: bcgwtst.bcgov&#13;&lt;br&gt; - Instance: port:5153&#13;&lt;br&gt; - User ID: &amp;lt;destination schema&amp;gt;&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="2501 -2110"
+#! TOP_LEFT="2501 -2110"
+#! BOTTOM_RIGHT="2501 -2110"
+#! BOUNDING_RECT="2501 -2110 0 0"
+#! ORDER="14"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="21"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;FILE NAMING CONVENTION&#13;&lt;br&gt;&#13;&lt;br&gt;Components, separated by underscore characters ( _ )&#13;&lt;br&gt;&#13;&lt;br&gt;Components:&#13;&lt;br&gt;   Destination layer name (warehouse name in full)&#13;&lt;br&gt; _Source location&#13;&lt;br&gt; _Source format&#13;&lt;br&gt; _Destination location&#13;&lt;br&gt;  .fmw&#13;&lt;br&gt;&#13;&lt;br&gt;Examples:&#13;&lt;br&gt; cbm_intgd_cadastral_fabric_sp_icfprd_sde_idwdlvr1.fmw&#13;&lt;br&gt; raad_aoa_provincial_staging_shp_idwprod1.fmw&#13;&lt;br&gt; spi_wildlife_nonsensitive_sp_idwprod1_svw_idwprod1.fmw&#13;&lt;br&gt; site_env_remediation_sites_sp_idwprod1_odb_idwprod1.fmw&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="181 -2886"
+#! TOP_LEFT="181 -2886"
+#! BOTTOM_RIGHT="181 -2886"
+#! BOUNDING_RECT="181 -2886 0 0"
+#! ORDER="15"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="8"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;DELIVERY PACKAGE&#13;&lt;br&gt;&#13;&lt;br&gt;Container structure&#13;&lt;br&gt;       &amp;lt;container&amp;gt;&#13;&lt;br&gt;                 this workbench.fmw&#13;&lt;br&gt;                 &amp;lt;bin&amp;gt;&#13;&lt;br&gt;                       DataBCWhse.py&#13;&lt;br&gt;                  &amp;lt;docs&amp;gt;&#13;&lt;br&gt;                       fme2012template.docx&#13;&lt;br&gt;                  &amp;lt;outputs&amp;gt;&#13;&lt;br&gt;                        &amp;lt;audt&amp;gt; &#13;&lt;br&gt;                                etlFileChangeLog.txt&#13;&lt;br&gt;                                etlPopulationLog.txt&#13;&lt;br&gt;                        &amp;lt;failed_features&amp;gt;&#13;&lt;br&gt;                                {tester outputs}&#13;&lt;br&gt;                        &amp;lt;log&amp;gt;&#13;&lt;br&gt;                                 this workbench.log&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="186 -2111"
+#! TOP_LEFT="186 -2111"
+#! BOTTOM_RIGHT="186 -2111"
+#! BOUNDING_RECT="186 -2111 0 0"
+#! ORDER="16"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="10"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;WORKSPACE PROPERTIES&#13;&lt;br&gt;&#13;&lt;br&gt;Complete workspace properties according to the instructions&#13;&lt;br&gt;provided as template values at the bottom of the Navigator widow&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="147 -3587"
+#! TOP_LEFT="147 -3587"
+#! BOTTOM_RIGHT="147 -3587"
+#! BOUNDING_RECT="147 -3587 0 0"
+#! ORDER="17"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="24"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;PRIVATE PARAMETERS&#13;&lt;br&gt;&#13;&lt;br&gt;Publish the following parameters:&#13;&lt;br&gt; - Any data source name&#13;&lt;br&gt; - Any destination data service name&#13;&lt;br&gt;&#13;&lt;br&gt;Add new published parameters for any&#13;&lt;br&gt;destination dataset being populated, with&#13;&lt;br&gt;the following characteristics:&#13;&lt;br&gt; - Type: text&#13;&lt;br&gt; - Name: DestFeature*&#13;&lt;br&gt; - Prompt: Destination Feature *&#13;&lt;br&gt; - Default Value: &amp;lt;name of destination feature&amp;gt;&#13;&lt;br&gt;&#13;&lt;br&gt;* a number to distinguish between &#13;&lt;br&gt;  multiple destination features.&#13;&lt;br&gt;&#13;&lt;br&gt;Template includes private parameters:&#13;&lt;br&gt; - LogURL: URL to centralized logging service&#13;&lt;br&gt; - NotificationEmail: contact email&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="2453 -2914"
+#! TOP_LEFT="2453 -2914"
+#! BOTTOM_RIGHT="2453 -2914"
+#! BOUNDING_RECT="2453 -2914 0 0"
+#! ORDER="18"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="23"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;WORKSPACE PARAMETERS&#13;&lt;br&gt;&#13;&lt;br&gt; - Workspace Title: name of script, less file extension&#13;&lt;br&gt; - Log File: .\outputs\log\&amp;lt;Workspace Title&amp;gt;.log&#13;&lt;br&gt; - Password: &amp;lt;no password&amp;gt;&#13;&lt;br&gt; - Startup Python Script: &amp;lt;provided&amp;gt;&#13;&lt;br&gt; - Shutdown Python Script: &amp;lt;provided&amp;gt;&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1411 -3351"
+#! TOP_LEFT="1411 -3351"
+#! BOTTOM_RIGHT="1411 -3351"
+#! BOUNDING_RECT="1411 -3351 0 0"
+#! ORDER="19"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="22"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;DESTINATION FEATURE PARAMETERS&#13;&lt;br&gt;&#13;&lt;br&gt;Available on the properties pagefor each Destination Feature:&#13;&lt;br&gt; - Table Exists: Yes&#13;&lt;br&gt; - Drop Table First: N&#13;&lt;br&gt; - Truncate Table First: Y&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1339 -2973"
+#! TOP_LEFT="1339 -2973"
+#! BOTTOM_RIGHT="1339 -2973"
+#! BOUNDING_RECT="1339 -2973 0 0"
+#! ORDER="20"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="4"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;Data Flow&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1056 0"
+#! TOP_LEFT="1056 0"
+#! BOTTOM_RIGHT="1056 0"
+#! BOUNDING_RECT="1056 0 0 0"
+#! ORDER="21"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="REGULAR"
+#! ANCHORED_NODE="0"
+#! />
+#! <COMMENT
+#! IDENTIFIER="56"
+#! COMMENT_VALUE="&lt;html&gt;&lt;body&gt;Destination Types&lt;/body&gt;&lt;/html&gt;"
+#! POSITION="1612 -11"
+#! TOP_LEFT="1612 -11"
+#! BOTTOM_RIGHT="1612 -11"
+#! BOUNDING_RECT="1612 -11 0 0"
+#! ORDER="25"
+#! FOLLOW_ANCHOR="true"
+#! INFO_NODE="false"
+#! COLOUR="1,1,0.784314,0.192157"
+#! SIZE_POLICY="10"
+#! COMMENT_TYPE="DEST_HEADER"
+#! ANCHORED_NODE="0"
+#! />
+#! </COMMENTS>
+#! <CONSTANTS>
+#! </CONSTANTS>
+#! <BOOKMARKS>
+#! <BOOKMARK
+#! IDENTIFIER="17"
+#! NAME="Setup and Configuration"
+#! DESCRIPTION="&lt;html&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;"
+#! TOP_LEFT="107 -2014"
+#! BOTTOM_RIGHT="1232 -3883"
+#! BOUNDING_RECT="107 -2014 1125 1869"
+#! STICKY="true"
+#! COLOUR="0.0784314,0.0784314,0.756863"
+#! CONTENTS="10 8 21 "
+#! />
+#! <BOOKMARK
+#! IDENTIFIER="16"
+#! NAME="Readers and Writers"
+#! DESCRIPTION="&lt;html&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;"
+#! TOP_LEFT="1268 -2021"
+#! BOTTOM_RIGHT="3356 -2703"
+#! BOUNDING_RECT="1268 -2021 2088 682"
+#! STICKY="true"
+#! COLOUR="1,0.501961,0"
+#! CONTENTS="13 15 14 12 "
+#! />
+#! <BOOKMARK
+#! IDENTIFIER="25"
+#! NAME="Parameters and Settings"
+#! DESCRIPTION="&lt;html&gt;&lt;body&gt;&lt;/body&gt;&lt;/html&gt;"
+#! TOP_LEFT="1276 -2753"
+#! BOTTOM_RIGHT="3373 -3887"
+#! BOUNDING_RECT="1276 -2753 2097 1134"
+#! STICKY="true"
+#! COLOUR="0.819608,0.501961,0.976471"
+#! CONTENTS="24 23 22 "
+#! />
+#! </BOOKMARKS>
+#! <TRANSFORMERS>
+#! </TRANSFORMERS>
+#! <FEAT_LINKS>
+#! </FEAT_LINKS>
+#! <BREAKPOINTS>
+#! </BREAKPOINTS>
+#! <ATTR_LINKS>
+#! </ATTR_LINKS>
+#! <SUBDOCUMENTS>
+#! <SUBDOCUMENT
+#! NAME="ArcSDELockRemover"
+#! DOC_DYNAMIC_INPUT_ATTRS="0"
+#! REQUIREMENTS_KEYWORD=""
+#! REQUIREMENTS=""
+#! DESCRIPTION="Test description&#10;"
+#! LEGAL_TERMS_CONDITIONS=""
+#! VIEW_POSITION="0 0"
+#! FME_PROCESS_GROUP_BY=""
+#! IS_VISIBLE="false"
+#! USAGE=""
+#! TITLE="ArcSDELockRemover"
+#! DOC_TOP_LEFT="0 0"
+#! HISTORY=""
+#! SUPPRESS_UPGRADE="false"
+#! FME_DOCUMENT_GUID=""
+#! XFORM_DEPRECATED="No"
+#! ZOOM_SCALE="99"
+#! FME_DOCUMENT_PRIORGUID=""
+#! DOC_EXTENTS="0 0"
+#! CATEGORY="DataBC"
+#! FME_PROCESS_COUNT="NO_PARALLELISM"
+#! FME_PROCESS_GROUPS_ORDERED="No"
+#! >
+#! <GLOBAL_PARAMETERS>
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI TEXT Data_Source Destination Instance:"
+#! DEFAULT_VALUE="idwprod1.bcgov"
 #! IS_STAND_ALONE="true"
 #! />
 #! <GLOBAL_PARAMETER
-#! GUI_LINE="GUI OPTIONAL IGNORE TEXT_EDIT_PYTHON_PARM LOG_FILE Python Script:"
-#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getFMWLogFileRelativePath&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
-#! IS_STAND_ALONE="false"
+#! GUI_LINE="GUI TEXT User_ID User ID:"
+#! DEFAULT_VALUE=""
+#! IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI PASSWORD Password Password:"
+#! DEFAULT_VALUE=""
+#! IS_STAND_ALONE="true"
 #! />
 #! </GLOBAL_PARAMETERS>
 #! <COMMENTS>
@@ -127,20 +707,19 @@
 #! </BREAKPOINTS>
 #! <ATTR_LINKS>
 #! </ATTR_LINKS>
-#! <SUBDOCUMENTS>
+#! </SUBDOCUMENT>
 #! </SUBDOCUMENTS>
 #! <LOOKUP_TABLES>
 #! </LOOKUP_TABLES>
 #! </WORKSPACE>
 #! 
+GUI IGNORE DestDataset_SDE30_1,_OUT_SDE3Server_SDE30_1,_OUT_SDE3Instance_SDE30_1,_OUT_SDE3UserName_SDE30_1,_OUT_SDE3Password_SDE30_1,_OUT_SDE3Version_SDE30_1,_ADD_LAYERS_TO_EXISTING_TABLES_SDE30_1,_TRANSACTION_INTERVAL_SDE30_1,_WRITER_MODE_SDE30_1,_TRANSACTION_SDE30_1,_BUFFERED_WRITES_SDE30_1,_REJECTED_PIPELINE_DIRECTORY_SDE30_1,_CONTINUE_TRANSLATION_BAD_DATA_SDE30_1,_MAX_OPEN_TABLES_SDE30_1,_INTEGER_OVERRIDE_DEFINITION_SDE30_1,_STRICT_LOAD_SDE30_1,_FORCE_IN_AGGREGATES_SDE30_1,_DEFAULT_Z_VALUE_SDE30_1,_LEAVE_LAYER_EXTENTS_SDE30_1,_SPLIT_DONUTS_SDE30_1,SDE30_OUT_RECONCILE_AND_POST_SDE30_1,SDE30_OUT_TABLES_TO_RECONCILE_SDE30_1,SDE30_OUT_DELETE_CHILD_AFTER_RECONCILE_AND_POST_SDE30_1,SDE30_OUT_WRITE_TO_CURRENT_STATE_SDE30_1
+DEFAULT_MACRO DEST_SCHEMA <DESTINATION SCHEMA>
+GUI TEXT DEST_SCHEMA Destination Schema:
+DEFAULT_MACRO DEST_FEATURE_1 <DESTINATION TABLE>
+GUI TEXT DEST_FEATURE_1 Destination Feature 1:
 DEFAULT_MACRO DEST_DB_ENV_KEY DLV
 GUI OPTIONAL STRING_OR_CHOICE DEST_DB_ENV_KEY DLV%TST%PRD Destination Database Keyword (DLV|TST|PRD):
-DEFAULT_MACRO DEST_SCHEMA 
-GUI OPTIONAL TEXT DEST_SCHEMA Destination Schema (upper case please):
-DEFAULT_MACRO DEST_FEATURE_1 
-GUI OPTIONAL TEXT DEST_FEATURE_1 Destination Feature 1:
-DEFAULT_MACRO FILE_CHANGE_DETECTION TRUE
-GUI OPTIONAL CHOICE FILE_CHANGE_DETECTION TRUE%FALSE Whether to use file change detection or not:
 INCLUDE PYTHON
 def ParamFunc():
   import DataBCFMWTemplate
@@ -159,7 +738,6 @@ def ParamFunc():
   import DataBCFMWTemplate
   params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
   return params.getDestinationSDEPort()
-  
   
 value = ParamFunc()
 macroName = 'DEST_PORT'
@@ -183,6 +761,7 @@ else:
 END_INCLUDE
 INCLUDE PYTHON
 def ParamFunc():
+  
   import DataBCFMWTemplate
   params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
   return params.getDestinationInstance()
@@ -201,41 +780,232 @@ def ParamFunc():
   return params.getFMWLogFileRelativePath()
   
 value = ParamFunc()
-macroName = 'LOG_FILE'
+macroName = 'LOGFILE'
 if value == None:
   return { macroName : '' }
 else:
   return { macroName : str(value) }
 END_INCLUDE
-INCLUDE [ if {{$(DEST_SERVER)} == {}} { puts_real {Parameter 'DEST_SERVER' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(DEST_SCHEMA)} == {}} { puts_real {Parameter 'DEST_SCHEMA' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(DEST_FEATURE_1)} == {}} { puts_real {Parameter 'DEST_FEATURE_1' must be given a value.}; exit 1; }; ]
 INCLUDE [ if {{$(DEST_PORT)} == {}} { puts_real {Parameter 'DEST_PORT' must be given a value.}; exit 1; }; ]
-INCLUDE [ if {{$(DEST_PASSWORD)} == {}} { puts_real {Parameter 'DEST_PASSWORD' must be given a value.}; exit 1; }; ]
 INCLUDE [ if {{$(DEST_INSTANCE)} == {}} { puts_real {Parameter 'DEST_INSTANCE' must be given a value.}; exit 1; }; ]
 #! START_HEADER
+# ============================================================================
+# The following line defines the title presented to the user when this
+# mapping file is run through the FME GUI.  You may modify this
+# if a more meaningful title would be appropriate.
+GUI TITLE DBF to ORACLE8I_DB Translation
+# ============================================================================
+# The following line names the log file to which useful statistics about
+# the translation will be written.  This line can be uncommented and
+# updated if you do wish to keep these statistics.
+# LOG_FILENAME translation.log
+# LOG_APPEND NO
+# ============================================================================
+# The following line instructs the FME to log any features that do not
+# match any of the source feature patterns listed further down in
+# this file.  If you are modifying this mapping file, this will be
+# useful to describe to you exactly which features you are losing
+# during translation, if the statistics indicate that features are
+# not being correlated or grouped.  Uncorrelated features do not
+# match any source specification, ungrouped features do not have
+# any corresponding _DEF line.
+# FME_DEBUG UNGROUPED UNCORRELATED
+# ============================================================================
+# The following two lines define the type of reader and writer to be
+# used for this translation.  If you want to translate your data
+# back into its original format, you may make a copy of this file
+# and switch the reader and writer types.  If you rerun the FME, you
+# will get your original data back again (together with any modifications
+# you made in the meantime).  Note that several formats are NOT
+# bi-directional (for example, GIF can only be used as a WRITER)
+# so a reverse translation may not always be possible.
 #! START_WB_HEADER
 READER_TYPE NULL
 READER_KEYWORD NULL_SOURCE
 NULL_SOURCE_DATASET null
-WRITER_TYPE NULL
-WRITER_KEYWORD NULL_DEST
-NULL_DEST_DATASET null
+WRITER_TYPE MULTI_WRITER
+MULTI_WRITER_DATASET_ORDER BY_ID
+MULTI_WRITER_FIRST_WRITER_ID 0
+MULTI_WRITER_TYPE{0} SDE30
+MULTI_WRITER_KEYWORD{0} SDE30_1
 #! END_WB_HEADER
+#! START_WB_HEADER
+MACRO WB_KEYWORD "SDE30_1"
+#! END_WB_HEADER
+#! START_DEST_HEADER SDE30 SDE30_1
+# ============================================================================
+# The following GUI line prompts for the name of the SDE dataset.
+# to which data will be written.
+#! END_DEST_HEADER
+#! START_WB_HEADER
+DEFAULT_MACRO DestDataset
+INCLUDE [ if {"$(DestDataset)" != ""} {                          \
+ puts {DEFAULT_MACRO DestDataset_SDE30_1 $(DestDataset)}         \
+ } ]
+#! END_WB_HEADER
+#! START_DEST_HEADER SDE30 SDE30_1
+DEFAULT_MACRO DestDataset_SDE30_1 $(DEST_INSTANCE)
+GUI TEXT DestDataset_SDE30_1 Destination ArcSDE Dataset:
+# ============================================================================
+# The following GUI line prompts for the name of the host machine on which.
+# the SDE Server runs.
+DEFAULT_MACRO _OUT_SDE3Server_SDE30_1 $(DEST_SERVER)
+GUI OPTIONAL TEXT _OUT_SDE3Server_SDE30_1 Server Name:
+SDE30_1_SERVER "$(_OUT_SDE3Server_SDE30_1)"
+# ============================================================================
+# The following GUI line prompts for the instance
+DEFAULT_MACRO _OUT_SDE3Instance_SDE30_1 $(DEST_PORT)
+GUI TEXT _OUT_SDE3Instance_SDE30_1 Instance:
+SDE30_1_INSTANCE "$(_OUT_SDE3Instance_SDE30_1)"
+# ============================================================================
+# The following GUI line prompts for the user name to use for
+# accessing the SDE dataset.
+DEFAULT_MACRO _OUT_SDE3UserName_SDE30_1 $(DEST_SCHEMA)
+GUI OPTIONAL TEXT _OUT_SDE3UserName_SDE30_1 User ID:
+SDE30_1_USERID "$(_OUT_SDE3UserName_SDE30_1)"
+# ============================================================================
+# The following GUI line prompts for the user password.
+DEFAULT_MACRO _OUT_SDE3Password_SDE30_1 $(DEST_PASSWORD)
+GUI OPTIONAL PASSWORD _OUT_SDE3Password_SDE30_1 Password:
+SDE30_1_PASSWORD "$(_OUT_SDE3Password_SDE30_1)"
+# ============================================================================
+# The following GUI line prompts for the SDE version.
+DEFAULT_MACRO _OUT_SDE3Version_SDE30_1 SDE.DEFAULT
+GUI TEXT _OUT_SDE3Version_SDE30_1 Version:
+SDE30_1_VERSION_NAME "$(_OUT_SDE3Version_SDE30_1)"
+# ============================================================================
+# The following GUI line prompts for the SDE version.
+DEFAULT_MACRO _ADD_LAYERS_TO_EXISTING_TABLES_SDE30_1 NO
+GUI CHOICE _ADD_LAYERS_TO_EXISTING_TABLES_SDE30_1 YES%NO Add Layers to Existing Tables
+SDE30_1_ADD_LAYERS_TO_EXISTING_TABLES "$(_ADD_LAYERS_TO_EXISTING_TABLES_SDE30_1)"
+# ============================================================================
+# This option specifies how many features will be written to the SDE on each
+# transaction.
+DEFAULT_MACRO _TRANSACTION_INTERVAL_SDE30_1 100
+GUI INT_OR_CHOICE _TRANSACTION_INTERVAL_SDE30_1 VARIABLE Features to Write Per Transaction:
+SDE30_1_TRANSACTION_INTERVAL $(_TRANSACTION_INTERVAL_SDE30_1)
+# ============================================================================
+# The following specifies what mode the SDE writer will use. INSERT (thedefault)
+# results in the writer not checking SDE for duplicate key values in the database,
+# which is useful when loading new data into the SDE. UPDATE will cause the writer
+# to check update attributes for duplicates.
+DEFAULT_MACRO _WRITER_MODE_SDE30_1 INSERT
+GUI CHOICE _WRITER_MODE_SDE30_1 INSERT%UPDATE Writer Mode:
+SDE30_1_WRITER_MODE $(_WRITER_MODE_SDE30_1)
+# ============================================================================
+# This option specifies the start transaction for the SDE writer. Normally
+# this will be zero, which will write every feature to the SDE, but it might
+# be another value if a previous translation was interrupted.
+DEFAULT_MACRO _TRANSACTION_SDE30_1 0
+GUI OPTIONAL INTEGER _TRANSACTION_SDE30_1 Last Successful Transaction:
+SDE30_1_TRANSACTION $(_TRANSACTION_SDE30_1)
+# ============================================================================
+# This option specifies whether the FME should use buffered writes or not.
+DEFAULT_MACRO _BUFFERED_WRITES_SDE30_1 NO
+GUI CHOICE _BUFFERED_WRITES_SDE30_1 YES%NO Use Buffered Writes:
+SDE30_1_BUFFERED_WRITES $(_BUFFERED_WRITES_SDE30_1)
+# ============================================================================
+# This option specifies the directory for rejected pipeline files.
+DEFAULT_MACRO _REJECTED_PIPELINE_DIRECTORY_SDE30_1 
+GUI OPTIONAL DIRNAME _REJECTED_PIPELINE_DIRECTORY_SDE30_1 Rejected Pipeline Directory:
+SDE30_1_REJECTED_PIPELINE_DIRECTORY "$(_REJECTED_PIPELINE_DIRECTORY_SDE30_1)"
+# ============================================================================
+# This option specifies whether FME should keep writing data when it runs
+# into bad data.
+DEFAULT_MACRO _CONTINUE_TRANSLATION_BAD_DATA_SDE30_1 NO
+GUI CHOICE _CONTINUE_TRANSLATION_BAD_DATA_SDE30_1 YES%NO%ROLLBACK_THEN_CONTINUE Skip Bad Data:
+SDE30_1_CONTINUE_TRANSLATION_BAD_DATA $(_CONTINUE_TRANSLATION_BAD_DATA_SDE30_1)
+# ============================================================================
+# This option specifies the maximum number of streams that can be open to
+# the SDE simultaneously.
+DEFAULT_MACRO _MAX_OPEN_TABLES_SDE30_1 
+GUI OPTIONAL INTEGER _MAX_OPEN_TABLES_SDE30_1 Maximum Num of Open Tables:
+SDE30_1_MAX_OPEN_TABLES $(_MAX_OPEN_TABLES_SDE30_1)
+# ============================================================================
+# This option specifies the definition to use for an integer field
+# when creating a new table.
+DEFAULT_MACRO _INTEGER_OVERRIDE_DEFINITION_SDE30_1 
+GUI OPTIONAL TEXT _INTEGER_OVERRIDE_DEFINITION_SDE30_1 Integer Definition:
+SDE30_1_INTEGER_OVERRIDE_DEFINITION $(_INTEGER_OVERRIDE_DEFINITION_SDE30_1)
+# ============================================================================
+# This option specifies whether the FME should be strict when loading data into SDE.
+# If this is set to true, the FME will stop translating on the first sign of
+# trouble from the SDE.
+DEFAULT_MACRO _STRICT_LOAD_SDE30_1 NO
+GUI CHOICE _STRICT_LOAD_SDE30_1 YES%NO Strict SDE Load:
+SDE30_1_STRICT_LOAD $(_STRICT_LOAD_SDE30_1)
+# ============================================================================
+# This option specifies whether the FME will make extra effort to store
+# aggregates in the SDE. This may break apart aggregates.
+DEFAULT_MACRO _FORCE_IN_AGGREGATES_SDE30_1 NO
+GUI CHOICE _FORCE_IN_AGGREGATES_SDE30_1 YES%NO Force In Aggregates:
+SDE30_1_FORCE_IN_AGGREGATES $(_FORCE_IN_AGGREGATES_SDE30_1)
+# ============================================================================
+# This option specifies what z-value should be given to two-dimensional features.
+DEFAULT_MACRO _DEFAULT_Z_VALUE_SDE30_1 0
+GUI INTEGER _DEFAULT_Z_VALUE_SDE30_1 Default Z Value:
+SDE30_1_DEFAULT_Z_VALUE $(_DEFAULT_Z_VALUE_SDE30_1)
+# ============================================================================
+# This option specifies whether FME should update the layer extents when
+# writing to the SDE
+DEFAULT_MACRO _LEAVE_LAYER_EXTENTS_SDE30_1 NO
+GUI CHOICE _LEAVE_LAYER_EXTENTS_SDE30_1 YES%NO Leave Layer Extents:
+SDE30_1_LEAVE_LAYER_EXTENTS $(_LEAVE_LAYER_EXTENTS_SDE30_1)
+# ============================================================================
+# This option specifies whether FME should split donuts into simple polygons
+# when writing to the SDE
+DEFAULT_MACRO _SPLIT_DONUTS_SDE30_1 NO
+GUI CHOICE _SPLIT_DONUTS_SDE30_1 YES%NO Store Donuts as Polygons:
+SDE30_1_SPLIT_DONUTS $(_SPLIT_DONUTS_SDE30_1)
+# ============================================================================
+# This option specifies whether we are to reconcile the changes between the
+# version specified by VERSION_NAME and its parent version and then post those
+# changes to the parent version. If the directive TABLES_TO_RECONCILE is not
+# specified, then only those tables that were edited during the current
+# translation will be reconciled and posted.
+DEFAULT_MACRO SDE30_OUT_RECONCILE_AND_POST_SDE30_1 
+GUI OPTIONAL LISTBOX SDE30_OUT_RECONCILE_AND_POST_SDE30_1 ALL%INSERTS%UPDATES%DELETES Reconcile and Post:
+SDE30_1_RECONCILE_AND_POST $(SDE30_OUT_RECONCILE_AND_POST_SDE30_1)
+# ============================================================================
+# This option specifies which tables to reconcile, when the directive
+# RECONCILE_AND_POST has been specified. Using this keyword it is possible
+# to specify tables that were not edited during the current translation.
+DEFAULT_MACRO SDE30_OUT_TABLES_TO_RECONCILE_SDE30_1 
+GUI OPTIONAL TEXT SDE30_OUT_TABLES_TO_RECONCILE_SDE30_1 Tables to Reconcile:
+SDE30_1_TABLES_TO_RECONCILE $(SDE30_OUT_TABLES_TO_RECONCILE_SDE30_1)
+# ============================================================================
+# Decide whether or not to delete the child state after a reconcile and post operation
+DEFAULT_MACRO SDE30_OUT_DELETE_CHILD_AFTER_RECONCILE_AND_POST_SDE30_1 YES
+GUI CHOICE SDE30_OUT_DELETE_CHILD_AFTER_RECONCILE_AND_POST_SDE30_1 YES%NO Delete child state following reconcile and post:
+SDE30_1_DELETE_CHILD_AFTER_RECONCILE_AND_POST $(SDE30_OUT_DELETE_CHILD_AFTER_RECONCILE_AND_POST_SDE30_1)
+# ============================================================================
+# Decide whether or not to write features to the current state or child state
+DEFAULT_MACRO SDE30_OUT_WRITE_TO_CURRENT_STATE_SDE30_1 NO
+GUI CHOICE SDE30_OUT_WRITE_TO_CURRENT_STATE_SDE30_1 YES%NO Write To Current State:
+SDE30_1_WRITE_TO_CURRENT_STATE $(SDE30_OUT_WRITE_TO_CURRENT_STATE_SDE30_1)
+SDE30_1_DATASET "$(DestDataset_SDE30_1)"
+#! END_DEST_HEADER
 #! END_HEADER
 
-LOG_FILENAME "$(LOG_FILE)"
+LOG_FILENAME "$(LOGFILE)"
 LOG_APPEND NO
 LOG_MAX_FEATURES 200
 LOG_MAX_RECORDED_FEATURES 200
 LOG_MAX_PRECISION Yes
 FME_REPROJECTION_ENGINE FME
-FME_IMPLICIT_CSMAP_REPROJECTION_MODE Auto
-FME_GEOMETRY_HANDLING Enhanced
+FME_IMPLICIT_CSMAP_REPROJECTION_MODE Datum
+FME_GEOMETRY_HANDLING Classic
 FME_STROKE_MAX_DEVIATION 0
+MAPPING_FILE_ID SDEGEODB_TO_BCGW
 LOG_FILTER_MASK -1
+DEFAULT_MACRO DATASET_KEYWORD_SDE30_1 SDE30_1
 # -------------------------------------------------------------------------
 
+SDE30_1_COORDINATE_SYSTEM BCALB-83
 MULTI_READER_CONTINUE_ON_READER_FAILURE No
-FME_BEGIN_PYTHON_ENC import<space>fme<lf>import<space>DataBCFMWTemplate<lf>start<space>=<space>DataBCFMWTemplate.Start<openparen>fme<closeparen><lf>start.startup<openparen><closeparen><lf>
+FME_BEGIN_PYTHON_ENC import<space>fme<lf>import<space>DataBCFMWTemplate<lf>start<space>=<space>DataBCFMWTemplate.Start<openparen>fme<closeparen><lf>start.startup<openparen><closeparen><lf><lf>
 FME_END_PYTHON_ENC import<space>fme<lf>import<space>DataBCFMWTemplate<lf>shutIt<space>=<space>DataBCFMWTemplate.Shutdown<openparen>fme<closeparen><lf>shutIt.shutdown<openparen><closeparen><lf>
 
 # -------------------------------------------------------------------------
@@ -250,3 +1020,5 @@ FACTORY_DEF * RoutingFactory FACTORY_NAME "Destination Feature Type Routing Corr
 
 FACTORY_DEF * TeeFactory   FACTORY_NAME "Final Output Nuker"   INPUT FEATURE_TYPE __nuke_me__
 
+# -------------------------------------------------------------------------
+SDE30_1_DEF "$(DEST_SCHEMA).OG_ANCILLARY_OTHER_APPS_GOV_SP"   SDE_DROP_TABLE               N   SDE_TRUNCATE_TABLE           Y

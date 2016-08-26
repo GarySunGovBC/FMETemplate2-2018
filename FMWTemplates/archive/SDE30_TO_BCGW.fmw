@@ -5,7 +5,7 @@
 #    Command-line to run this workspace:
 #    
 #    
-#    E:\sw_nt\FME2015\fme.exe Z:\scripts\python\DataBCFmeTemplate2\FMWTemplates\SDE30_TO_BCGW.fmw
+#    E:\sw_nt\FME2015\fme.exe Z:\scripts\python\DataBCFmeTemplate2\FMWTemplates\archive\SDE30_TO_BCGW.fmw
 #          --DEST_SCHEMA "<DESTINATION_SCHEMA>"
 #          --DEST_FEATURE_1 "<DESTINATION_TABLE>"
 #          --DEST_DB_ENV_KEY "DLV"
@@ -17,50 +17,50 @@
 #          --SRC_ORA_SCHEMA "<SOURCE_ORACLE_SCHEMA>"
 #    
 #    
-#! ZOOM_SCALE="75"
-#! FME_STROKE_MAX_DEVIATION="0"
-#! VIEW_POSITION="-304.003 44.0004"
-#! REDIRECT_TERMINATORS="NONE"
-#! LAST_SAVE_BUILD="FME(R) 2015.1.2.0 (20150911 - Build 15538 - WIN32)"
 #! SOURCE_ROUTING_FILE=""
-#! STRICT_PARAMETER_VALIDATION="false"
-#! TITLE="SDE30_TO_BCGW"
-#! PASSWORD=""
-#! SOURCE="NONE"
-#! MULTI_WRITER_DATASET_ORDER="BY_ID"
-#! FME_IMPLICIT_CSMAP_REPROJECTION_MODE="Datum"
-#! FME_GEOMETRY_HANDLING="Classic"
-#! DOC_EXTENTS="3276 2812"
-#! DESTINATION_ROUTING_FILE=""
-#! REQUIREMENTS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List dependencies specific to this replication &lt;/p&gt;&#10;"
-#! LOG_MAX_PRECISION="Yes"
-#! LAST_SAVE_DATE="2016-08-17T14:06:07"
-#! WORKSPACE_VERSION="1"
-#! END_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;shutIt&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Shutdown&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;shutIt.shutdown&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
-#! HISTORY=""
-#! FME_DOCUMENT_PRIORGUID="5fb22768-e321-4932-85a2-e8162793ea4c,169249b6-6f08-497b-89de-130ead777590,6d1d0829-356e-4963-a403-b67abcaf741a,fbc5c269-2fae-42cc-9ec1-f1362da83ff5,65b435b4-7688-407f-b759-57818a803f44"
-#! BEGIN_TCL=""
 #! BEGIN_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;start&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Start&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;start.startup&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;lf&gt;"
-#! MAX_LOG_FEATURES="200"
-#! WARN_INVALID_XFORM_PARAM="No"
-#! USAGE="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Describe expected replication schedule &lt;/p&gt;&#10;"
-#! ATTR_TYPE_ENCODING="SDF"
-#! END_TCL=""
-#! FME_REPROJECTION_ENGINE="FME"
-#! SHOW_ANNOTATIONS="true"
 #! LOG_FILE="$(LOGFILE)"
-#! CATEGORY="DataBC Warehouse Replication"
-#! DESTINATION="NONE"
 #! SHOW_INFO_NODES="true"
-#! IGNORE_READER_FAILURE="No"
-#! DOC_TOP_LEFT="58 -2812"
-#! DESCRIPTION="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List Source and Destination datasets and describe any inline data manipulations &lt;/p&gt;&#10;"
-#! LOG_MAX_RECORDED_FEATURES="200"
-#! FME_BUILD_NUM="15538"
-#! FME_DOCUMENT_GUID="611ade06-6008-45d2-a14f-bc105b58b813"
+#! FME_IMPLICIT_CSMAP_REPROJECTION_MODE="Datum"
 #! REQUIREMENTS_KEYWORD="none"
+#! STRICT_PARAMETER_VALIDATION="false"
+#! BEGIN_TCL=""
+#! IGNORE_READER_FAILURE="No"
+#! END_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;shutIt&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Shutdown&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;shutIt.shutdown&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! ATTR_TYPE_ENCODING="SDF"
+#! LAST_SAVE_DATE="2016-08-26T10:27:27"
+#! DOC_TOP_LEFT="58 -2812"
+#! TITLE="SDE30_TO_BCGW"
+#! SOURCE="NONE"
+#! REDIRECT_TERMINATORS="NONE"
+#! SHOW_ANNOTATIONS="true"
+#! FME_BUILD_NUM="15538"
+#! LOG_MAX_PRECISION="Yes"
+#! DESTINATION="NONE"
+#! ZOOM_SCALE="75"
+#! WORKSPACE_VERSION="1"
+#! END_TCL=""
+#! MULTI_WRITER_DATASET_ORDER="BY_ID"
+#! LAST_SAVE_BUILD="FME(R) 2015.1.2.0 (20150911 - Build 15538 - WIN32)"
+#! VIEW_POSITION="-304.003 44.0004"
+#! WARN_INVALID_XFORM_PARAM="No"
+#! PASSWORD=""
+#! CATEGORY="DataBC Warehouse Replication"
+#! LOG_MAX_RECORDED_FEATURES="200"
+#! MAX_LOG_FEATURES="200"
+#! HISTORY=""
+#! DESTINATION_ROUTING_FILE=""
+#! FME_GEOMETRY_HANDLING="Classic"
+#! USAGE="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Describe expected replication schedule &lt;/p&gt;&#10;"
 #! LEGAL_TERMS_CONDITIONS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Any portion of this document, or any information supplied by the Province in relation to this document may not be used or disclosed for any purpose other than for DataBC Warehouse Population Services. Without limiting the generality of the foregoing, the User agrees to hold in confidence all information supplied by the Province in relation to this document. &lt;/p&gt;&#10;"
+#! REQUIREMENTS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List dependencies specific to this replication &lt;/p&gt;&#10;"
+#! FME_DOCUMENT_GUID="8230c4ca-e04f-4c30-ba01-442dc4f7a137"
 #! FME_SERVER_SERVICES=""
+#! FME_DOCUMENT_PRIORGUID="5fb22768-e321-4932-85a2-e8162793ea4c,169249b6-6f08-497b-89de-130ead777590,6d1d0829-356e-4963-a403-b67abcaf741a,fbc5c269-2fae-42cc-9ec1-f1362da83ff5,65b435b4-7688-407f-b759-57818a803f44,611ade06-6008-45d2-a14f-bc105b58b813"
+#! DOC_EXTENTS="3276 2812"
+#! FME_STROKE_MAX_DEVIATION="0"
+#! DESCRIPTION="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List Source and Destination datasets and describe any inline data manipulations &lt;/p&gt;&#10;"
+#! FME_REPROJECTION_ENGINE="FME"
 #! >
 #! <DATASETS>
 #! <DATASET
@@ -76,7 +76,7 @@
 #! WRITE_DEFS="true"
 #! DEFLINE_TEMPLATE="SDE_CONFIG_KEYWORD {SDE_CONFIG_KEYWORD} SDE_LAYER {SDE_COLUMN_NAME} SDE_PRECISION {SDE_PRECISION} SDE_GRID{0} {SDE_GRID{0}} SDE_GRID{1} {SDE_GRID{1}} SDE_GRID{2} {SDE_GRID{2}} SDE_DIMENSION {SDE_DIMENSION} SDE_MEASURED {SDE_MEASURED} SDE_ANNOTATED {SDE_ANNOTATED} SDE_AREA {SDE_AREA} SDE_LINE {SDE_LINE} SDE_POINT {SDE_POINT} SDE_SIMPLE_LINE {SDE_SIMPLE_LINE} SDE_NIL {SDE_NIL} SDE_MULTIPART {SDE_MULTIPART} SDE_XORIGIN {SDE_XORIGIN} SDE_YORIGIN {SDE_YORIGIN} SDE_SCALE {SDE_SCALE} SDE_ZORIGIN {SDE_ZORIGIN} SDE_ZSCALE {SDE_ZSCALE} SDE_MEASURED_ORIGIN {SDE_MEASURED_ORIGIN} SDE_MEASURED_SCALE {SDE_MEASURED_SCALE}"
 #! DEFLINE_ATTRS="true"
-#! EXPOSABLE_ATTRS="sde30_text_string char(50) fme_basename char(50) SE_ROW_ID integer fme_rotation double sde30_text_x_location char(50) sde30_radius double sde30_measures char(50) sde30_text_x_leader char(50) fme_geometry fme_char(50) sde30_type char(50) sde30_text_y_offset double fme_feature_type char(50) sde30_text_size double multi_reader_keyword char(50) sde30_text_z_location char(50) fme_start_angle double fme_color char(50) sde30_text_symbol integer multi_reader_type char(50) fme_text_size double fme_sweep_angle double fme_secondary_axis double sde30_minor_axis double fme_text_string char(50) fme_type char(50) fme_dataset char(50) sde30_justification char(50) sde30_rotation double sde30_text_level integer sde30_major_axis double multi_reader_full_id integer sde30_num_points integer fme_primary_axis double sde30_text_y_leader char(50) sde30_text_x_offset double sde30_text_x double sde30_text_y_location char(50) sde30_text_y double sde30_text_z_leader char(50) sde30_text_z double sde30_text_gap_ratio double fme_fill_color char(50) multi_reader_id integer"
+#! EXPOSABLE_ATTRS="fme_basename char(50) fme_color char(50) sde30_text_gap_ratio double sde30_text_x_leader char(50) fme_secondary_axis double fme_dataset char(50) sde30_text_y_offset double sde30_text_y_location char(50) sde30_text_level integer sde30_num_points integer fme_primary_axis double fme_text_size double sde30_text_symbol integer multi_reader_type char(50) fme_feature_type char(50) sde30_rotation double sde30_justification char(50) sde30_type char(50) sde30_measures char(50) multi_reader_keyword char(50) sde30_text_x_location char(50) fme_rotation double sde30_minor_axis double sde30_text_y_leader char(50) sde30_radius double sde30_text_x_offset double sde30_text_size double fme_geometry fme_char(50) sde30_text_z_leader char(50) sde30_major_axis double fme_start_angle double SE_ROW_ID integer fme_fill_color char(50) multi_reader_id integer sde30_text_x double sde30_text_y double sde30_text_z double fme_sweep_angle double sde30_text_z_location char(50) multi_reader_full_id integer fme_type char(50) fme_text_string char(50) sde30_text_string char(50)"
 #! DEFLINE_PARMS=""
 #! ATTR_INDEX_TYPES=""
 #! ATTR_NAME_INVALID_CHARS=""
@@ -85,12 +85,12 @@
 #! DYNAMIC_FEATURE_TYPES_LIST_ON_MERGE="true"
 #! DATASET_TYPE="DATABASE"
 #! GENERATE_FME_BUILD_NUM="12238"
+#! FEATURE_TYPES=""
 #! MIN_FEATURES=""
-#! COORDSYS=""
+#! START_FEATURE=""
 #! MAX_FEATURES_PER_FEATURE_TYPE=""
 #! MAX_FEATURES=""
-#! FEATURE_TYPES=""
-#! START_FEATURE=""
+#! COORDSYS=""
 #! >
 #! <METAFILE_PARAMETER
 #! NAME="ADVANCED_PARMS"
@@ -110,7 +110,7 @@
 #! WRITE_DEFS="true"
 #! DEFLINE_TEMPLATE="SDE_CONFIG_KEYWORD $(_OUT_SDE3Config) SDE_COORD_SYS_ID &quot;&quot; SDE_COORD_SYS_DESCRIPTION &quot;&quot; SDE_DROP_TABLE N SDE_TRUNCATE_TABLE N SDE_LAYER SHAPE SDE_PRECISION 64 SDE_GRID{0} $(_OUT_SDE3Grid0) SDE_GRID{1} $(_OUT_SDE3Grid1) SDE_GRID{2} $(_OUT_SDE3Grid2) SDE_DIMENSION $(_OUT_SDE3Dimension) SDE_MEASURED N SDE_ANNOTATED Y SDE_AREA Y SDE_LINE Y SDE_POINT Y SDE_SIMPLE_LINE Y SDE_NIL Y SDE_MULTIPART Y SDE_CAD N SDE_XORIGIN $(_OUT_SDE3XOrigin) SDE_YORIGIN $(_OUT_SDE3YOrigin) SDE_ZORIGIN 0 SDE_MEASURED_ORIGIN 0 SDE_SCALE $(_OUT_SDE3Scale) SDE_ZSCALE 1 SDE_MEASURED_SCALE 1 SDE_TOLERANCE &quot;&quot; SDE_ZTOLERANCE &quot;&quot; SDE_MEASURED_TOLERANCE &quot;&quot;"
 #! DEFLINE_ATTRS="true"
-#! EXPOSABLE_ATTRS="sde30_text_string char(50) fme_basename char(50) SE_ROW_ID integer fme_rotation double sde30_text_x_location char(50) sde30_radius double sde30_measures char(50) sde30_text_x_leader char(50) fme_geometry fme_char(50) sde30_type char(50) sde30_text_y_offset double fme_feature_type char(50) sde30_text_size double sde30_text_z_location char(50) fme_start_angle double fme_color char(50) sde30_text_symbol integer fme_text_size double fme_db_operation char(6) fme_sweep_angle double fme_secondary_axis double sde30_minor_axis double fme_text_string char(50) fme_type char(50) fme_dataset char(50) sde30_rotation double sde30_justification char(50) sde30_text_level integer sde30_major_axis double sde30_num_points integer fme_primary_axis double sde30_text_y_leader char(50) sde30_text_x_offset double sde30_text_x double sde30_text_y_location char(50) sde30_text_y double sde30_text_z_leader char(50) sde30_text_z double sde30_text_gap_ratio double fme_fill_color char(50)"
+#! EXPOSABLE_ATTRS="fme_basename char(50) fme_color char(50) sde30_text_gap_ratio double sde30_text_x_leader char(50) fme_secondary_axis double fme_dataset char(50) sde30_text_y_offset double sde30_text_y_location char(50) sde30_text_level integer sde30_num_points integer fme_primary_axis double fme_text_size double sde30_text_symbol integer fme_feature_type char(50) sde30_rotation double sde30_justification char(50) sde30_type char(50) fme_db_operation char(6) sde30_measures char(50) sde30_text_x_location char(50) fme_rotation double sde30_minor_axis double sde30_text_y_leader char(50) sde30_radius double sde30_text_x_offset double sde30_text_size double fme_geometry fme_char(50) sde30_text_z_leader char(50) sde30_major_axis double fme_start_angle double SE_ROW_ID integer fme_fill_color char(50) sde30_text_x double sde30_text_y double sde30_text_z double fme_sweep_angle double sde30_text_z_location char(50) fme_type char(50) fme_text_string char(50) sde30_text_string char(50)"
 #! DEFLINE_PARMS="&quot;GUI DISABLE disabled Table exists&quot; No &quot;GUI TEXT SDE_CONFIG_KEYWORD Configuration Keyword&quot; DEFAULTS &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_COORD_SYS_ID Coordsys ID&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_COORD_SYS_DESCRIPTION Coordsys Description&quot; &quot;&quot; &quot;GUI OPTIONAL ALWAYS_ENABLED CHOICE SDE_DROP_TABLE Y%N Drop Table First&quot; N &quot;GUI OPTIONAL DISABLED_ONLY CHOICE SDE_TRUNCATE_TABLE Y%N Truncate Table First&quot; N &quot;GUI OPTIONAL WHOLE_LINE DISABLED_ONLY FORCE_DEFS ATTRLIST_COMMAS SDE_UPDATE_FIELDS Update Key Fields&quot; &quot;&quot; &quot;GUI TEXT SDE_LAYER Layer Keyword&quot; SHAPE &quot;GUI CHOICE SDE_PRECISION 32%64 Layer Precision&quot; 64 &quot;GUI FLOAT SDE_GRID{0} Grid 0 Size&quot; 100 &quot;GUI OPTIONAL FLOAT SDE_GRID{1} Grid 1 Size&quot; 0 &quot;GUI OPTIONAL FLOAT SDE_GRID{2} Grid 2 Size&quot; 0 &quot;GUI CHOICE SDE_DIMENSION 2%3 Dimension&quot; 2 &quot;GUI CHOICE SDE_MEASURED Y%N Allow Measures&quot; N &quot;GUI CHOICE SDE_ANNOTATED Y%N Allow Annotation&quot; Y &quot;GUI CHOICE SDE_AREA Y%N Allow Areas&quot; Y &quot;GUI CHOICE SDE_LINE Y%N Allow Lines&quot; Y &quot;GUI CHOICE SDE_POINT Y%N Allow Points&quot; Y &quot;GUI CHOICE SDE_SIMPLE_LINE Y%N Allow Simple Lines&quot; Y &quot;GUI CHOICE SDE_NIL Y%N Allow NIL Geometry&quot; Y &quot;GUI CHOICE SDE_MULTIPART Y%N Allow Multi Part Geometry&quot; Y &quot;GUI CHOICE SDE_CAD Y%N Allow CAD Data&quot; N &quot;GUI FLOAT SDE_XORIGIN X Origin &quot; 0 &quot;GUI FLOAT SDE_YORIGIN Y Origin &quot; 0 &quot;GUI FLOAT SDE_ZORIGIN Z Origin &quot; 0 &quot;GUI FLOAT SDE_MEASURED_ORIGIN Measures Origin &quot; 0 &quot;GUI FLOAT SDE_SCALE Scaling Factor&quot; 100 &quot;GUI FLOAT SDE_ZSCALE Z Scaling Factor&quot; 1 &quot;GUI FLOAT SDE_MEASURED_SCALE Measures Scaling Factor&quot; 1 &quot;GUI OPTIONAL FLOAT SDE_TOLERANCE Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL FLOAT SDE_ZTOLERANCE Z Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL FLOAT SDE_MEASURED_TOLERANCE Measures Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE CHOICE SDE_STORAGE_TYPE SDE_BINARY%WKB%SQL%NORMALIZED Storage Type&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_DESCRIPTION Layer Description&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE INTEGER SDE_MINIMUM_FID Minimum FID&quot; &quot;&quot; "
 #! ATTR_INDEX_TYPES=""
 #! ATTR_NAME_INVALID_CHARS=". %-#[]&quot;()!?*&apos;&amp;+\/"
@@ -121,11 +121,11 @@
 #! GENERATE_FME_BUILD_NUM="5210"
 #! NAME="bcgw.bcgov [SDE30]"
 #! FANOUT_SUFFIX=""
-#! FANOUT="No"
-#! FANOUT_ID_ATTR=""
-#! FANOUT_PREFIX=""
 #! COORDSYS="BCALB-83"
 #! FANOUT_DIRECTORY=""
+#! FANOUT_PREFIX=""
+#! FANOUT="No"
+#! FANOUT_ID_ATTR=""
 #! >
 #! <METAFILE_PARAMETER
 #! NAME="ADVANCED_PARMS"
@@ -549,13 +549,6 @@
 #! MERGE_FILTER_CASE_SENSITIVE="false"
 #! DYNAMIC_SCHEMA="false"
 #! >
-#! <FEAT_ATTRIBUTE ATTR_NAME="CASCADE_MTN_BOUNDARY_POLY_ID" ATTR_TYPE="integer" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="DESCRIPTION" ATTR_TYPE="char(255)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="WHO_CREATED" ATTR_TYPE="char(30)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="WHEN_CREATED" ATTR_TYPE="date" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="WHO_UPDATED" ATTR_TYPE="char(30)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="WHEN_UPDATED" ATTR_TYPE="date" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="OBJECTID" ATTR_TYPE="integer" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
 #! </FEATURE_TYPE>
 #! <FEATURE_TYPE
 #! IS_SOURCE="false"
@@ -574,44 +567,41 @@
 #! ENABLED="true"
 #! SCHEMA_ATTRIBUTE_SOURCE="1"
 #! >
-#! <FEAT_ATTRIBUTE ATTR_NAME="FADM_CASCADE_MTN_BOUNDARY_ID" ATTR_TYPE="integer" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="DESCRIPTION" ATTR_TYPE="char(255)" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <FEAT_ATTRIBUTE ATTR_NAME="OBJECTID" ATTR_TYPE="integer" ATTR_HAS_PORT="true" ATTR_VALUE=""/>
-#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MINIMUM_FID" PARM_VALUE="&lt;Unused&gt;"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_LINE" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_LAYER" PARM_VALUE="SHAPE"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_SIMPLE_LINE" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="disabled" PARM_VALUE="Yes"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_PRECISION" PARM_VALUE="64"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_ZORIGIN" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_YORIGIN" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_XORIGIN" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_TOLERANCE" PARM_VALUE=""/>
-#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_ID" PARM_VALUE="&lt;Unused&gt;"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_GRID{2}" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_SCALE" PARM_VALUE="1"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_LAYER" PARM_VALUE="SHAPE"/>
+#! <DEFLINE_PARM PARM_NAME="disabled" PARM_VALUE="Yes"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_ANNOTATED" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_ZTOLERANCE" PARM_VALUE=""/>
-#! <DEFLINE_PARM PARM_NAME="SDE_TRUNCATE_TABLE" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_AREA" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_TOLERANCE" PARM_VALUE=""/>
-#! <DEFLINE_PARM PARM_NAME="SDE_DIMENSION" PARM_VALUE="2"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_DROP_TABLE" PARM_VALUE="N"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_STORAGE_TYPE" PARM_VALUE="&lt;Unused&gt;"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_GRID{1}" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_POINT" PARM_VALUE="Y"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_NIL" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_YORIGIN" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_STORAGE_TYPE" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_ID" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_XORIGIN" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_LINE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ZTOLERANCE" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_DIMENSION" PARM_VALUE="2"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_TOLERANCE" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_DROP_TABLE" PARM_VALUE="N"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_UPDATE_FIELDS" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_CONFIG_KEYWORD" PARM_VALUE="DEFAULTS"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{2}" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MINIMUM_FID" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_AREA" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_CAD" PARM_VALUE="N"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_POINT" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_SIMPLE_LINE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_TRUNCATE_TABLE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{1}" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MULTIPART" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED" PARM_VALUE="N"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{0}" PARM_VALUE="100"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_SCALE" PARM_VALUE="100"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ZSCALE" PARM_VALUE="1"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_PRECISION" PARM_VALUE="64"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_TOLERANCE" PARM_VALUE=""/>
 #! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_ORIGIN" PARM_VALUE="0"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_GRID{0}" PARM_VALUE="100"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_ZSCALE" PARM_VALUE="1"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_SCALE" PARM_VALUE="100"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED" PARM_VALUE="N"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MULTIPART" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_CAD" PARM_VALUE="N"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_SCALE" PARM_VALUE="1"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_CONFIG_KEYWORD" PARM_VALUE="DEFAULTS"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_UPDATE_FIELDS" PARM_VALUE=""/>
 #! </FEATURE_TYPE>
 #! </FEATURE_TYPES>
 #! <FMESERVER>
@@ -935,7 +925,7 @@
 #! BOUNDING_RECT="58 -943 1125 1869"
 #! STICKY="true"
 #! COLOUR="0.0784314,0.0784314,0.756863"
-#! CONTENTS="8 21 10 "
+#! CONTENTS="10 8 21 "
 #! />
 #! <BOOKMARK
 #! IDENTIFIER="16"
@@ -946,7 +936,7 @@
 #! BOUNDING_RECT="1233 -940 2088 682"
 #! STICKY="true"
 #! COLOUR="1,0.501961,0"
-#! CONTENTS="13 14 15 12 "
+#! CONTENTS="14 15 12 13 "
 #! />
 #! <BOOKMARK
 #! IDENTIFIER="25"
@@ -971,27 +961,27 @@
 #! <SUBDOCUMENTS>
 #! <SUBDOCUMENT
 #! NAME="ArcSDELockRemover"
-#! REQUIREMENTS_KEYWORD=""
-#! ZOOM_SCALE="99"
-#! LEGAL_TERMS_CONDITIONS=""
-#! VIEW_POSITION="0 0"
-#! FME_PROCESS_GROUP_BY=""
-#! DESCRIPTION="Test description&#10;"
-#! USAGE=""
-#! TITLE="ArcSDELockRemover"
 #! SUPPRESS_UPGRADE="false"
-#! FME_DOCUMENT_PRIORGUID=""
 #! XFORM_DEPRECATED="No"
 #! DOC_DYNAMIC_INPUT_ATTRS="0"
+#! FME_PROCESS_COUNT="NO_PARALLELISM"
+#! REQUIREMENTS_KEYWORD=""
+#! DESCRIPTION="Test description&#10;"
 #! FME_PROCESS_GROUPS_ORDERED="No"
-#! FME_DOCUMENT_GUID=""
+#! HISTORY=""
+#! FME_DOCUMENT_PRIORGUID=""
+#! FME_PROCESS_GROUP_BY=""
 #! REQUIREMENTS=""
 #! IS_VISIBLE="false"
-#! CATEGORY="DataBC"
 #! DOC_EXTENTS="0 0"
-#! HISTORY=""
+#! VIEW_POSITION="0 0"
+#! USAGE=""
 #! DOC_TOP_LEFT="0 0"
-#! FME_PROCESS_COUNT="NO_PARALLELISM"
+#! TITLE="ArcSDELockRemover"
+#! CATEGORY="DataBC"
+#! FME_DOCUMENT_GUID=""
+#! ZOOM_SCALE="99"
+#! LEGAL_TERMS_CONDITIONS=""
 #! >
 #! <GLOBAL_PARAMETERS>
 #! <GLOBAL_PARAMETER
@@ -1509,7 +1499,7 @@ FME_END_PYTHON_ENC import<space>fme<lf>import<space>DataBCFMWTemplate<lf>shutIt<
 MACRO WORKSPACE_NAME SDE30_TO_BCGW
 MACRO FME_VIEWER_APP fmedatainspector
 # -------------------------------------------------------------------------
-SDE30_1_DEF "$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)"   SDE_CONFIG_KEYWORD           {SDE_CONFIG_KEYWORD}   SDE_LAYER                    {SDE_COLUMN_NAME}   SDE_PRECISION                {SDE_PRECISION}   SDE_GRID{0}                  {SDE_GRID{0}}   SDE_GRID{1}                  {SDE_GRID{1}}   SDE_GRID{2}                  {SDE_GRID{2}}   SDE_DIMENSION                {SDE_DIMENSION}   SDE_MEASURED                 {SDE_MEASURED}   SDE_ANNOTATED                {SDE_ANNOTATED}   SDE_AREA                     {SDE_AREA}   SDE_LINE                     {SDE_LINE}   SDE_POINT                    {SDE_POINT}   SDE_SIMPLE_LINE              {SDE_SIMPLE_LINE}   SDE_NIL                      {SDE_NIL}   SDE_MULTIPART                {SDE_MULTIPART}   SDE_XORIGIN                  {SDE_XORIGIN}   SDE_YORIGIN                  {SDE_YORIGIN}   SDE_SCALE                    {SDE_SCALE}   SDE_ZORIGIN                  {SDE_ZORIGIN}   SDE_ZSCALE                   {SDE_ZSCALE}   SDE_MEASURED_ORIGIN          {SDE_MEASURED_ORIGIN}   SDE_MEASURED_SCALE           {SDE_MEASURED_SCALE}   CASCADE_MTN_BOUNDARY_POLY_ID integer   DESCRIPTION                  char(255)   WHO_CREATED                  char(30)   WHEN_CREATED                 date   WHO_UPDATED                  char(30)   WHEN_UPDATED                 date   OBJECTID                     integer
+SDE30_1_DEF "$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)"   SDE_CONFIG_KEYWORD           {SDE_CONFIG_KEYWORD}   SDE_LAYER                    {SDE_COLUMN_NAME}   SDE_PRECISION                {SDE_PRECISION}   SDE_GRID{0}                  {SDE_GRID{0}}   SDE_GRID{1}                  {SDE_GRID{1}}   SDE_GRID{2}                  {SDE_GRID{2}}   SDE_DIMENSION                {SDE_DIMENSION}   SDE_MEASURED                 {SDE_MEASURED}   SDE_ANNOTATED                {SDE_ANNOTATED}   SDE_AREA                     {SDE_AREA}   SDE_LINE                     {SDE_LINE}   SDE_POINT                    {SDE_POINT}   SDE_SIMPLE_LINE              {SDE_SIMPLE_LINE}   SDE_NIL                      {SDE_NIL}   SDE_MULTIPART                {SDE_MULTIPART}   SDE_XORIGIN                  {SDE_XORIGIN}   SDE_YORIGIN                  {SDE_YORIGIN}   SDE_SCALE                    {SDE_SCALE}   SDE_ZORIGIN                  {SDE_ZORIGIN}   SDE_ZSCALE                   {SDE_ZSCALE}   SDE_MEASURED_ORIGIN          {SDE_MEASURED_ORIGIN}   SDE_MEASURED_SCALE           {SDE_MEASURED_SCALE}
 # -------------------------------------------------------------------------
 
 FACTORY_DEF * RoutingFactory   FACTORY_NAME "Router and Unexpected Input Remover"   INPUT FEATURE_TYPE *       @SupplyAttributes(multi_reader_keyword,SDE30_1)    ROUTE SDE30 "SDE30_1::$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)" TO FME_GENERIC "::$(SRC_ORA_SCHEMA).$(SRC_FEATURE_1)" ALIAS_GEOMETRY    MERGE_INPUT Yes   OUTPUT ROUTED FEATURE_TYPE *
