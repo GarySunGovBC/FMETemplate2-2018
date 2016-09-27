@@ -1,58 +1,17 @@
 '''
-
-
 Created on Jan 13, 2016
 
 @author: kjnether
 
-
 what follows is the code that was extracted from 
 the transformer:
-
-# class to retrieve a flag associated with the input feature's dataset
-# name that indicates whether or not the dataset has changed since the
-# last successful replication
-import pyfme
-import __main__ # FME_MacroValues are part of the __main__ namespace
-import string
-from string import upper
-
-global FME_MacroValues
-
-class changeFlagFetcher(object):
-    def __init__(self):
-        pass
-    def input(self, feature):
-        
-        # dataset name is index to source file dictionary
-        fmeDataset = feature.getAttribute('fme_dataset')
-        
-        # standardize use of \ in full path
-        dataset = fmeDataset.replace('/','\\')
-        
-        # retrieve dictionary
-        sourceFileDictionary = __main__.changes
-        
-        # dictionary is keyed on dataset name; 
-        # corresponding value is python list ['True'|'False', File Date]
-        sourceList = sourceFileDictionary[dataset]
-        
-        # first item in the list is 'True'|'False' indicator for change
-        changeIndicator = upper(str(sourceList[0]))
-        
-        # create a new attribute with the true/false value
-        feature.setAttribute('CHANGE_DETECTED', changeIndicator)
-        
-        self.pyoutput(feature)
-        
-    def close(self):
-        pass
-
 '''
+
 import ChangeDetectLib
 import FMELogger
 import fme  # @UnresolvedImport
 import logging.config
+import sys
 import os.path
 
 class ChangeFlagFetcher(object):
@@ -79,15 +38,6 @@ class ChangeFlagFetcher(object):
         self.featuresIn = 0
         #directory = self.fmeMacroValues[self.chng.const.FMWMacroKey_FMWDirectory]
         directory = os.path.dirname(__file__)
-
-        #logfileName = self.fmeMacroValues[self.chng.const.FMWMacroKey_FMWName]
-        #logfileName = os.path.basename(__file__)
-        #logSuffix = self.chng.const.FMELogFileSuffix
-        #logfileNoSuffix, suffix = os.path.splitext(logfileName)
-        
-        #logconfigFile = os.path.join(directory, logfileNoSuffix + logSuffix)
-        # TODO: add a if exists handler
-        #print 'logconfigFile', logconfigFile
         
         self.logger.debug("completed the init of the ChangFlagFetcher")
     
@@ -114,20 +64,27 @@ class ChangeFlagFetcher(object):
         changeDetectionEnabledParam = self.fmeMacroValues[fileChngKey]
         
         #self.logger.debug("changeDetectionEnabledParam: {0}".format(changeDetectionEnabledParam))
-        
+        #self.logger.debug("Changelib location: {0}".format(ChangeDetectLib.__file__))
+
         atribNames = feature.getAllAttributeNames()
-        fmeDataset = feature.getAttribute('fme_dataset')
+        fmeDatasetRaw = feature.getAttribute('fme_dataset')
+        #self.logger.debug("FME_DATASET extracted straight from the feature: {0}".format(fmeDatasetRaw))
+        fmeDataset = self.chng.formatDataSet(fmeDatasetRaw)
+        #self.logger.debug("FME_DATASET modified / normalized {0}".format(fmeDataset))
         self.changeCache.addFeatureIn(fmeDataset)
         
         # indicates that change detection has been disabled
         if changeDetectionEnabledParam.upper() == 'FALSE':
             feature.setAttribute('CHANGE_DETECTED', 'TRUE')
             self.changeCache.addFeatureChange(fmeDataset)
+            #self.logger.debug("CHANGE DISABLED")
         elif self.changeCache.hasChanged(fmeDataset):
             feature.setAttribute('CHANGE_DETECTED', 'TRUE')
             self.changeCache.addFeatureChange(fmeDataset)
+            #self.logger.debug("CHANGE: TRUE")
         else:
             feature.setAttribute('CHANGE_DETECTED', 'FALSE')
+            #self.logger.debug("CHANGE: FALSE")
         self.pyoutput(feature)
         
     def close(self):
@@ -137,3 +94,4 @@ class ChangeFlagFetcher(object):
         # for each input feature, check the
         self.logger.debug("closing the file change detector")
         self.changeCache.updateFileChangeLog(changeDetectionEnabledParam)
+

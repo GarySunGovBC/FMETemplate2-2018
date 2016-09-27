@@ -143,6 +143,11 @@ class TemplateConstants(object):
     FMWMacroKey_FMWDirectory = 'FME_MF_DIR'
     FMWMacroKey_FMWName = 'FME_MF_NAME'
     
+    FMEServerSection='fmeserver'
+    FMEServerSection_Host='host'
+    FMEServerSection_RootDir = '/fmerest/v2/'
+    FMEServerSection_Token='token'
+    
     # pmp config parameters
     ConfFileSection_pmpConfig = 'pmp_server_params'
     ConfFileSection_pmpConfig_baseurl = 'baseurl'
@@ -422,7 +427,19 @@ class TemplateConfigFileReader(object):
             
     def getDestinationServer(self):
         server = self.parser.get(self.key, self.const.ConfFileSection_serverKey)
-        return server        
+        return server
+    
+    def getFMEServerHost(self):
+        host =  self.parser.get(self.const.FMEServerSection, self.const.FMEServerSection_Host)
+        return host
+    
+    def getFMEServerRootDir(self):
+        rootdir =  self.parser.get(self.const.FMEServerSection, self.const.FMEServerSection_RootDir)
+        return rootdir
+    
+    def getFMEServerToken(self):
+        token = self.parser.get(self.const.FMEServerSection, self.const.FMEServerSection_Token)
+        return token
         
     def getSourcePmpResources(self):
         srcPmpResources = self.parser.get(self.const.ConfFileSection_pmpSrc, self.const.ConfFileSection_pmpSrc_resources)
@@ -1198,7 +1215,7 @@ class CalcParamsDataBC(object):
                    'restdir': self.paramObj.getPmpRestDir()}
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
         self.logger.debug("TESTING SIMPLE MESSAGE")
-        self.logger.debug("pmp dict used to contruct pmp obj: {0}".format(pmpDict))
+        #self.logger.debug("pmp dict used to contruct pmp obj: {0}".format(pmpDict))
         msg = 'retrieving the destination password for schame: ({0}) db env key: ({1})'
         msg = msg.format(schema, destKey)
         self.logger.debug(msg)

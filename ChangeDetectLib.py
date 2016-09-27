@@ -37,11 +37,14 @@ API DOC:
 ===============     
 """
 import DataBCFMWTemplate
+import BCDCUtil.BCDCRestQuery  # @UnresolvedImport
 import os.path
 import datetime
 import time
 import logging
 import pytz
+import requests
+import pprint
 
 class ChangeDetect(object):
     
@@ -60,37 +63,9 @@ class ChangeDetect(object):
             self.changeLogFilePath = self.getChangeLogFilePath(True)
         msg = "Change control file is: {0}".format(self.changeLogFilePath)
         self.logger.debug(msg)
-        #print 'printing this in case the self.logger setup is not working'
-        #print msg
-            
-#     def createChangeLogFilePath(self):
-#         self.logger.warning("The change log {0} does not exist, creating it now")
-#         # \\data.bcgov\work\
-#         #   scripts\
-#         #    python\
-#         #      DataBCFmeTemplate2\
-#         #        outputs\
-#         #          changelogs\
-#         #            clab_indian_reserves_staging_fgdb_bcgwdlv_Development\
-#         #              etlFileChangeLog.txt
-#         rootDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_changeLogDir)
-#         if not os.path.exists(rootDir):
-#             msg = 'The root directory: {0} for file change logs does not exist' + \
-#                   'Either create it or change the parameter in the global section ' + \
-#                   'called {1} in the config file {2}'
-#             msg = msg.format(rootDir, self.const.ConfFileSection_global_changeLogDir, 
-#                              self.paramObj.confFile)
-#             self.logger.error(msg)
-#             raise ValueError, msg        
-
-#     def getSourceDataSets(self):
-#         srcDataSets = []
-#         srchExpression = "^" + self.const.FMWParams_srcDataSet + '.*'
-#         srcDataRegex = re.compile(srchExpression, re.IGNORECASE)
-#         for macroKey in self.fmeMacroValues.keys():
-#             if srcDataRegex.match(macroKey):
-#                 srcDataSets.append(self.fmeMacroValues[macroKey])
-#         return srcDataSets
+        #         changeCache = ChangeCache(self, struct)
+        self.changeCache = ChangeCache(self)
+        self.logger.debug("Change Detect module location {0}".format(__file__))
             
     def getChangeLogFilePath(self, create=False):
         '''
@@ -181,7 +156,6 @@ class ChangeDetect(object):
         reads newly formatted change logs
         
         '''
-        #TODO: Finish coding this
         self.logger.debug("reading the changelog")
         struct = {}
         if not changeLogPath:
@@ -201,8 +175,9 @@ class ChangeDetect(object):
                 # shouldn't be considered
                 if replicated:
                     sourceFilePath = lineElems[3].strip()
-                    sourceFilePathNorm = os.path.normpath(sourceFilePath)
-                    sourceFilePathNorm = os.path.normcase(sourceFilePathNorm)
+                    #sourceFilePathNorm = os.path.normpath(sourceFilePath)
+                    #sourceFilePathNorm = os.path.normcase(sourceFilePathNorm)
+                    sourceFilePathNorm = self.formatDataSet(sourceFilePath)
                     sourceFileTimeStamp = int(lineElems[4])
                     sourceFileDateTime = datetime.datetime.utcfromtimestamp(sourceFileTimeStamp)
                     sourceFileDateTime = pytz.utc.localize(sourceFileDateTime)
@@ -211,8 +186,9 @@ class ChangeDetect(object):
                             struct[sourceFilePathNorm] = sourceFileDateTime
                     else:
                         struct[sourceFilePathNorm] = sourceFileDateTime
-        changeCache = ChangeCache(self, struct)
-        return changeCache
+        #changeCache = ChangeCache(self, struct)
+        self.changeCache.repopulateChangeDict(struct)
+        return self.changeCache
     
     def readOldChangeLog(self, changeLogPath=None):
         '''
@@ -249,8 +225,9 @@ class ChangeDetect(object):
                 # shouldn't be considered
                 if replicated:
                     sourceFilePath = lineElems[2].strip()
-                    sourceFilePathNorm = os.path.normpath(sourceFilePath)
-                    sourceFilePathNorm = os.path.normcase(sourceFilePathNorm)
+                    #sourceFilePathNorm = os.path.normpath(sourceFilePath)
+                    #sourceFilePathNorm = os.path.normcase(sourceFilePathNorm)
+                    sourceFilePathNorm = self.formatDataSet(sourceFilePath)
                     sourceFileTimeStamp = int(lineElems[3])
                     sourceFileDateTime = datetime.datetime.fromtimestamp(sourceFileTimeStamp)
 
@@ -262,40 +239,6 @@ class ChangeDetect(object):
         changeCache = ChangeCache(self, struct)
         return changeCache
                     
-#     def getMostRecentModificationDate(self, srcDataSetPath):
-#         #line: 12/25/2015 02:45:00,acdf_ownership_codes_staging_csv_bcgw,\\data.bcgov\data_staging\BCGW\physical_infrastructure\ownership_lut.csv,1389299409,False
-#         # 2014-01-09 12:30:09
-#         srcDataSetPathNorm = os.path.normpath(srcDataSetPath)
-#         mostRecentDate = None
-#         with open(self.changeLogFilePath, 'r') as changeFile:
-#             for line in changeFile:
-#                 line = line.strip()
-#                 lineElems = line.split(',')
-#                 replicated = lineElems[4]
-#                 if replicated.lower() == 'false':
-#                     replicated = False
-#                 else:
-#                     replicated = True
-#                 # if the dataset was not replicated then 
-#                 # shouldn't be considered
-#                 if replicated:
-#                     sourceFilePath = lineElems[2].strip()
-#                     sourceFilePathNorm = os.path.normpath(sourceFilePath)
-#                     if sourceFilePathNorm == srcDataSetPathNorm:
-#                         # now look for the last parameter which is the destination 
-#                         # keyword.  If no keyword exists then assume we have a 
-#                         # prod replication.
-#                         if self.hasSameDestination(lineElems):
-#                             sourceFileTimeStamp = int(lineElems[3])
-#                             sourceFileDateTime = datetime.datetime.fromtimestamp(sourceFileTimeStamp)
-#                             if mostRecentDate:
-#                                 print sourceFileDateTime, mostRecentDate
-#                                 if sourceFileDateTime > mostRecentDate:
-#                                     mostRecentDate = sourceFileDateTime
-#                             else:
-#                                 mostRecentDate = sourceFileDateTime
-#         return mostRecentDate                
-
     def hasSameDestination(self, changeLogRecordList):
         # 0 - date of last change detection attempt
         # 1 - source fmw
@@ -316,9 +259,136 @@ class ChangeDetect(object):
             retVal = True
         return retVal
     
+    def formatDataSet(self, fmeDataSet):
+        '''
+        Thsi is the parameter that is extracted from an fme objects
+        feature object, using the feature.getattribute('fme_dataset')
+        
+        needs formatting so that it can be referred to consistently
+        
+        Was having problems when the paths were provided using 
+        \\ charcters.  When trying to retrieve a value in a 
+        dictionary and the dictioanry key had \\ in it.  Sometimes
+        lookups failed because the \\ were being interpreted as\\\\
+        
+        All analysis of windows file paths is now being completed 
+        using / slashes.  os.path functions all work consistently 
+        wiht the forward slash syntax, example exists, isdir, ...
+        '''
+        #self.logger.debug("orignal path: {0}".format(fmeDataSet))
+        dataPath = os.path.normcase(fmeDataSet)
+        #self.logger.debug("case normalized path: {0}".format(fmeDataSet))
+        dataPath = os.path.normpath(dataPath)
+        #self.logger.debug("normalized path: {0}".format(fmeDataSet))
+        dataPath = dataPath.replace('\\', '/')
+        #self.logger.debug("path with forward slashes: {0}".format(dataPath))
+        return dataPath
+    
+#     def normalizeFeatureClassName(self, fcName):
+#         self.logger.debug("unmodified feature path: {0}".format(fcName))
+#         fcName = fcName.encode('string-escape')
+#         self.logger.debug("converted to raw string: {0}".format(fcName))
+#         fcName = os.path.normcase(fcName)
+#         self.logger.debug("normalized case path: {0}".format(fcName))
+#         #dataPath = os.path.normcase(dataPath)
+#         #dataPath = os.path.normpath(dataPath)
+#         fcName = os.path.normpath(fcName)
+#         self.logger.debug("normalized path: {0}".format(fcName))
+#         # return fcName.encode('string-escape')
+#         return fcName
+    
+class ChangeDetectBCDC(ChangeDetect):
+    
+    def __init__(self, fmeMacroValues, changeControlLog=None):
+        ChangeDetect.__init__(self, fmeMacroValues, changeControlLog)
+        self.changeCache = ChangeCache(self)
+    
+    def getFileModificationUTCDateTime(self, inFilePath):
+        '''
+        queries the rest api for the revision date and returns it 
+        as a utc datetime object
+        '''
+        # validate the source path
+        # TODO: should think about this transformer!  Will it work external
+        # to dat
+        #self.logger.debug("Source dataset is {0}".format(inFilePath))
+        revisionUTCTimeStamp = None
+        resp = requests.head(inFilePath)
+        if resp.status_code <> 200:
+            msg = 'Unable to connect to the source dataset {0}'
+            raise ValueError, msg.format(inFilePath)
+        else:
+            revisionDate = self.getResourceRevisionDate(inFilePath)
+            # if need the timestamp this is how to get it
+            #revisionUTCTimeStamp = time.mktime(revisionDate.timetuple())
+        #return revisionUTCTimeStamp
+        return revisionDate
+            
+    def getResourceRevisionDate(self, resourceName):
+        '''
+        Recieves the name of a file that exists in BCDC as a 
+        download.  Searches for the resource by querying the url
+        field of the BCDC resources for records that contain the 
+        file. Having determined the resource, the revision 
+        object of the resource is then determined and queried.
+        the revision timestamp is then extracted, converted to 
+        a datetime object and returned.
+        
+        :param  resourceName: the name of the file that can be 
+                              downloaded from BCDC. 
+        :type resourceName: string
+        
+        :returns: revision date of the file extracted from BCDC
+        :rtype: datetime
+        '''
+        bcdc = BCDCUtil.BCDCRestQuery.BCDCRestQuery('PROD')
+        resourceNameJustFile = os.path.basename(resourceName)
+        resourceDict = bcdc.getResource('url', resourceNameJustFile)
+        if len(resourceDict['result']['results']) > 1:
+            msg = 'When searching BCDC for a resource that contains the ' + \
+                  'file {0} found {1} records.  Should only have found ' + \
+                  'one.'
+            msg = msg.format(resourceName, len(resourceDict['result']['results']))
+            # TODO: Define appropriate error
+            raise ValueError, msg
+        elif len(resourceDict['result']['results']) == 0:
+            msg = 'Did not find any resource records in BCDC that are ' + \
+                  'associated with the file: {0} url: {1}'
+            msg = msg.format(resourceNameJustFile, resourceName)
+            raise ValueError, msg
+        revision_id = resourceDict['result']['results'][0]['revision_id']
+        revision = bcdc.getRevision(revision_id)
+        revisionDate = revision['result']['timestamp']
+        # example format: u'2015-07-24T19:57:35.259549'},
+        # Convert to datetime and return the datetime object.
+        revisionDateTime = datetime.datetime.strptime(revisionDate, '%Y-%m-%dT%H:%M:%S.%f')
+        revisionDateTime = revisionDateTime.replace(tzinfo=pytz.utc)
+        return revisionDateTime
+
+    def formatDataSet(self, fmeDataSet):
+        '''
+        recieves a path that looks like: 
+         https://catalogue.data.gov.bc.ca/dataset/5ee75843-06b3-4767-b6c2 ...
+           -3248289f5e8d/resource/1dfd3f35-1ab3-4366-b2ae-9af51bf429b7/ ...
+           download/nrsmajorprojectstracking.xls\nrsmajorprojectstracking.xls
+        
+        need to remove the repeat of the csv at the end of the path,not sure 
+        why fme repeats it.
+        
+        '''
+        retVal = fmeDataSet
+        urlSplitOnBackslash = fmeDataSet.split('\\')
+        if len(urlSplitOnBackslash) == 2:
+            retVal = urlSplitOnBackslash[0]
+        return retVal
+    
+#     def normalizeFeatureClassName(self, fcName):
+#         self.logger.debug("fcName is going to remain unmodified: {0}".format(fcName.encode('string-escape')))
+#         return fcName.encode('string-escape')
+
 class ChangeCache():
     
-    def __init__(self, changeObj, changeDict):
+    def __init__(self, changeObj, changeDict={}):
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
 
@@ -328,6 +398,8 @@ class ChangeCache():
         # are in the changeObj.
         self.const = self.changeObj.const
         
+        # where the change information that is retrieved from the change log file
+        # gets stored
         self.changeDict = changeDict
         # dictionary that keeps track of whether change has been detected on a source
         self.changeCache = {}
@@ -343,6 +415,13 @@ class ChangeCache():
         # used to cache source data modification times 
         self.lastModifiedDateTimes = {}
         
+    def repopulateChangeDict(self, newChangeDict):
+        #self.changeCache = newChangeDict
+        self.changeDict = newChangeDict
+        self.logger.debug("Change cache data struct:")
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(self.changeDict)
+        
     def truncDateTime(self, dt ):
         """
         truncate a datetime object to any time laps in seconds
@@ -350,24 +429,22 @@ class ChangeCache():
         roundTo : Closest number of seconds to round to, default 1 minute.
         Author: Thierry Husson 2012 - Use it as you want but don't blame me.
         """
-        #if dt == None : dt = datetime.datetime.now()
-        #dtmin = dt.min
-        #seconds = (dt - dt.min).seconds
-        # // is a floor division, not a comment on following line:
-        #rounding = (seconds+roundTo/2) // roundTo * roundTo
-        #return dt + datetime.timedelta(0,rounding-seconds,-dt.microsecond)
-        self.logger.debug("testing self.logger")
+        self.logger.debug("dt: {0} type: {1}".format(dt, type(dt)))
         dt = dt.replace( microsecond=0)
         return dt
         
     def hasChanged(self, currentDataSet):
         retVal = False
-        currentDataSet = os.path.normcase(currentDataSet)
-        currentDataSet = os.path.normpath(currentDataSet)
+        #if currentDataSet[0:4].lower() <> 'http':
+        #    currentDataSet = os.path.normcase(currentDataSet)
+        #    currentDataSet = os.path.normpath(currentDataSet)
+        currentDataSet = self.changeObj.formatDataSet(currentDataSet)
+        #self.logger.debug("hasChanged path: {0}".format(currentDataSet))
         if self.changeCache.has_key(currentDataSet):
             # already encountered this source, returning the cached 
             # value determining if change has been detected.
             retVal = self.changeCache[currentDataSet]
+            #self.logger.debug("already encountered this path: {0}".format(currentDataSet))
         else:
             if self.changeDict.has_key(currentDataSet):
                 # is the "currentDataSet" described in the change log
@@ -380,9 +457,9 @@ class ChangeCache():
                 
                 self.changeDict[currentDataSet] = self.truncDateTime(self.changeDict[currentDataSet])
                 #print 'fileModDate', fileModDate
-                self.logger.debug("fileModDate: {0}".format(fileModDate))
+                #self.logger.debug("fileModDate: {0}".format(fileModDate))
                 #print 'self.changeDict[currentDataSet]', self.changeDict[currentDataSet]
-                self.logger.debug("current data set: {0}".format(self.changeDict[currentDataSet]))
+                #self.logger.debug("current data set: {0}".format(self.changeDict[currentDataSet]))
                 if fileModDate > self.changeDict[currentDataSet]:
                     self.changeCache[currentDataSet] = True
                     self.lastModifiedDateTimes[currentDataSet] = fileModDate
@@ -393,26 +470,26 @@ class ChangeCache():
                     retVal = False
             else:
                 #print 'no key for ', currentDataSet
-                self.logger.debug("no key for {0}".format(currentDataSet))
+                #self.logger.debug("no key for {0}".format(currentDataSet))
                 self.changeCache[currentDataSet] = True
                 fileModDate = self.changeObj.getFileModificationUTCDateTime(currentDataSet)
                 fileModDate = self.truncDateTime(fileModDate)
                 self.lastModifiedDateTimes[currentDataSet] =  fileModDate
                 retVal = True
-        #print 'change value: ', retVal
         return retVal
-        
+    
     def addFeatureIn(self, dataPath):
-        dataPath = os.path.normcase(dataPath)
-        dataPath = os.path.normpath(dataPath)
+        self.logger.debug('original datapath: {0}'.format(dataPath))
+        dataPath = self.changeObj.formatDataSet(dataPath)
+        self.logger.debug('normalized datapath: {0}'.format(dataPath))
         if not self.featureCounts.has_key(dataPath):
             self.featureCounts[dataPath] = [1, 0]
         else:
             self.featureCounts[dataPath][0] += 1
     
     def addFeatureChange(self, dataPath):
-        dataPath = os.path.normcase(dataPath)
-        dataPath = os.path.normpath(dataPath)
+        #self.changeObj.normalizeFeatureClassName(dataPath)
+        dataPath = self.changeObj.formatDataSet(dataPath)
         #self.logger.debug("feature key: {0}".format(dataPath))
         if not self.featureCounts.has_key(dataPath):
             self.featureCounts[dataPath] = [0, 1]
@@ -435,21 +512,26 @@ class ChangeCache():
             
         # getting a template constants object
         self.const.FMWMacroKey_FMWName
-
+        self.logger.debug("change log path: {0}".format(self.changeObj.changeLogFilePath))
         fh = open(self.changeObj.changeLogFilePath, 'a')
         
         currentUTCDateTime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc) 
         fmwName = self.changeObj.fmeMacroValues[self.const.FMWMacroKey_FMWName]
+        
         currentLocalDateTime = currentUTCDateTime.astimezone(pytz.timezone(self.const.LocalTimeZone))
         currentLocalDateTimeStr = currentLocalDateTime.strftime(self.const.FMELogDateFormatString)
         currentUTCDateTimeStamp = int(time.mktime(currentUTCDateTime.timetuple()))
         # TODO: Should probably have used the CSV module to write to the log file
-        for featPath in self.featureCounts:
+        cnt = 1
+        for featPathOrig in self.featureCounts:
             # don't need to normalize featPath as it was normalized when entered
             # into data struct
             # features changed should be the same as the features that went in.
-            featPath = os.path.normcase(featPath)
-            self.logger.debug("feat path: {0}".format(featPath))
+            self.logger.debug("iteration: {0}, rawfeat path {1}".format(cnt, featPathOrig))
+            #featPath = self.changeObj.normalizeFeatureClassName(featPathOrig)
+            featPath = self.changeObj.formatDataSet(featPathOrig)
+            #featPath = featPath.encode('string-escape')
+            self.logger.debug("fcName after normalize: {0}".format(featPath))
 
             elems = []
             if not fileChangeDetectionEnabled:
@@ -463,9 +545,10 @@ class ChangeCache():
                 fileModDate = self.truncDateTime(fileModDate)
                 self.lastModifiedDateTimes[featPath] = fileModDate
                 # indicating that a replication has taken place on the dataset in 'featPath'
-                self.changeCache[featPath] = True           
+                self.changeCache[featPath] = True        
             try:
                 # convert last modified to utc time stamp
+                self.logger.debug("feat path: {0}".format(featPath)) 
                 modificationUTCTimeStamp = int(time.mktime(self.lastModifiedDateTimes[featPath].timetuple()))
                 # convert last modified to datetime in local time zone
                 modificationLocalDateTime = self.lastModifiedDateTimes[featPath].astimezone(pytz.timezone(self.const.LocalTimeZone))
@@ -490,7 +573,6 @@ class ChangeCache():
 
             if self.featureCounts[featPath][0] == self.featureCounts[featPath][1]:
                 elems.append(str(self.changeCache[featPath]))
-                
             else:
                 msg = 'input features is nto the same as the change ' +\
                       'features.  input: {0}, change {1}'
@@ -500,7 +582,7 @@ class ChangeCache():
             # TODO: might want write this to memory then if the fmw completes successfully it gets written
             LineToAdd = ','.join(elems) + '\n'
             fh.write(LineToAdd)
+            cnt += 1
         fh.close()
-            
             
             

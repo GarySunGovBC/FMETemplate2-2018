@@ -72,33 +72,23 @@ class Test_ChangeDetect(unittest.TestCase):
     def tearDown(self):
         pass
 
-
     def test_getFileModificationTime(self):
         print 'getting here'
-        modDate = self.chngObj.getFileModificationTime(__file__)
+        file = '//data.bcgov/data_staging/bcgw/physical_infrastructure/diagnostic_facilities_data_structure.csv'
+        changeLog = 
+        modDate = self.chngObj.getFileModificationUTCDateTime(__file__)
         print 'modDate', modDate, type(modDate)
         
     def test_getMostRecentModificationDate(self):
         self.chngObj.changeLogFilePath = self.testChangeControlFile
         self.chngObj.fmeMacroValues['DEST_DB_ENV_KEY'] = 'prod'
         srcFile = r'\\data.bcgov\data_staging\BCGW\administrative_boundaries\cbd_boundary_poly.shp'
-        modDate = self.chngObj.getMostRecentModificationDate(srcFile)
+        modDate = self.chngObj.getFileModificationUTCDateTime(srcFile)
         srcFile = r'\\data.bcgov\data_staging\BCGW\fresh_water_and_marine\FloodProtectionWorks.gdb'
-        modDate = self.chngObj.getMostRecentModificationDate(srcFile)
+        modDate = self.chngObj.getFileModificationUTCDateTime(srcFile)
         srcFile = r'\\data.bcgov\data_staging\BCGW\physical_infrastructure\ownership_lut.csv'
-        modDate = self.chngObj.getMostRecentModificationDate(srcFile)
+        modDate = self.chngObj.getFileModificationUTCDateTime(srcFile)
         print modDate
-        
-    def test_getSourceDataSets(self):
-        self.fmeMacroValues['SRC_DATASET_FGDB'] = '\\\\data.bcgov\\data_staging_ro\\BCGW\\administrative_boundaries\\Federal_IRs.gdb'
-        self.fmeMacroValues['SRC_DATASET_XLS'] = '\\\\data.bcgov\\data_staging_ro\\BCGW\\administrative_boundaries\\Federal_IRs.gdb'
-        expectList = [ self.fmeMacroValues['SRC_DATASET_XLS'], self.fmeMacroValues['SRC_DATASET_FGDB'] ]
-        chngObj = ChangeDetectLib.ChangeDetect(self.fmeMacroValues)
-        srcDataSets = chngObj.getSourceDataSets()
-        msg = 'Get source data sets is not properly extracting the source data sets.' + \
-              'expected: {0}\nrecieved: {1}'
-        msg = msg.format(expectList, srcDataSets)
-        self.assertListEqual(expectList, srcDataSets, msg)
         
     def test_readChangeLog(self):
         print 'self.testChangeControlFile', self.testChangeControlFile
@@ -194,7 +184,7 @@ class Test_ChangeDetect(unittest.TestCase):
     
 
 if __name__ == "__main__":
-    sys.argv = ['', 'Test_ChangeDetect.test_truncDateTime']
+    sys.argv = ['', 'Test_ChangeDetect.test_getFileModificationTime']
     unittest.main()
     
     
