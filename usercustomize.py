@@ -33,19 +33,19 @@ sys.path.insert(0, sys.path.pop())
 sys.path.insert(0, sys.path.pop())
 
 # development should be commented out later
-pth2Remove = r'\\data.bcgov\work\scripts\python\DataBCFmeTemplate2'   
-# While debugging remove the path to \\data.bcgov\work\scripts\python\DataBCFmeTemplate2
-number2Remove = 0
-for cnt in range(0, len(sys.path)):
-    pth = sys.path[cnt]
-    #print pth
-    if pth == pth2Remove:
-        number2Remove += 1
-print '----------------------------'
-if number2Remove:
-    for i in range(0, number2Remove):
-        sys.path.remove(pth2Remove)
-        #print 'PATH REMOVED', pth2Remove
+# pth2Remove = r'\\data.bcgov\work\scripts\python\DataBCFmeTemplate2'   
+# # While debugging remove the path to \\data.bcgov\work\scripts\python\DataBCFmeTemplate2
+# number2Remove = 0
+# for cnt in range(0, len(sys.path)):
+#     pth = sys.path[cnt]
+#     #print pth
+#     if pth == pth2Remove:
+#         number2Remove += 1
+# print '----------------------------'
+# if number2Remove:
+#     for i in range(0, number2Remove):
+#         sys.path.remove(pth2Remove)
+#         #print 'PATH REMOVED', pth2Remove
 
 
     
