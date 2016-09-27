@@ -11,6 +11,27 @@ Goals of the template are:
    
 # About
 
+## FME Template - User Documentation
+This is a guide to allow FME developers to get started using our new FME 
+template.  Be sure you have at least scanned
+this document before continuing on to read about other pieces related
+to the template.
+
+https://docs.google.com/document/d/1WXUMN-2RDC_7u3OgtbG-NYFevKqZcZlxwF4PEB_lpu4/edit?usp=sharing
+
+## FME Template - Technical Documentation
+This is a more indepth description of how various pieces that make up the
+template function.  Where config files are located, how they are used, how 
+change detection works. etc...
+
+This is a much less polished document as is not intended as a publicly 
+consumable document.  Its been a scratch space to put documentation 
+in lieu of having another place to put it which the template was under
+development.  Eventually the goal is to move everything in 
+this document into appendices in the User Documentation.
+
+https://docs.google.com/document/d/1U31K0jl9dTwqbNZJuajbLf-dhmNlrCzpXZBrfxKlgJY/edit?usp=sharing
+
 ## Template Development Project Plan
 Project plan re-iterating in more detail the goals of the the 
 new template:
@@ -18,7 +39,10 @@ https://docs.google.com/document/d/13j919H17UV_g4VQFi4Z3Yjhw8NXBs7OLuSMCc2OkL1Y/
 
 ## Template Parameter Standard:
 Description of the published and private parameters necessary for 
-the an FMW to implement the template:
+the an FMW to implement the template is included in the 'Parameter 
+Standard' section of the user documentation
+
+(old path to parameter spec)
 http://test.apps.bcgov/guide/intdocs/fme-template-v2-draft-parameter-spec/
 
 ## Template Implementation Plan
