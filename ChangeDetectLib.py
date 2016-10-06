@@ -479,9 +479,9 @@ class ChangeCache():
         return retVal
     
     def addFeatureIn(self, dataPath):
-        self.logger.debug('original datapath: {0}'.format(dataPath))
+        #self.logger.debug('original datapath: {0}'.format(dataPath))
         dataPath = self.changeObj.formatDataSet(dataPath)
-        self.logger.debug('normalized datapath: {0}'.format(dataPath))
+        #self.logger.debug('normalized datapath: {0}'.format(dataPath))
         if not self.featureCounts.has_key(dataPath):
             self.featureCounts[dataPath] = [1, 0]
         else:
