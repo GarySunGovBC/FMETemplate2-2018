@@ -150,6 +150,7 @@ class RestBase():
         # verify the status code
         if r.status_code < 200 or r.status_code > 299:
             msg = 'Post Request failed, status code is {0}, return text is {1}'
+            #self.logger.debug()
             raise ValueError, msg.format(r.status_code, r.text)
         self.logger.info("order request returned status code {0}".format(r.status_code))
         return r.json()
@@ -506,19 +507,74 @@ class parcelMapAPI(RestBase, Constants):
         self.download(requestBody, destinationFile)
         self.logger.info("Data for the entire province has been downloaded to {0}".format(destinationFile))
     
-    
-    
+    def unZipFile(self, destFile, srcFGDB):
+        '''
+        get the zip file, read it and get the name of the 
+        gdb in it.
         
-    
+        extract the gdb.
         
-class FingerPrinting():
+        Delete the existing gdb, replace with the new gdb. 
+        '''
+        self.logger.debug("input zip file: {0}".format(destFile))
+        self.logger.debug("final destination fgdb {0}".format(srcFGDB))
+        # name of the final FGDB
+        finalFGDBName = os.path.basename(srcFGDB)
+        # The destination directory specified for zip file
+        destDir = os.path.dirname(destFile)
+        # The full path to where the new FGDB should be
+        finalFGDBFullPath = os.path.normpath(os.path.join(destDir, finalFGDBName))
+        self.logger.debug("Name of the final fgdb path to be updated (r/w) path {0}".format(finalFGDBFullPath))
+        # extracting from zip file
+        zip_ref = zipfile.ZipFile(destFile, 'r')
+        # Get the file list from the zip file
+        nameList = zip_ref.namelist()
+        # from the filelist get the destination directory (name of 
+        # fgdb in the zip file)
+        zipDir = os.path.dirname(nameList[0])
+        # The name of the fgdb that is going to be created by
+        # unzipping the file.
+        destFGDB = os.path.normpath(os.path.join(destDir, zipDir))
+        self.logger.debug("temporary unzip home of the zip file {0}".format(destFGDB))
+        # Try to delete the fgdb. 
+        if os.path.exists(destFGDB):
+            try:
+                shutil.rmtree(destFGDB)
+            except:
+                msg = 'Trying to remove the fgdb that currently exists in ' + \
+                      'the staging area ({0}) so it can be updated.  Unfortunately ' + \
+                      'ran into an error when this was attempted'
+                self.logger.error(msg.format(destFGDB))
+                raise
+        zip_ref.extractall(destDir)
+        zip_ref.close()
+        
+        # finally rename the fgdb that was just extracted to have
+        # the name of the destination fgdb
+        if os.path.exists(finalFGDBFullPath):
+            try:
+                self.logger.debug("deleting {0}, then renaming this that to {1}".format(finalFGDBFullPath, destFGDB))
+                shutil.rmtree(finalFGDBFullPath)
+            except:
+                msg = 'Unable to delete the existing FGDB ({0}), so it ' + \
+                      'can be replaced by ({1})'
+                self.logger.error(msg.format(finalFGDBFullPath,destFGDB ))
+        os.rename(destFGDB, finalFGDBFullPath)
+             
+class FingerPrinting(Constants):
 
     def __init__(self, destFile):
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+        #self.logger.setLevel(logging.DEBUG)
+        
         self.destFile = destFile
+        Constants.__init__(self)
         
     def getCacheFilePath(self):
         pathNoSuffix, zipSuffix = os.path.splitext(self.destFile)
         md5File = pathNoSuffix + self.fingerprintSuffix
+        self.logger.debug("fingerprint file: {0}".format(md5File))
         return md5File
         
     def getLastFingerPrint(self):
@@ -533,33 +589,43 @@ class FingerPrinting():
         directory will be the same as the destination date.
         '''
         md5File = self.getCacheFilePath()
+        self.logger.debug("md5 cache file is {0}".format(md5File))
         md5 = None
         if os.path.exists(md5File):
+            self.logger.debug("input md5 exists")
             fh = open(md5File, 'r')
-            md5 = fh.read()
+            md5 = fh.readline()
             md5 = md5.replace('\n', '')
-        md5 = md5.strip()
+            md5 = md5.strip()
+            fh.close()
         return md5
         
     def calculateFingerPrint(self):
         md5 = None
         if os.path.exists(self.destFile):
             md5 = hashlib.md5(open(self.destFile, 'rb').read()).hexdigest()
+        else:
+            msg = "Asked to create an MD5 checksum on a file ({0}) that does not exist"
+            self.logger.warning(msg.format(self.destFile))
         return md5
     
     def cacheFingerPrint(self):
         cacheFile = self.getCacheFilePath()
+        self.logger.debug("cache file {0}".format(cacheFile))
         if os.path.exists(cacheFile):
             os.remove(cacheFile)
         md5 = self.calculateFingerPrint()
         fh = open(cacheFile, 'w')
         fh.write(md5)
+        msg = "File {0} should exist with the md5 checksum for the file {1}"
+        self.logger.debug(msg.format(cacheFile, self.destFile))
         fh.close()
         
     def hasParcelFabricChanged(self):
-        pastMd5 = self.getLastFingerPrint(self.destFile)
-        currentMd5 = self.calculateFingerPrint(self.destFile)
+        pastMd5 = self.getLastFingerPrint()
+        currentMd5 = self.calculateFingerPrint()
         retVal = True
+        self.logger.debug("md5's are:\n{0}\n{1}".format(pastMd5, currentMd5))
         # clean make sure there are no leading spaces
         if pastMd5 == currentMd5:
             retVal = False
@@ -619,19 +685,4 @@ class ParcelMapUtil():
             #self.logger.warning(msg)
         return prefix
         
-    def unZipFile(self, destFile):
-        '''
-        get the zip file, read it and get the name of the 
-        gdb in it.
-        
-        extract the gdb.
-        
-        Delete the existing gdb, replace with the new gdb. 
-        '''
-        
-        
-        destDir = os.path.dirname(destFile)
-        print 'destDir', destDir
-        zip_ref = zipfile.ZipFile(destFile, 'r')
-        zip_ref.extractall(destDir)
-        zip_ref.close()
+

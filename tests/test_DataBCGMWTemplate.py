@@ -10,6 +10,8 @@ pathList = os.environ['PATH'].split(';')
 pathList.insert(0, r'E:\sw_nt\FME2015')
 sys.path.insert(0, r'E:\sw_nt\FME2015\fmeobjects\python27')
 sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
+sys.path.insert(0, r'\\data.bcgov\work\Workspace\kjnether\proj\FMETemplateRevisions_Python')
+
 os.environ['PATH'] = ';'.join(pathList)
 
 import unittest
@@ -360,6 +362,10 @@ class Test_CalcParamsDevel(unittest.TestCase):
         msg = msg.format(failedFeatsDir)
         self.assertTrue(os.path.exists(failedFeatsDir), msg)
     
+    def test_getDbCredsFile(self):
+        self.calcParams.plugin.getDbCredsFile()
+
+    
 class Test_TemplateConfigFileReader(unittest.TestCase):
     
     def setUp(self):
@@ -423,6 +429,7 @@ class Test_TemplateConfigFileReader(unittest.TestCase):
         self.assertRaises(ValueError, lambda: self.confFileReader.validateKey('dlvv'))
         self.confFileReader.validateKey('deliv')
         #self.confFileReader.validateKey('dlvv')
+    
 
 class Test_Startup(unittest.TestCase):
     def setUp(self):
@@ -571,8 +578,8 @@ if __name__ == "__main__":
     #                       'Test_TemplateConfigFileReader.test_validateKey']
     #sys.argv = ['', 'Test_Shutdown.test_dbConn']
     #sys.argv = ['', 'Test_Shutdown.test_shutdown']
-    sys.argv = ['','Test_Shutdown.test_shutdown']
-    #sys.argv = ['','Test_CalcParamsDevel.test_getSourcePassword']
+    #sys.argv = ['','Test_TemplateConfigFileReader.test_shutdown']
+    sys.argv = ['','Test_CalcParamsDevel.test_getDbCredsFile']
 
     # 'Test_CalcParams.test_getFailedFeaturesFile',
     # 

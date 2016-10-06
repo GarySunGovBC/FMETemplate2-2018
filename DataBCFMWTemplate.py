@@ -51,10 +51,9 @@ import PMP.PMPRestConnect
 import DB.DbLib
 #import FMELogger
 import datetime
-#import urllib
 import re
-#import cx_Oracle
 import inspect
+import shutil
 
 class TemplateConstants(object):
     # no need for a logger in this class as its just
@@ -999,21 +998,10 @@ class CalcParamsDevelopment(object):
         self.logger = logging.getLogger(modDotClass)
         
         self.logger.debug("constructing a CalcParamsDevelopment object")
-        credsFileName = self.paramObj.getDevelopmentModeCredentialsFileName() 
-        self.logger.debug("Credentials file being used is: {0}".format(credsFileName))
-        # can have a creds file in the local directory as the fmw.  In this case it will 
-        # take precidence over the global version
-        credsFileFullPath = os.path.join(self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory], credsFileName)
-        # if a local version of the creds file does not exist try to find one in the config dir.
-        if not os.path.exists(credsFileFullPath):
-            # try the default creds file
-            templateRootDir = self.paramObj.getTemplateRootDirectory()
-            confDirName = self.paramObj.getConfigDirName()
-            credsFileFullPath = os.path.join(templateRootDir, confDirName, credsFileName)
+        # This is the base / example db creds file. 
+        self.credsFileFullPath = self.getDbCredsFile()
+        self.logger.debug("Credentials file being used is: {0}".format(self.credsFileFullPath))
         
-        # getTemplateRootDirectory
-        self.credsFileFullPath = os.path.realpath(credsFileFullPath)
-        self.logger.info("using the credentials file: {0}".format(credsFileFullPath))
         if not os.path.exists(self.credsFileFullPath):
             # The creds file doesn't exist, so raise exception
             # TODO: once the svn url used for distribution is known include it in 
@@ -1026,9 +1014,50 @@ class CalcParamsDevelopment(object):
             msg = msg.format(self.credsFileFullPath, self.const.svn_DevelopmentJSONFile_Url)
             self.logger.error(msg)
             raise ValueError, msg
-        self.logger.debug( 'using the creds file {0}'.format(credsFileFullPath))
-        with open(credsFileFullPath, 'r') as jsonFile:
+        self.logger.debug( 'using the creds file {0}'.format(self.credsFileFullPath))
+        with open(self.credsFileFullPath, 'r') as jsonFile:
             self.data = json.load(jsonFile)
+            
+    def getDbCredsFile(self):
+        '''
+        This method will:
+           a) calculate the path to the current fmw's directory
+           b) determine if a dbcreds.json file exists in that directory
+           c) if it does not copy the default version down and let the user
+              know they need to populate it with the database credentials 
+              that they want to use.
+        '''
+        # this gets just the file name, no path
+        exampleCredsFile = self.paramObj.getDevelopmentModeCredentialsFileName()
+                
+        # calculate the expected location of the creds file, ie the creds file 
+        # name in the current fmw path.
+        fmwPath = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        self.logger.debug("fmwPath: {0}".format(fmwPath))
+        credsFileFMWPath = os.path.join(fmwPath, exampleCredsFile)
+        self.logger.info("using the credentials file: {0}".format(credsFileFMWPath))        
+        if not os.path.exists(credsFileFMWPath):
+             # calculate the full path to the example dbcreds.json file.
+            templateRootDir = self.paramObj.getTemplateRootDirectory()
+            confDirName = self.paramObj.getConfigDirName()
+            exampleCredsFilePath = os.path.join(templateRootDir, confDirName, exampleCredsFile)
+            exampleCredsFilePath = os.path.realpath(exampleCredsFilePath)
+            
+            
+            shutil.copy(exampleCredsFilePath, credsFileFMWPath)
+            msg = "You are running this script on a non DataBC computer. " + \
+                  "As a result instead of retrieving passwords from our " + \
+                  "password application, it expects them in a json file " + \
+                  "in the same directory as this fmw: {0}.  A example " + \
+                  "credential file has been placed in that direcory called " + \
+                  "{1}.  You need to edit this file with the username, password, " + \
+                  'and instance information that should be used to connect ' + \
+                  'and then '
+            msg = msg.format(fmwPath, os.path.basename(exampleCredsFilePath))
+            self.logger.error(msg)
+            # not worrying about raising an error as it will happen down the 
+            # road when the script attempts to find parameters in this file.
+        return credsFileFMWPath
         
     def getDestinationPassword(self):
         retVal = None
