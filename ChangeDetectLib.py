@@ -556,7 +556,8 @@ class ChangeCache():
                 modificationLocalDateTimeStr = modificationLocalDateTime.strftime(self.const.FMELogDateFormatString)
             except KeyError, e:
                 lastModKeys = self.lastModifiedDateTimes.keys()
-                msg = "The key: {0} was not found in the lastModifiedDateTimes dictionary, valid keys include {1}"
+                msg = "The key: {0} was not found in the lastModifiedDateTimes " + \
+                      "dictionary, valid keys include {1}"
                 msg = msg.format(featPath, ','.join(lastModKeys))
                 self.logger.error(msg)
                 raise

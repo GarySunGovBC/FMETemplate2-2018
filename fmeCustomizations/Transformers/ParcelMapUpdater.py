@@ -55,7 +55,6 @@ class ParcelMapUpdater(object):
         self.cnt = 0
         self.updateConstants()
 
-        #print keys
         self.logger.debug("            {0} ".format( self.fmeMacroValues))
 
         for key in self.fmeMacroValues:
@@ -109,7 +108,6 @@ class ParcelMapUpdater(object):
         return password
         
     def input(self, feature):
-        print 'featCnt {0}'.format(self.cnt)
         self.cnt += 1
         updateAttibuteStr = str(self.updated)
         updateAttibuteStr = updateAttibuteStr.upper()
@@ -118,5 +116,5 @@ class ParcelMapUpdater(object):
         self.pyoutput(feature)
         
     def close(self):
-        print 'closing shop'
+        self.logger.info('completed the parcelmap update')
     
