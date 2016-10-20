@@ -11,6 +11,7 @@ import requests
 import logging
 import sys
 import warnings
+import pprint
 
 class PMP(object):
     '''
@@ -158,6 +159,9 @@ class PMP(object):
     def getAccountId(self, accntName, resourceId):
         accntId = None
         accnts = self.getAccountsForResourceID(resourceId)
+        #pp = pprint.PrettyPrinter(indent=4)
+        #pp.pprint(accnts)
+        
         for accnt in accnts:
             if accnt['ACCOUNT NAME'].lower().strip() == accntName.lower().strip():
                 accntId = accnt['ACCOUNT ID']
@@ -189,6 +193,118 @@ class PMP(object):
             raise ValueError, msg
         return psswd
     
+    def getAccountDetails(self, accntId, resourceId):
+        # resources/303/accounts/307?AUTHTOKEN=B9A1809A-5BF7-4459-9ED2-8D4F499CB902
+        url = 'https://' + self.baseUrl + self.restDir + \
+              'resources/' + str(resourceId) + '/accounts/' + \
+              str(accntId)
+        tokenDict = self.getTokenDict()
+        print 'url:', url
+        r = requests.get(url, params=tokenDict, verify=False)
+        accntDtls = r.json()
+        return accntDtls
+    
+    def getRestAPIPassword(self, accountName, apiUrl, ResourceName):
+        '''
+        Currently we have a resource in pmp that stores rest api usernames
+        and passwords.  The standard for storing them is to store the username
+        as the account name.  The path to the rest service then gets stored
+        in the "Account Notes".  When passwords are stored in this way this 
+        method should be able to retrieve them.
+        
+        How it works:
+          a) accountName received if it includes @http://rest.api...
+             the account name and the url are separated
+          b) retrieves the accounts for the resourceName
+          c) iterates through each account, if the account name includes
+             a url it is separated from the username
+              - bare usernames are compared for a match, ie just the user
+                name supplied as an arg and just the user name in the iteration
+                of accounts for the resourceName
+              - if usernames match then retrieve the url from the "Account Notes"
+                if the url matches the received apiUrl then get the password and 
+                return it for that account.
+              - if the the "account notes" url does not match and there was a 
+                url appended to the end of the username example user@http://blah
+                then that url is compared with the supplied url.
+                if they match then get th password.
+                
+              - if neither of the url's match then raises and error saying there
+                is no account for the username url combination         
+                
+        :param  accountName: The name account name who's password we want
+        :type accountName: str
+        
+        :param  apiUrl: The url to the rest api that corresponds with the username.
+        :type apiUrl: str
+        
+        :param  ResourceName: The name of the resource in pmp who's password we are 
+                              trying to retrieve.
+        :type ResourceName: str
+        '''
+        # checking to see if the syntax for the account is
+        # username@url or if it is just username
+        #   example 'apiuser'
+        #   or can come as 'apiuser@https://blah.com/blah/blah/blah'
+        if '@' in accountName:
+            justUser, apiUrlfromAccntName = accountName.split('@')
+        else:
+            justUser = accountName
+            apiUrlfromAccntName = None
+        #print 'justUser', justUser
+        #print 'apiUrl', apiUrl
+        #pp = pprint.PrettyPrinter(indent=4)
+        
+        # a get the resource id
+        resId = self.getResourceId(ResourceName)
+        
+        # now get all the accounts for that resource using a heuristic 
+        # to search for the userName.
+        # start by getting all the accounts for the userid
+        accnts = self.getAccountsForResourceID(resId)
+        # will be where the extracted account name is stored assuming it is found
+        extractedAccntId = None
+        for accnt in accnts:
+            #pp.pprint(accnt)
+            # splitting up the received account name and url in case
+            # the version stored in pmp is username@url
+            if '@' in accnt['ACCOUNT NAME']:
+                currAccntName, currAccntUrl = accnt['ACCOUNT NAME'].split('@')
+            else:
+                currAccntName = accnt['ACCOUNT NAME']
+                currAccntUrl = None
+            currAccntId = accnt['ACCOUNT ID']
+            # if the usernames match, next we want to check if the 
+            # urls matches
+            if currAccntName.lower() == justUser.lower():
+                # get the details for the account and pull the url 
+                # from the details field
+                details = self.getAccountDetails(currAccntId, resId)
+                # Making sure there is a details field, and if there is
+                # putting the contents into urlFromDetails
+                if ((details.has_key('operation')) and \
+                     details['operation'].has_key('Details') ) and \
+                     details['operation']['Details'].has_key('DESCRIPTION'):
+                    urlFromDetails = details['operation']['Details']['DESCRIPTION']
+                    # now if the urlFromDetails matches apiUrl provided as an arg
+                    # then assume this is the account
+                    if urlFromDetails.lower().strip() == apiUrl.lower().strip():
+                        extractedAccntId = currAccntId
+                        break
+                # otherwise check to see if the url in the account name in 
+                # pmp matches the url sent as an arg
+                elif currAccntUrl:
+                    if apiUrl.lower().strip() ==  currAccntUrl.lower().strip():
+                        extractedAccntId = currAccntId
+                        break
+        if not extractedAccntId:
+            msg = 'unable to find an account that matches the account name: {0} and ' + \
+                  'the resource name {0}'
+            msg = msg.format(ResourceName, currAccntName)
+            raise AccountNotFound, msg
+        
+        return self.getAccountPasswordWithAccountId(extractedAccntId, resId)
+            
     def getAccountPasswordWithAccountId(self, accntId, resourceId):
         url = 'https://' + self.baseUrl + self.restDir + \
               'resources/' + str(resourceId) + '/accounts/' + \
@@ -206,5 +322,7 @@ class PMP(object):
             raise ValueError, msg
         return psswd
         
-
+class AccountNotFound(Exception):
+    def __init__(self,*args,**kwargs):
+        Exception.__init__(self,*args,**kwargs)
 

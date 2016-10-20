@@ -8,6 +8,7 @@ import fme  # @UnresolvedImport
 import logging.config
 import sys
 import os.path
+import urlparse
 import ParcelMapLib
 import PMP.PMPRestConnect
 
@@ -98,12 +99,18 @@ class ParcelMapUpdater(object):
         fmwDir = os.path.normcase(os.path.normpath(self.fmeMacroValues[self.const.fmeDirectoryKey]))
         pmpResource = self.fmeMacroValues[self.const.fmePMPResource]
         
+        # assemble the full url to the parcelmap api
+        pmUrl = self.fmeMacroValues[self.const.fmeRestAPIBaseURL]
+        pmUrl = urlparse.urljoin(pmUrl, self.const.restPath)
+        
         util = ParcelMapLib.ParcelMapUtil()
         pmpToken = util.getPMPDict(self.fmeMacroValues)
         self.logger.debug("Trying to create the pmp object")
         pmp = PMP.PMPRestConnect.PMP(pmpToken)
         self.logger.debug("created the pmp object")
-        password = pmp.getAccountPassword(user, resourceName=pmpResource)
+        #password = pmp.getAccountPassword(user, resourceName=pmpResource)
+        password = pmp.getRestAPIPassword(user, resourceName=pmpResource)
+
         self.logger.debug("got the password for {0}".format(user))
         return password
         

@@ -603,7 +603,7 @@ class FingerPrinting(Constants):
     def calculateFingerPrint(self):
         md5 = None
         if os.path.exists(self.destFile):
-            md5 = hashlib.md5(open(self.destFile, 'rb').read()).hexdigest()
+            md5 = hashlib.md5(open(self.destFile, 'rb').read()).hexdigest()  # @UndefinedVariable
         else:
             msg = "Asked to create an MD5 checksum on a file ({0}) that does not exist"
             self.logger.warning(msg.format(self.destFile))
