@@ -67,6 +67,7 @@ class ParcelMapUpdater(object):
         restApiURL = self.fmeMacroValues[self.const.fmeRestAPIBaseURL]
 
         restApiUser = self.fmeMacroValues[self.const.fmeRestAPIUser]
+        self.logger.debug('restApiUser: {0}'.format(restApiUser))
         restApiPswd = self.getRestApiPassword(user=restApiUser)
         destDir = self.fmeMacroValues[self.const.fmeDestinationDirectory]
         destFileName = self.const.parcelMapZipFile
