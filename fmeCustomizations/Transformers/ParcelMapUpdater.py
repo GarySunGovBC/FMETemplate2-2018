@@ -113,6 +113,7 @@ class ParcelMapUpdater(object):
         pmp = PMP.PMPRestConnect.PMP(pmpToken)
         self.logger.debug("created the pmp object")
         #password = pmp.getAccountPassword(user, resourceName=pmpResource)
+        self.logger.debug("sending {0},{1}, {2}".format(user,pmUrl,pmpResource))
         password = pmp.getRestAPIPassword(user,pmUrl,pmpResource)
 
         self.logger.debug("got the password for {0}".format(user))

@@ -12,6 +12,7 @@ import logging
 import sys
 import warnings
 import pprint
+import urlparse
 
 class PMP(object):
     '''
@@ -242,12 +243,22 @@ class PMP(object):
                               trying to retrieve.
         :type ResourceName: str
         '''
+        self.logger.debug("params are {0}, {1}, {2}".format(accountName, apiUrl, ResourceName))
+        
+        parsed_uri = urlparse.urlparse( apiUrl )
+        apiUrl = parsed_uri.netloc
+        self.logger.debug("apiUrl: {0}".format(apiUrl))
+
         # checking to see if the syntax for the account is
         # username@url or if it is just username
         #   example 'apiuser'
         #   or can come as 'apiuser@https://blah.com/blah/blah/blah'
         if '@' in accountName:
             justUser, apiUrlfromAccntName = accountName.split('@')
+            # only comparing the domain right now
+            parsed_uri = urlparse.urlparse( apiUrlfromAccntName )
+            apiUrlfromAccntName = parsed_uri.netloc
+            self.logger.debug("apiUrlfromAccntName: {0}".format(apiUrlfromAccntName))
         else:
             justUser = accountName
             apiUrlfromAccntName = None
@@ -270,6 +281,9 @@ class PMP(object):
             # the version stored in pmp is username@url
             if '@' in accnt['ACCOUNT NAME']:
                 currAccntName, currAccntUrl = accnt['ACCOUNT NAME'].split('@')
+                parsed_uri = urlparse.urlparse( currAccntUrl )
+                currAccntUrl = parsed_uri.netloc
+                self.logger.debug("currAccntUrl: {0}".format(currAccntUrl))
             else:
                 currAccntName = accnt['ACCOUNT NAME']
                 currAccntUrl = None
@@ -286,6 +300,10 @@ class PMP(object):
                      details['operation'].has_key('Details') ) and \
                      details['operation']['Details'].has_key('DESCRIPTION'):
                     urlFromDetails = details['operation']['Details']['DESCRIPTION']
+                    parsed_uri = urlparse.urlparse( urlFromDetails )
+                    urlFromDetails = parsed_uri.netloc
+                    self.logger.debug("urlFromDetails: {0}".format(urlFromDetails))
+
                     # now if the urlFromDetails matches apiUrl provided as an arg
                     # then assume this is the account
                     if urlFromDetails.lower().strip() == apiUrl.lower().strip():
@@ -298,9 +316,10 @@ class PMP(object):
                         extractedAccntId = currAccntId
                         break
         if not extractedAccntId:
+            self.logger.debug("account name: {0}".format(accountName))
             msg = 'unable to find an account that matches the account name: {0} and ' + \
-                  'the resource name {0}'
-            msg = msg.format(ResourceName, currAccntName)
+                  'the resource name {1}'
+            msg = msg.format(accountName, ResourceName)
             raise AccountNotFound, msg
         
         return self.getAccountPasswordWithAccountId(extractedAccntId, resId)
