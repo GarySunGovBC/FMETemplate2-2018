@@ -100,8 +100,11 @@ class ParcelMapUpdater(object):
         pmpResource = self.fmeMacroValues[self.const.fmePMPResource]
         
         # assemble the full url to the parcelmap api
+        pmConst = ParcelMapLib.Constants()
+        self.logger.debug("retrieved the parcel map path: {0}".format(pmConst.restPath))
         pmUrl = self.fmeMacroValues[self.const.fmeRestAPIBaseURL]
-        pmUrl = urlparse.urljoin(pmUrl, self.pm.restPath)
+        pmUrl = urlparse.urljoin(pmUrl, pmConst.restPath)
+        self.logger.debug("parcel map api url is {0}".format(pmUrl))
         
         util = ParcelMapLib.ParcelMapUtil()
         pmpToken = util.getPMPDict(self.fmeMacroValues)
@@ -109,7 +112,7 @@ class ParcelMapUpdater(object):
         pmp = PMP.PMPRestConnect.PMP(pmpToken)
         self.logger.debug("created the pmp object")
         #password = pmp.getAccountPassword(user, resourceName=pmpResource)
-        password = pmp.getRestAPIPassword(user, resourceName=pmpResource)
+        password = pmp.getRestAPIPassword(user,pmUrl, resourceName=pmpResource)
 
         self.logger.debug("got the password for {0}".format(user))
         return password
