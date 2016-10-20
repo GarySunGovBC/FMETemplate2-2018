@@ -24,7 +24,7 @@ class Constants(object):
     fmeFGDBReadOnly = 'FGDB_FULL_PATH_READONLY'
     fmeDestinationDirectory = 'DEST_DIR'
     
-    parcelMapZipFile = 'parcelmap_bc.zip'
+    parcelMapZipFile = 'ParcelMapBCExtract_fromLTSA.gdb.zip'
     downloadSrid = 'EPSG:3153'
     # populated later.  All macro values will use this prefix
     macroPrefix = None
