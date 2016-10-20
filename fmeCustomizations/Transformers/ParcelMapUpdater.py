@@ -101,7 +101,7 @@ class ParcelMapUpdater(object):
         
         # assemble the full url to the parcelmap api
         pmUrl = self.fmeMacroValues[self.const.fmeRestAPIBaseURL]
-        pmUrl = urlparse.urljoin(pmUrl, self.pm.const.restPath)
+        pmUrl = urlparse.urljoin(pmUrl, self.pm.restPath)
         
         util = ParcelMapLib.ParcelMapUtil()
         pmpToken = util.getPMPDict(self.fmeMacroValues)
