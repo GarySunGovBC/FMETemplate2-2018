@@ -1824,17 +1824,19 @@ class DWMWriter(object ):
         dataSourceList = self.fme.featuresRead.keys()
         if dataSourceList:
             dataSrcStr = ',+'.join(dataSourceList)
-        if len(dataSrcStr) > 180:
+        if len(dataSrcStr) >= 180:
             # oracle table for this only acccepts 180 characters, if the lenght is greater than
             # 180 then try to remove the path from all
+            dataSrcTruncatedDirs = []
             dirlist = []
             for datasrc in dataSourceList:
                 justDir = os.path.dirname(datasrc)
                 if not justDir in dirlist:
-                    dirlist.append(datasrc)
+                    dataSrcTruncatedDirs.append(datasrc)
+                    dirlist.append(justDir)
                 else:
-                    dirlist.append(os.path.basename(datasrc))
-            dataSrcStr = ',+'.join(dataSourceList)
+                    dataSrcTruncatedDirs.append(os.path.basename(datasrc))
+            dataSrcStr = ',+'.join(dataSrcTruncatedDirs)
             if len(dataSrcStr) > 180:
                 dataSrcStr = dataSrcStr[0:175] + '...'
         return dataSrcStr
