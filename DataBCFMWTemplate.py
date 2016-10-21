@@ -1675,9 +1675,10 @@ class DWMWriter(object ):
                       'dwm record for this replication will not be written'
                 self.logger.error(msg)
                 raise
-        msg = 'successfully connected to the database {0} with the user {1}'
-        msg = msg.format(instance, accntName)
-        self.logger.info(msg)
+        else:
+            msg = 'successfully connected to the database {0} with the user {1}'
+            msg = msg.format(instance, accntName)
+            self.logger.info(msg)
                         
     def writeRecord(self):
         '''
@@ -1711,7 +1712,7 @@ class DWMWriter(object ):
         returnDict['duration'] = self.getDuration()
         returnDict['dest_instance'] = self.getDestInstance()
         returnDict['dest_schema'] = self.getDestSchema()
-        returnDict['dest_table'] = self.getDestTable()
+        returnDict['dest_table'] = self.getDestTable()        
         return returnDict
         
     def getInsertStatement(self):
@@ -1823,6 +1824,19 @@ class DWMWriter(object ):
         dataSourceList = self.fme.featuresRead.keys()
         if dataSourceList:
             dataSrcStr = ',+'.join(dataSourceList)
+        if len(dataSrcStr) > 180:
+            # oracle table for this only acccepts 180 characters, if the lenght is greater than
+            # 180 then try to remove the path from all
+            dirlist = []
+            for datasrc in dataSourceList:
+                justDir = os.path.dirname(datasrc)
+                if not justDir in dirlist:
+                    dirlist.append(datasrc)
+                else:
+                    dirlist.append(os.path.basename(datasrc))
+            dataSrcStr = ',+'.join(dataSourceList)
+            if len(dataSrcStr) > 180:
+                dataSrcStr = dataSrcStr[0:175] + '...'
         return dataSrcStr
             
     def getDuration(self):

@@ -185,7 +185,6 @@ class FMEServerInteraction(T1T2ConversionConstants):
 
             self.updateFMW(fmwFile, self.fmwServCurRepo, self.fmwDestRepo)
             self.updateSchedule(fmwFile, self.fmwServCurRepo, self.fmwDestRepo, cronStr, category, schdName)
-
         
     def updateSchedule(self, fmwFileFullPath, fmwServCurRepo, fmwDestRepo, cronStr, category, schedName):
         '''
@@ -503,7 +502,7 @@ class FMEServerInteraction(T1T2ConversionConstants):
                 msg = "creating the test repository {0}".format(self.FMWTestRepo)
                 self.logger.debug(msg)
             wrkspcs = repo.getWorkspaces(self.FMWTestRepo)
-            if wrkspcs.exists(fmwFile) and refresh:
+            if wrkspcs.exists(fmwFile):
                 #wrkspcs.deleteWorkspace(fmwFile)
                 repo.updateRepository(self.FMWTestRepo, fmwFileFullPath)
                 wrkspcs.registerWithJobSubmitter(fmwFile)
