@@ -114,20 +114,31 @@ class Constants(object):
     #geographicBB = [ [ [ -139.06, 48.30], 
     #                   [ ]]]
     
+#     provincialJsonRequest = {
+#               "extract": {
+#                 "format": "File Geodatabase",
+#                 "realWorldChanges": "No",
+#                 "parcelFabricExtract": "Yes",
+#                 restKey_jurisdiction : None,
+#                 "fabricSpatialImprovements": "No",
+#                 "geometry": {
+#                   "type": "Polygon",
+#                   "coordinates": albersBB
+#                 },
+#                 "SRID": "EPSG:3153"
+#               }
+#             }
     provincialJsonRequest = {
               "extract": {
                 "format": "File Geodatabase",
                 "realWorldChanges": "No",
                 "parcelFabricExtract": "Yes",
-                restKey_jurisdiction : None,
+                "jurisdictionCode": "ALL",
                 "fabricSpatialImprovements": "No",
-                "geometry": {
-                  "type": "Polygon",
-                  "coordinates": albersBB
-                },
                 "SRID": "EPSG:3153"
               }
             }
+
     def __init__(self):
         pass
     
