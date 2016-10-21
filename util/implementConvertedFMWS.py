@@ -13,7 +13,7 @@ About
                     repository and verify that it works in a test
                     replication to DLV
                  1. get the cron schedule for the current schedule
-                    associated with the existing job
+                    associated with the existing job 
                  2. delete the jobs schedule
                  3. delete the existing job (in most cases this 
                     will be the version that exists in the fme 
