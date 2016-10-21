@@ -144,7 +144,8 @@ class TemplateConstants(object):
     
     FMEServerSection='fmeserver'
     FMEServerSection_Host='host'
-    FMEServerSection_RootDir = '/fmerest/v2/'
+    #FMEServerSection_RootDir = '/fmerest/v2/'
+    FMEServerSection_RootDir = 'rootdir'
     FMEServerSection_Token='token'
     
     # pmp config parameters
@@ -1037,7 +1038,7 @@ class CalcParamsDevelopment(object):
         credsFileFMWPath = os.path.join(fmwPath, exampleCredsFile)
         self.logger.info("using the credentials file: {0}".format(credsFileFMWPath))        
         if not os.path.exists(credsFileFMWPath):
-             # calculate the full path to the example dbcreds.json file.
+            # calculate the full path to the example dbcreds.json file.
             templateRootDir = self.paramObj.getTemplateRootDirectory()
             confDirName = self.paramObj.getConfigDirName()
             exampleCredsFilePath = os.path.join(templateRootDir, confDirName, exampleCredsFile)
@@ -1216,8 +1217,8 @@ class CalcParamsDataBC(object):
         self.const = self.parent.const
         self.paramObj = self.parent.paramObj
         
-        fmwDir = self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
-        fmwName = self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWName]
+        #fmwDir = self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        #fmwName = self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWName]
         #ModuleLogConfig(fmwDir, fmwName)
         
         #ModuleLogConfig()
