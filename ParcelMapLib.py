@@ -26,8 +26,12 @@ class Constants(object):
     extractDir = 'extract'
     extractFile = 'ParcelMapDirect_{0}.zip'
     restPath = '/pmd/api'
+    # the is a default value, can be overridden in the constructor for a parcelmap api object
+    orderStatusFileName = 'ParcelMapOrderStatus.json'
+    orderStatusFileNameFullPath = None
     
     defaultFormat = 'File Geodatabase'
+    defaultSRID = 'EPSG:3153'
     
     configDir = 'config'
     logConfigFile = 'logging_devel.config'
@@ -49,8 +53,8 @@ class Constants(object):
     
     # This is the time in seconds that the script will wait
     # before it polls the server about the status of an 
-    # order.
-    pollInterval = 120
+    # order.  was 120, moving it to 
+    pollInterval = 900
     # a request will return an expected completion time. The api 
     # will calculate how far in the future that value is in seconds
     # then propotion that number by this amount.  After that amount
@@ -58,7 +62,7 @@ class Constants(object):
     # seconds.
     # was 75 but have changed to 130 as the parcelmap ui 
     # seems to underestimate completion times
-    pollStartTimeProportionPercentage = 130
+    pollStartTimeProportionPercentage = 200
     
     # Order statuses sometimes return an error
     # that looks like this:
@@ -68,7 +72,7 @@ class Constants(object):
     # the script will pause for "ConnectionErrorRetryInterval" amount
     # of time in seconds
     # it will retry the query "ConnectionErrorMaxRetries 
-    ConnectionErrorRetryInterval = 15
+    ConnectionErrorRetryInterval = 30
     ConnectionErrorMaxRetries = 5
     
     # the suffix used for the checksum file (md5)
@@ -86,7 +90,7 @@ class Constants(object):
     testRequest1 = {
             'extract' : {
                  'jurisdictionCode' : 'J0084',
-                'SRID' : 'EPSG:3153',
+                'SRID' : defaultSRID,
                 'format' : defaultFormat,
                 'parcelFabricExtract' : 'Yes', 
                 'realWorldChanges': 'No', 
@@ -97,7 +101,7 @@ class Constants(object):
     defaultJurisDictionRequest = {
             'extract' : {
                  restKey_jurisdiction : '{0}',
-                restKey_SRID : 'EPSG:3153',
+                restKey_SRID : defaultSRID,
                 'format' : defaultFormat,
                 'parcelFabricExtract' : 'Yes', 
                 'realWorldChanges': 'No', 
@@ -130,12 +134,12 @@ class Constants(object):
 #             }
     provincialJsonRequest = {
               "extract": {
-                "format": "File Geodatabase",
+                "format": defaultFormat,
                 "realWorldChanges": "No",
                 "parcelFabricExtract": "Yes",
                 "jurisdictionCode": "ALL",
                 "fabricSpatialImprovements": "No",
-                "SRID": "EPSG:3153"
+                "SRID": defaultSRID
               }
             }
 
@@ -226,18 +230,32 @@ class RestBase():
 
 class parcelMapAPI(RestBase, Constants):
     
-    def __init__(self, url, userName, passWord):
+    def __init__(self, url, userName, passWord, destDir, orderStatusFileName=None):
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
-
         #self.configLogging()
 
         RestBase.__init__(self, url, userName, passWord)
         Constants.__init__(self)
+        if orderStatusFileName:
+            self.orderStatusFileName = orderStatusFileName
         
         self.user = userName
         self.passWord = passWord
         self.url = url
+        
+        # The directory where the parcelmap data will be downloaded to.
+        # the name of the file is always calculated using the constant
+        # extractFile which resolves to ParcelMapDirect_{0}.zip
+        # where {0} is replaced with the order number
+        self.destDir = destDir
+        # will get calculated once the order has been placed as the name
+        # is dependent on the order number
+        self.destFile = None
+        
+        # as soon as the order is either recovered or placed this var
+        # will get set
+        self.orderId = None
         
     def configLogging(self):
         '''
@@ -387,12 +405,34 @@ class parcelMapAPI(RestBase, Constants):
 
         currentTime = datetime.datetime.now(tz=pacificTZ)
         self.logger.debug('local time now: {0}'.format(currentTime))
-        intervalToExpectedTime = expectedDate - currentTime
-        proportionedInterval = (intervalToExpectedTime.seconds * 75) / 100
-        self.logger.debug("wait interval is: {0}".format(proportionedInterval))
+        if expectedDate < currentTime:
+            # might as well make it wait 2 seconds
+            proportionedInterval = 2
+        else:
+            intervalToExpectedTime = expectedDate - currentTime
+            self.logger.debug("intervalToExpectedTime {0}".format(intervalToExpectedTime))
+            proportionedInterval = (intervalToExpectedTime.seconds * 75) / 100
+            self.logger.debug("wait interval is: {0}".format(proportionedInterval))
         return proportionedInterval
                 
-    def download(self, requestBody, destinationFile):
+    def getStatusFile(self, dir=None):
+        # ift he dir is provided it allows it to be overridden
+        if not dir:
+            dir = self.destDir
+        if not self.orderStatusFileNameFullPath:
+            self.orderStatusFileNameFullPath = os.path.join(dir, self.orderStatusFileName)
+        return self.orderStatusFileNameFullPath
+    
+    def existsStatusFile(self):
+        statusFile = self.getStatusFile()
+        return os.path.exists(statusFile)
+    
+    def deleteStatusFile(self):
+        statusFile = self.getStatusFile()
+        if os.path.exists(statusFile):
+            os.remove(statusFile)
+        
+    def download(self, requestBody):
         '''
         This method will recieve a request body and will mange
         the rest of the process involved with downloading the
@@ -403,7 +443,8 @@ class parcelMapAPI(RestBase, Constants):
               when they occur
             - Issue the request and parse the return json 
               object to ensure that indicates the request was
-              successfully filled
+              successfully filled.  returned json is also written 
+              to the status file.
             - After request is made the returning object provides
               an estimates completion time.  The script will wait
               until that time has expired and will then attempt 
@@ -416,30 +457,59 @@ class parcelMapAPI(RestBase, Constants):
               a query regarding the status, the script will download
               the data.
         '''
+        # get the path to the status file
+        fullPathStatusFile = self.getStatusFile()
+        
+        # issue the request and get the response
         response = self.requestParcels(requestBody)
         self.logger.info("request for parcel map data has been issued")
-        self.logger.info("order id is: {0}".format(response[self.restKey_orderid]))
-        # make sure the response has an orderid
-        if not response.has_key(self.restKey_orderid):
-            msg = "Cannot find an orderid in the response from " + \
-                  "the server.  Searching for the key {0} but could " + \
-                  "not find it.  Full response is: {1}"
-            self.logger.error(msg.format(self.restKey_orderid, response))
-            raise ValueError, msg.format(self.restKey_orderid, response)
-        # make sure the response has an expected date
-        if not response.has_key(self.restKey_expectedDate):
-            msg = 'The response does not have an expected date key: {0}' + \
-                 'full response is: {1}'
-            self.logger.error(msg.format(self.restKey_orderid, response))
-            raise ValueError, msg.format(self.restKey_orderid, response)
+        self.logger.debug("returned from order request: {0}".format(response))
+        
+        parcelMapOrder = ParcelMapOrder(response)
+        parcelMapOrder.validateOrder()
+        self.orderId = parcelMapOrder.getOrderId()
+        expectedDate = parcelMapOrder.getExpectedDate()
+        self.logger.info("order id is: {0}".format(self.orderId))
+        
+        # save the parcelmap data to the status file
+        parcelMapOrder.saveOrderToStatusFile(fullPathStatusFile)
+        
+        # order has been placed now monitor it, and when complete continue 
+        # with downloading it.
+        #self.monitorAndCompleteOrder(self.restKey_orderid, self.restKey_expectedDate)
+        self.monitorAndCompleteOrder(self.orderId, expectedDate)
+        # order completed so no need to hang onto the status file
+        self.deleteStatusFile()
+             
+    def monitorAndCompleteOrder(self, orderID, expectedDateTime):
+        '''
+        
+        Gets the orderid of the recently placed order, and the expected completion 
+        time, and the destination file for where to dump the data once the order is 
+        complete.  
+        
+        queries the rest api until the order with the order id is complete.  Then
+        downloads.  Does not query until the expected Date time has expired.
+        
+        :param  orderID: The order id to monitor and download
+        :type orderID: str
+        :param  expectedDateTime: expected date time for order to complete.  In 
+                                  json datetime format.
+        :type expectedDateTime: str
+        :param  destinationFile: Path to the destination file that will be created
+                                 once the data is ready
+        :type destinationFile: str(path)
+        '''
+        if self.orderId <> orderID:
+            self.orderId = orderID
         # parse the date.
         #expectedDate = datetime.datetime.strptime(response[self.restKey_expectedDate], 
         #                                          self.expectedDateFormat)
         # calculate when to start polling for a response.
-        pollStart = self.calculatePollingStartInterval(response[self.restKey_expectedDate])
+        pollStart = self.calculatePollingStartInterval(expectedDateTime)
         msg = "parcel map says order should be ready at {0}.  Will start " + \
               'polling parcel map for the order status in {1} seconds '
-        self.logger.info(msg.format(response[self.restKey_expectedDate], pollStart))
+        self.logger.info(msg.format(expectedDateTime, pollStart))
         time.sleep(pollStart)
         
         # when the status of an order returns and the order is processing 
@@ -455,7 +525,7 @@ class parcelMapAPI(RestBase, Constants):
         continueCheckingOnOrder = True
         while continueCheckingOnOrder:
             self.logger.info("initiating a status check on the order")
-            statusResponse = self.requestOrderStatus(response[self.restKey_orderid])
+            statusResponse = self.requestOrderStatus(orderID)
             #if statusResponse[self.restKey_status].lower() == 'processing':
             if self.isProcessingRegex.match(statusResponse[self.restKey_status]):
                 # keep on waiting
@@ -463,7 +533,7 @@ class parcelMapAPI(RestBase, Constants):
                 time.sleep(self.pollInterval)
             elif statusResponse[self.restKey_status].lower() == 'completed':
                 msg = 'order {0} is now complete, initiating download'
-                self.logger.info(msg.format(response[self.restKey_orderid]))
+                self.logger.info(msg.format(orderID))
                 continueCheckingOnOrder = False
             else:
                 msg = 'returned an unexpected status code, entire' + \
@@ -472,16 +542,32 @@ class parcelMapAPI(RestBase, Constants):
         # now download the order
         #     def requestOrderData(self, orderID, destFile):
         self.logger.info("order is now ready, retrieving it")
-        self.logger.info("pausing for 5 seconds to avoid 429 error...")
-        time.sleep(5)
-        self.requestOrderData(response[self.restKey_orderid], destinationFile)
+        msg = "pausing for {0} seconds to avoid 429 error..."
+        self.logger.info(msg.format(self.ConnectionErrorRetryInterval))
+        
+        time.sleep(self.ConnectionErrorRetryInterval)
+        destFileFullPath = self.getDestinationFilePath()
+        self.requestOrderData(orderID, destFileFullPath)
         msg = "order has been downloaded and can be found at {0}"
-        self.logger.info(msg.format(destinationFile))
+        self.logger.info(msg.format(destFileFullPath))
+    
+    def getDestinationFilePath(self):
+        retFilePath = None
+        if not self.orderId:
+            msg = 'Cannot calculate the destination file path becuase the ' +\
+                  'order id has not been set yet.  The order id gets set ' + \
+                  'either after a new order has been placed, or when an ' +\
+                  'existing orders status file is detected and the script ' +\
+                  'attempts to pick that order up'
+            raise ValueError, msg
+        justFile = self.extractFile.format(self.orderId)
+        retFilePath = os.path.join(self.destDir, justFile)
+        return retFilePath
     
     def downloadJurisdiction(self, jurisdictionId, destinationFile, SRID='EPSG:3153'):
         '''
-        Receives a jurisdication id, script then attempts to download that
-        jurisdication.
+        Receives a jurisdiction id, script then attempts to download that
+        jurisdiction.
         
         # example of a successful request for an order
         {"estimatedCompletionTime":"2016-09-03T00:43:57Z",
@@ -505,7 +591,9 @@ class parcelMapAPI(RestBase, Constants):
         self.download(requestBody, destinationFile)
         self.logger.info("Data for jurisdiction: {0} has been downloaded to {1}".format(jurisdictionId, destinationFile))
         
-    def downloadBC(self, destinationFile, SRID='EPSG:3153'):
+    def downloadBC(self, SRID=None):
+        if not SRID:
+            SRID = self.defaultSRID
         # put logic in here to deal with:
         # - making the request
         # - retrieve the order id
@@ -514,9 +602,11 @@ class parcelMapAPI(RestBase, Constants):
         # potentially integrate with FMW.
         self.logger.info("Retrieving the parcel data for the entire province")
         requestBody = self.provincialJsonRequest
-        requestBody[self.restKey_extract][self.restKey_SRID] = SRID
-        self.download(requestBody, destinationFile)
-        self.logger.info("Data for the entire province has been downloaded to {0}".format(destinationFile))
+        if SRID <> self.defaultSRID:
+            requestBody[self.restKey_extract][self.restKey_SRID] = SRID
+        self.download(requestBody)
+        destFilePath = self.getDestinationFilePath()
+        self.logger.info("Data for the entire province has been downloaded to {0}".format(destFilePath))
     
     def unZipFile(self, destFile, srcFGDB):
         '''
@@ -695,5 +785,71 @@ class ParcelMapUtil():
             msg = 'Was unable to determine the transormer published parameter prefix'
             #self.logger.warning(msg)
         return prefix
+    
+    def readStatusFile(self, statusFile):
+        '''
+        When an order is placed with the parcel map api the returned 
+        json data is cached in a file.  This method is designed to 
+        read that file and return it as a ParcelMapOrder object
+        
+        :param  statusFile: The path to the status file with the parcel
+                            map json data.
+        :type statusFile: str(path)
+        
+        :returns: ParcelMapOrder object
+        :rtype: ParcelMapOrder
+        '''
+        if not os.path.exists(statusFile):
+            msg = 'The status file {0} does not exist' 
+            self.logger.error(msg.format(statusFile))
+            raise IOError, msg.format(statusFile)
+        with open(statusFile, 'r') as data_file:    
+            struct = json.load(data_file)
+        parcelMapOrder = ParcelMapOrder(struct)
+        return parcelMapOrder
+    
+class ParcelMapOrder(Constants):
+    
+    def __init__(self, requestData):
+        Constants.__init__(self)
+        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        self.logger = logging.getLogger(modDotClass)
+        self.requestData = requestData
+        
+    def getOrderId(self):
+        '''
+        Takes the request data that is returned when an order is placed for a product
+        from parcelmap.  It then extracts and returns the orderid from this data 
+        structure
+        
+        :returns: returns the order id extacted from the parcel map data.
+        :rtype: str
+        '''
+        self.validateOrder()
+        return self.requestData[self.restKey_orderid]
+    
+    def getExpectedDate(self):
+        self.validateOrder()
+        return self.requestData[self.restKey_expectedDate]
+    
+    def validateOrder(self):
+        # make sure the response has an orderid
+        if not self.requestData.has_key(self.restKey_orderid):
+            msg = "Cannot find an orderid in the response from " + \
+                  "the server.  Searching for the key {0} but could " + \
+                  "not find it.  Full response is: {1}"
+            self.logger.error(msg.format(self.restKey_orderid, self.requestData))
+            raise ValueError, msg.format(self.restKey_orderid, self.requestData)
+        # make sure the response has an expected date
+        if not self.requestData.has_key(self.restKey_expectedDate):
+            msg = 'The response does not have an expected date key: {0}' + \
+                 'full response is: {1}'
+            self.logger.error(msg.format(self.restKey_orderid, self.requestData))
+            raise ValueError, msg.format(self.restKey_orderid, self.requestData)
+    
+    def saveOrderToStatusFile(self, fullPathStatusFile):
+        with open(fullPathStatusFile, 'w') as fp:
+            json.dump(self.requestData, fp)
+
         
 
