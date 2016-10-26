@@ -138,7 +138,6 @@ class ParcelMapUpdater(object):
             # finally update the cache
             fp.cacheFingerPrint()
             
-            
     def updateConstants(self):
         '''
         The published parameters of a linked transformer will have the name of the 

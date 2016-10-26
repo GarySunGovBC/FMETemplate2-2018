@@ -461,6 +461,7 @@ class parcelMapAPI(RestBase, Constants):
         fullPathStatusFile = self.getStatusFile()
         
         # issue the request and get the response
+        sys.exit() # debug while I make sure this is getting bypassed
         response = self.requestParcels(requestBody)
         self.logger.info("request for parcel map data has been issued")
         self.logger.debug("returned from order request: {0}".format(response))
