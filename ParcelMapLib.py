@@ -461,7 +461,7 @@ class parcelMapAPI(RestBase, Constants):
         fullPathStatusFile = self.getStatusFile()
         
         # issue the request and get the response
-        sys.exit() # debug while I make sure this is getting bypassed
+        #sys.exit() # debug while I make sure this is getting bypassed
         response = self.requestParcels(requestBody)
         self.logger.info("request for parcel map data has been issued")
         self.logger.debug("returned from order request: {0}".format(response))
@@ -611,19 +611,31 @@ class parcelMapAPI(RestBase, Constants):
     
     def unZipFile(self, destFile, srcFGDB):
         '''
-        get the zip file, read it and get the name of the 
-        gdb in it.
+        gets the zip file and the full path to it.  The zip file path
+        will contain the writeable destination directory.  
         
-        extract the gdb.
+        Also receives the srcFGDB which is the name of the source 
+        file geodatabase used by the FMW.  If this parameter includes
+        a path it will be the read-only path.
         
+        This method will reconstruct the srcFGDB so that the name 
+        of the geodatabase is in the directory of the destFile.
+        
+        Finally it will unzip the destFile into the srcFGDB, if 
+        the srcFGDB already exists it will be deleted.
+                
         Delete the existing gdb, replace with the new gdb. 
         '''
         self.logger.debug("input zip file: {0}".format(destFile))
         self.logger.debug("final destination fgdb {0}".format(srcFGDB))
         # name of the final FGDB
         finalFGDBName = os.path.basename(srcFGDB)
+        self.logger.debug('finalFGDBName: {0}'.format(finalFGDBName))
+        
         # The destination directory specified for zip file
         destDir = os.path.dirname(destFile)
+        self.logger.debug('destDir: {0}'.format(destDir))
+
         # The full path to where the new FGDB should be
         finalFGDBFullPath = os.path.normpath(os.path.join(destDir, finalFGDBName))
         self.logger.debug("Name of the final fgdb path to be updated (r/w) path {0}".format(finalFGDBFullPath))
@@ -637,40 +649,45 @@ class parcelMapAPI(RestBase, Constants):
         # The name of the fgdb that is going to be created by
         # unzipping the file.
         destFGDB = os.path.normpath(os.path.join(destDir, zipDir))
+        self.logger.debug('destFGDB: {0}'.format(destFGDB))
+        # todo: should get rid of the delete 
         self.logger.debug("temporary unzip home of the zip file {0}".format(destFGDB))
         # Try to delete the fgdb. 
-        if os.path.exists(destFGDB):
-            try:
-                shutil.rmtree(destFGDB)
-            except:
-                msg = 'Trying to remove the fgdb that currently exists in ' + \
-                      'the staging area ({0}) so it can be updated.  Unfortunately ' + \
-                      'ran into an error when this was attempted'
-                self.logger.error(msg.format(destFGDB))
-                raise
-        zip_ref.extractall(destDir)
+        #if os.path.exists(destFGDB):
+        #    try:
+        #        shutil.rmtree(destFGDB)
+        #    except:
+        #        msg = 'Trying to remove the fgdb that currently exists in ' + \
+        #              'the staging area ({0}) so it can be updated.  Unfortunately ' + \
+        #              'ran into an error when this was attempted'
+        #        self.logger.error(msg.format(destFGDB))
+        #        raise
+        if not os.path.exists(destFGDB):
+            zip_ref.extractall(destDir)
         zip_ref.close()
         
         # finally rename the fgdb that was just extracted to have
         # the name of the destination fgdb
         if os.path.exists(finalFGDBFullPath):
             try:
-                self.logger.debug("deleting {0}, then renaming this that to {1}".format(finalFGDBFullPath, destFGDB))
+                self.logger.debug("deleting {0}, then renaming this to that {1}".format(finalFGDBFullPath, destFGDB))
                 shutil.rmtree(finalFGDBFullPath)
             except:
                 msg = 'Unable to delete the existing FGDB ({0}), so it ' + \
                       'can be replaced by ({1})'
                 self.logger.error(msg.format(finalFGDBFullPath,destFGDB ))
-        os.rename(destFGDB, finalFGDBFullPath)
+        
+        shutil.move(destFGDB, finalFGDBFullPath)
              
 class FingerPrinting(Constants):
 
-    def __init__(self, destFile):
+    def __init__(self, destFile, fingerPrintFile):
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
         #self.logger.setLevel(logging.DEBUG)
         
         self.destFile = destFile
+        self.fingerPrintFile = fingerPrintFile
         Constants.__init__(self)
         
     def getCacheFilePath(self):
@@ -690,7 +707,8 @@ class FingerPrinting(Constants):
         zip file except it will have a .md5 suffix.  The 
         directory will be the same as the destination date.
         '''
-        md5File = self.getCacheFilePath()
+        #md5File = self.getCacheFilePath()
+        md5File = self.fingerPrintFile
         self.logger.debug("md5 cache file is {0}".format(md5File))
         md5 = None
         if os.path.exists(md5File):
@@ -712,8 +730,9 @@ class FingerPrinting(Constants):
         return md5
     
     def cacheFingerPrint(self):
-        cacheFile = self.getCacheFilePath()
-        self.logger.debug("cache file {0}".format(cacheFile))
+        #cacheFile = self.getCacheFilePath()
+        cacheFile = self.fingerPrintFile
+        self.logger.debug("md5 file {0}".format(cacheFile))
         if os.path.exists(cacheFile):
             os.remove(cacheFile)
         md5 = self.calculateFingerPrint()

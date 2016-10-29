@@ -162,6 +162,7 @@ class FMEServerInteraction(T1T2ConversionConstants):
         each fmw.
         '''
         fmwFiles = self.getFMWs()
+        
         self.logger.debug("")
         scheds = Schedules(self.fmeServer)
         for fmwFile in fmwFiles:
@@ -272,11 +273,13 @@ class FMEServerInteraction(T1T2ConversionConstants):
             # set up a schedule object
             scheds = self.fmeServer.getSchedules()
             sched = scheds.getSchedule()
-    
-            # now delete the existing schedule
-            self.logger.debug("removing the schedule {0} with the category {1}".format(schedName, category))
-            sched.delete(category, schedName)
-            self.logger.debug("schedule {0} has been removed".format(schedName))
+            
+            # check to see if the schedule exists
+            if scheds.exists(schedName, category):
+                # now delete the existing schedule
+                self.logger.debug("removing the schedule {0} with the category {1}".format(schedName, category))
+                sched.delete(category, schedName)
+                self.logger.debug("schedule {0} has been removed".format(schedName))
             
             # finally create the schedule
             self.logger.debug("recreating the schedule to refer to the new fmw ")

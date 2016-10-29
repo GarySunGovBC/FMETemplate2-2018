@@ -23,10 +23,11 @@ class Constants(object):
     
     fmePMPResource = 'PMP_RESOURCE'
     fmeFGDBReadOnly = 'FGDB_FULL_PATH_READONLY'
-    fmeDestinationDirectory = 'DEST_DIR'
+    fmeDestinationDirectory = 'DEST_DIR' # the writeable directory
     
     parcelMapZipFile = 'ParcelMapBCExtract_fromLTSA.gdb.zip'
     orderStatusFile = 'ParcelMapBCExtract_status.json'
+    fingerPrintFile = 'ParcelMapBCExtract.md5'
     downloadSrid = 'EPSG:3153'
     # populated later.  All macro values will use this prefix
     macroPrefix = None
@@ -80,11 +81,10 @@ class ParcelMapUpdater(object):
 
         self.logger.debug("            {0} ".format( self.fmeMacroValues))
 
-        for key in self.fmeMacroValues:
-
-            self.logger.debug("            {0}  :  {1}".format(key, self.fmeMacroValues[key]))
+        #for key in self.fmeMacroValues:
+        #    self.logger.debug("            {0}  :  {1}".format(key, self.fmeMacroValues[key]))
         
-        # extracging values from published parameters required to build parcel map connection
+        # extracting values from published parameters required to build parcel map connection
         self.logger.debug("retrieving the macrovalue: {0}".format(self.const.fmeRestAPIUser))
         restApiURL = self.fmeMacroValues[self.const.fmeRestAPIBaseURL]
         
@@ -99,44 +99,59 @@ class ParcelMapUpdater(object):
         destFileName = self.const.parcelMapZipFile # just the file name of the zip file
         destFullPath = os.path.join(destDir, destFileName) # calc full path
         destFullPath = os.path.normcase(os.path.normpath(destFullPath)) # normalize it
-        
+        self.logger.debug("destFullPath {0}".format(destFullPath))
         # creating the parcel map object
         self.logger.debug("creating parcel map api object")
         self.pm = ParcelMapLib.parcelMapAPI(restApiURL, restApiUser, restApiPswd, destDir)
         
         # if a status file exists it indicates that the process never completed
         if self.pm.existsStatusFile():
+            # now check to see if the destination 
             util = ParcelMapLib.ParcelMapUtil()
-            parcelMapOrder = util.readStatusFile()
-            
+            statusFile = self.pm.getStatusFile()
+            parcelMapOrder = util.readStatusFile(statusFile)
             orderId = parcelMapOrder.getOrderId()
             expectedCompletionDate = parcelMapOrder.getExpectedDate()
+            self.pm.orderId = orderId
+            file2Download = self.pm.getDestinationFilePath()
+            if not os.path.exists(file2Download):
             # extract the data from the statusFileData data
-            self.pm.monitorAndCompleteOrder(orderId, expectedCompletionDate)
-            self.pm.deleteStatusFile()
+                self.logger.debug("file2Download {0} does not exist".format(file2Download))
+                self.pm.monitorAndCompleteOrder(orderId, expectedCompletionDate)
         else:
             # this method just will place the order, monitor it and 
             # download.
             self.pm.downloadBC()
+        # now do the comparison.
+        self.logger.debug("destFullPath {0}".format(destFullPath))
+        self.logger.debug("fingerPrintFile {0}".format(self.const.fingerPrintFile))
         
-        newlyDownloadedParcelMapData = self.pm.getDestinationFilePath()
-        # once we get here we have two zip files, the one we just downloaded
-        # and the one that was previously downloaded.
-        # now going to just delete the version that we might already have 
-        # and replace it with the new one.
-        if os.path.exists(destFullPath):
-            os.remove(destFullPath)
-        shutil.move(newlyDownloadedParcelMapData, destFullPath)
-            
-        # now do the comparison
-        fp = ParcelMapLib.FingerPrinting(destFullPath)
+        # currentOrderFile is something like parcelmap_10732.gdb.zip
+        currentOrderFile = self.pm.getDestinationFilePath()
+        fingerPrintFile = os.path.join(destDir, self.const.fingerPrintFile)
+        fp = ParcelMapLib.FingerPrinting(currentOrderFile, fingerPrintFile)
         if fp.hasParcelFabricChanged():
             # yes it has changed, need to unzip it
             fgdbPathReadOnly = self.fmeMacroValues[self.const.fmeFGDBReadOnly]
-            self.pm.unZipFile(destFullPath, fgdbPathReadOnly)
+            zipFileDownloaded = self.pm.getDestinationFilePath()
+            self.pm.unZipFile(zipFileDownloaded, fgdbPathReadOnly)
             self.updated = True
             # finally update the cache
             fp.cacheFingerPrint()
+            
+            if os.path.exists(destFullPath):
+                self.logger.debug("removing {0}".format(destFullPath))
+                os.remove(destFullPath)
+            shutil.move(file2Download, destFullPath)
+        else:
+            if os.path.exists(file2Download):
+                self.logger.debug("removing {0}".format(file2Download))
+                os.remove(file2Download)
+            
+        # once order has been placed, retrieved, compared, unzipped, then 
+        # proceed with deleting the statusfile.
+        # next step is to delete the status file
+        self.pm.deleteStatusFile()
             
     def updateConstants(self):
         '''

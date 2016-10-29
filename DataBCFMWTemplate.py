@@ -49,7 +49,6 @@ import json
 import logging.config
 import PMP.PMPRestConnect
 import DB.DbLib
-#import FMELogger
 import datetime
 import re
 import inspect
