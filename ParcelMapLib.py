@@ -482,8 +482,6 @@ class parcelMapAPI(RestBase, Constants):
         # with downloading it.
         #self.monitorAndCompleteOrder(self.restKey_orderid, self.restKey_expectedDate)
         self.monitorAndCompleteOrder(self.orderId, expectedDate)
-        # order completed so no need to hang onto the status file
-        self.deleteStatusFile()
              
     def monitorAndCompleteOrder(self, orderID, expectedDateTime):
         '''
