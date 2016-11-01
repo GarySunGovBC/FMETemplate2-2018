@@ -121,7 +121,10 @@ class ParcelMapUpdater(object):
         else:
             # this method just will place the order, monitor it and 
             # download.
-            self.pm.downloadBC()
+            self.logger.debug("placing a new order for the province")
+            #self.pm.downloadBC()
+            # debugging
+            sys.exit()
         # now do the comparison.
         self.logger.debug("destFullPath {0}".format(destFullPath))
         self.logger.debug("fingerPrintFile {0}".format(self.const.fingerPrintFile))
@@ -138,15 +141,16 @@ class ParcelMapUpdater(object):
             self.updated = True
             # finally update the cache
             fp.cacheFingerPrint()
-            
             if os.path.exists(destFullPath):
                 self.logger.debug("removing {0}".format(destFullPath))
                 os.remove(destFullPath)
-            shutil.move(file2Download, destFullPath)
+            shutil.move(zipFileDownloaded, destFullPath)
         else:
-            if os.path.exists(file2Download):
-                self.logger.debug("removing {0}".format(file2Download))
-                os.remove(file2Download)
+            # The versions have not changed so don't bother downloading.
+            zipFileDownloaded = self.pm.getDestinationFilePath()
+            if os.path.exists(zipFileDownloaded):
+                self.logger.debug("removing {0}".format(zipFileDownloaded))
+                os.remove(zipFileDownloaded)
             
         # once order has been placed, retrieved, compared, unzipped, then 
         # proceed with deleting the statusfile.

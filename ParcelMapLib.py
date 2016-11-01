@@ -425,7 +425,10 @@ class parcelMapAPI(RestBase, Constants):
     
     def existsStatusFile(self):
         statusFile = self.getStatusFile()
-        return os.path.exists(statusFile)
+        self.logger.debug("status file is {0}".format(statusFile))
+        fileExists = os.path.exists(statusFile)
+        self.logger.debug("file exists {0}".format(fileExists))
+        return fileExists
     
     def deleteStatusFile(self):
         statusFile = self.getStatusFile()
