@@ -7,10 +7,11 @@ import site
 import platform
 import os.path
 import sys
-print 'running usercustomize...'
-print 'platform.node()', platform.node()
+import requests
+
+#print 'platform.node()', platform.node()
 rootDir = os.path.dirname(__file__)
-print 'ROOTDIR: {0}'.format(rootDir)
+#print 'ROOTDIR: {0}'.format(rootDir)
 if platform.node().lower() == 'matar':
     #print 'adding matar internal lib paths...'
     #Z:\scripts\python\DataBCPyLib\PMP
@@ -20,17 +21,25 @@ if platform.node().lower() == 'matar':
     pass
     
 # adding the lib_ext path
-lib_extPath = os.path.join(rootDir, 'lib_ext')
-lib_intPath = os.path.join(rootDir, 'lib_int')
-site.addsitedir(lib_extPath)
-site.addsitedir(lib_intPath)
-site.addsitedir(rootDir)
+#lib_extPath = os.path.join(rootDir, 'lib_ext')
+#lib_intPath = os.path.join(rootDir, 'lib_int')
+#print 'lib_extPath', lib_extPath
+#print 'lib_intPath', lib_intPath
+#site.addsitedir(lib_extPath)
+#site.addsitedir(lib_intPath)
+#site.addsitedir(rootDir)
+
+#newPaths = [lib_extPath, lib_intPath, rootDir]
 
 # Grab the last three paths that were added to the end of the path list
 # and stick them in the front of the path list.
-sys.path.insert(0, sys.path.pop())
-sys.path.insert(0, sys.path.pop())
-sys.path.insert(0, sys.path.pop())
+
+
+#print sys.path
+#sys.path.insert(0, sys.path.pop())
+#sys.path.insert(0, sys.path.pop())
+#sys.path.insert(0, sys.path.pop())
+#print sys.path
 
 # development should be commented out later
 # pth2Remove = r'\\data.bcgov\work\scripts\python\DataBCFmeTemplate2'   
