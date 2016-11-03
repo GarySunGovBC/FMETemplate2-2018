@@ -7,8 +7,7 @@ import site
 import platform
 import os.path
 import sys
-import requests
-
+print 'RUNNING USERCUSTOMIZE {0}'.format(__file__)
 #print 'platform.node()', platform.node()
 rootDir = os.path.dirname(__file__)
 #print 'ROOTDIR: {0}'.format(rootDir)
@@ -19,10 +18,30 @@ if platform.node().lower() == 'matar':
     #site.addsitedir(matarPath)
     #print '{0} path has been added'.format(matarPath)
     pass
-    
-# adding the lib_ext path
-#lib_extPath = os.path.join(rootDir, 'lib_ext')
-#lib_intPath = os.path.join(rootDir, 'lib_int')
+
+lib_extPath = os.path.join(rootDir, 'lib_ext')
+lib_intPath = os.path.join(rootDir, 'lib_int')
+requestsPackages = os.path.join(rootDir, 'lib_ext', 'requests', 'packages' )
+requestsPackages2 = os.path.join(rootDir, 'lib_ext', 'requests', 'packages' , 'urllib3', 'packages')
+
+pathsToAdd = [rootDir, lib_intPath, lib_extPath]
+
+# now add the paths
+for pth in pathsToAdd:
+    site.addsitedir(pth)
+
+# now make sure these are at the start of the path list
+for pth2Rerder in pathsToAdd:
+    pthCntr = 0
+    for curPth in sys.path:
+        if pth2Rerder == curPth:
+            del sys.path[pthCntr]
+            sys.path.insert(0, pth2Rerder)
+            print 'inserted', pth2Rerder, 'to the front of the pathlist'
+            break
+        pthCntr += 1
+
+
 #print 'lib_extPath', lib_extPath
 #print 'lib_intPath', lib_intPath
 #site.addsitedir(lib_extPath)

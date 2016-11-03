@@ -109,6 +109,7 @@ class ParcelMapUpdater(object):
             # now check to see if the destination 
             util = ParcelMapLib.ParcelMapUtil()
             statusFile = self.pm.getStatusFile()
+            self.logger.debug("status file is {0}".format(statusFile))
             parcelMapOrder = util.readStatusFile(statusFile)
             orderId = parcelMapOrder.getOrderId()
             expectedCompletionDate = parcelMapOrder.getExpectedDate()
@@ -122,7 +123,9 @@ class ParcelMapUpdater(object):
             # this method just will place the order, monitor it and 
             # download.
             self.logger.debug("placing a new order for the province")
-            self.pm.downloadBC()
+            #self.pm.downloadBC()
+            self.logger.debug("Should not get here!")
+            sys.exit()
             # debugging
         # now do the comparison.
         self.logger.debug("destFullPath {0}".format(destFullPath))

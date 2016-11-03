@@ -1,5 +1,4 @@
 requests
-requests[security]
 #cx_Oracle
 pytz
 hashlib
