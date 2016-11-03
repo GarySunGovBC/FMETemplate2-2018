@@ -124,9 +124,6 @@ class ParcelMapUpdater(object):
             # download.
             self.logger.debug("placing a new order for the province")
             #self.pm.downloadBC()
-            self.logger.debug("Should not get here!")
-            sys.exit()
-            # debugging
         # now do the comparison.
         self.logger.debug("destFullPath {0}".format(destFullPath))
         self.logger.debug("fingerPrintFile {0}".format(self.const.fingerPrintFile))
