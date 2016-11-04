@@ -233,6 +233,8 @@ class RestBase():
                       "of {1}.  Deleting this file and trying again, attempts {2}/{3}"
                 msg = msg.format(destFile, fileSize, attempts, maxDownloadAttempts)
                 self.logger.debug(msg)
+                self.logger.debug("sleeping for {0}".format(self.ConnectionErrorRetryInterval))
+                time.sleep(self.ConnectionErrorRetryInterval)
                 self.getBinaryRequest(url, destFile, maxDownloadAttempts, data=None, attempts=attempts )
             msg = "finished writing to the temp zip dest file {0} size is {1}"
             self.logger.debug(msg.format(destFile, ))
