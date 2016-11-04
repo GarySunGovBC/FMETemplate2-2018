@@ -188,7 +188,7 @@ class RestBase():
             # problem with the request
             msg = "GET request returned a status code of {0}" + \
                   "expecting a 200 series code for success"
-            raise ValueError, msg.format(r.status_code)
+            raise requests.ConnectionError, msg.format(r.status_code)
         else:
             self.logger.debug("raw response for get request is: {0}".format( r))
             jsonRep = r.json()
