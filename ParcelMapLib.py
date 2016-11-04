@@ -218,6 +218,7 @@ class RestBase():
                 #shutil.copyfileobj(r.raw, f)
                 for chunk in r:
                     f.write(chunk)
+            self.logger.debug("finished writing to the temp zip dest file {0}".format(destFile))
             
     def fixUrlPath(self, url):
         # the rest url is going to have directories added to 
