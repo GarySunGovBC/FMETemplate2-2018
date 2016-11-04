@@ -75,6 +75,10 @@ class Constants(object):
     ConnectionErrorRetryInterval = 30
     ConnectionErrorMaxRetries = 5
     
+    # Tries to download an order, if the order returns a 0 size file
+    # then will try this many times before it fails
+    maxParcelMapDownloadAttempts = 3
+    
     # the suffix used for the checksum file (md5)
     fingerprintSuffix = '.md5'
     
@@ -196,10 +200,14 @@ class RestBase():
             self.logger.debug("requested url is: {0}".format( url))
         return jsonRep
 
-    def getBinaryRequest(self, url, destFile, data=None, attempts=0 ):
+    def getBinaryRequest(self, url, destFile, maxDownloadAttempts, data=None, attempts=0 ):
         self.logger.debug("requested destination file is: {0}".format( destFile ))
         r = requests.get(url, data=data, auth=self.authObj, stream=True)
         self.logger.info("response code from requst for order file: {0}".format(r.status_code ))
+        if attempts > maxDownloadAttempts:
+            msg = "Attempted to retrieve the data {0} times, all have failed!"
+            msg = msg.format(attempts)
+            raise IOError, msg
         if r.status_code == 429:
             statusCodeMesg = "When requesting the the data recieved http status " + \
                              "code {0}.  Pausing for {1} seconds and then will " + \
@@ -207,7 +215,7 @@ class RestBase():
             self.logger.error(statusCodeMesg.format(r.status_code, self.ConnectionErrorRetryInterval))
             time.sleep(self.ConnectionErrorRetryInterval)
             attempts += 1
-            self.getBinaryRequest(url, destFile, data=None, attempts=attempts )
+            self.getBinaryRequest(url, destFile, maxDownloadAttempts, data=None, attempts=attempts )
             #r = requests.get(url, data=data, auth=self.authObj, stream=True,         
         if r.status_code == 200:
             self.logger.debug("attempting to write raw data to {0}".format(destFile))
@@ -218,7 +226,17 @@ class RestBase():
                 #shutil.copyfileobj(r.raw, f)
                 for chunk in r:
                     f.write(chunk)
-            self.logger.debug("finished writing to the temp zip dest file {0}".format(destFile))
+            fileSize = os.path.getsize(destFile)
+            if int(fileSize) == 0:
+                attempts += 1
+                msg = "Order zip file: {0} was successfully downloaded but has a file size " + \
+                      "of {1}.  Deleting this file and trying again, attempts {2}/{3}"
+                msg = msg.format(destFile, fileSize, attempts, maxDownloadAttempts)
+                self.logger.debug(msg)
+                self.getBinaryRequest(url, destFile, maxDownloadAttempts, data=None, attempts=attempts )
+            msg = "finished writing to the temp zip dest file {0} size is {1}"
+            self.logger.debug(msg.format(destFile, ))
+            
             
     def fixUrlPath(self, url):
         # the rest url is going to have directories added to 
@@ -384,7 +402,7 @@ class parcelMapAPI(RestBase, Constants):
         mapFile = self.extractFile.format(orderID)
         url = urlparse.urljoin(url, mapFile)
         self.logger.info("url used for the order data: {0}".format(url))
-        self.getBinaryRequest(url, destFile)
+        self.getBinaryRequest(url, destFile, self.maxParcelMapDownloadAttempts)
         
     def calculatePollingStartInterval(self, expectedDate):
         '''
