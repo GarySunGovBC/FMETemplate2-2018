@@ -237,7 +237,7 @@ class RestBase():
                 time.sleep(self.ConnectionErrorRetryInterval)
                 self.getBinaryRequest(url, destFile, maxDownloadAttempts, data=None, attempts=attempts )
             msg = "finished writing to the temp zip dest file {0} size is {1}"
-            self.logger.debug(msg.format(destFile, ))
+            self.logger.debug(msg.format(destFile, fileSize))
             
             
     def fixUrlPath(self, url):
