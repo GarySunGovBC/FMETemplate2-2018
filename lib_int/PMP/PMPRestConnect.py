@@ -193,7 +193,7 @@ class PMP(object):
         
         for accnt in accnts:
             if accnt[self.const.resourceKeys_accountName].lower().strip() == accntName.lower().strip():
-                accntId = accnt[self.const.resourceKeys_accountList]
+                accntId = accnt[self.const.resourceKeys_accountID]
                 break
         self.logger.debug("Account id for the account name (" + \
                           "(" + str(accntName)+") is (" + str(accntId) + ')')
