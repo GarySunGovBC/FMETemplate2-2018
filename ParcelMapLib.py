@@ -239,7 +239,6 @@ class RestBase():
             msg = "finished writing to the temp zip dest file {0} size is {1}"
             self.logger.debug(msg.format(destFile, fileSize))
             
-            
     def fixUrlPath(self, url):
         # the rest url is going to have directories added to 
         # it later so it is absoultely essential that it end with 

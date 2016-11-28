@@ -14,6 +14,30 @@ import warnings
 import pprint
 import urlparse
 
+class PMPConst(object):
+    tokenKey = 'AUTHTOKEN'
+    
+    resourcekeys_operation = 'operation'
+    resourcekeys_Details = 'Details'
+    resourceKeys_resourceName = 'RESOURCE NAME'
+    resourceKeys_resourceID = 'RESOURCE ID'
+    resourceKeys_accountList = 'ACCOUNT LIST'
+    resourceKeys_accountName = 'ACCOUNT NAME'
+    resourceKeys_accountID = 'ACCOUNT ID'
+    resourceKeys_customFields = 'CUSTOM FIELD'
+    resourceKeys_customFieldName = 'CUSTOMFIELDCOLUMNNAME'
+    resourceKeys_customFieldValue = 'CUSTOMFIELDVALUE'
+    resourceKeys_customFieldLabel = 'CUSTOMFIELDLABEL'
+    resourceKeys_description = 'DESCRIPTION'
+    resourceKeys_password = 'PASSWORD'
+    
+    # server custom field name, these are possible values
+    # that can exist in the column resourceKeys_customFieldLabel
+    customFieldLblServer = 'Server'
+    customFieldLblLoginId = 'Login ID'
+    customFieldLblKeePassNotes = 'KeePassNotes'
+    customFieldLblAPI = 'API'
+
 class PMP(object):
     '''
     This class provides a simple python api that will 
@@ -24,10 +48,11 @@ class PMP(object):
     
     def __init__(self, configDict):
         self.__initLogging()
+        self.const = PMPConst()
         self.token = configDict['token']
         self.baseUrl = configDict['baseurl']
         self.restDir = configDict['restdir']
-        self.tokenKey = 'AUTHTOKEN'
+        #self.tokenKey = 'AUTHTOKEN'
         
     def __initLogging(self):
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
@@ -35,7 +60,7 @@ class PMP(object):
         self.logger.debug("Logging set up in the module: " + str(os.path.basename(__file__)))
         
     def getTokenDict(self):
-        tokenDict = {self.tokenKey: self.token}
+        tokenDict = {self.const.tokenKey: self.token}
         return tokenDict
     
     def getResources(self):
@@ -47,8 +72,9 @@ class PMP(object):
         #r = requests.get(url, verify=False)
         resources = r.json()
         resourcObjects = None
-        if ( resources.has_key('operation') ) and resources['operation'].has_key('Details'):
-            resourcObjects = resources['operation']['Details']
+        if ( resources.has_key(self.const.resourcekeys_operation) ) and \
+            resources[self.const.resourcekeys_operation].has_key(self.const.resourcekeys_Details):
+            resourcObjects = resources[self.const.resourcekeys_operation][self.const.resourcekeys_Details]
             self.logger.debug("returned resource objects: " + str(resourcObjects))
         else:
             msg = 'unable to read resources from PMP. Probably a token problems!  PMP message {0}'
@@ -64,8 +90,8 @@ class PMP(object):
         self.logger.debug("getting the log id for the resource name:" + str(resourceName))
         resources = self.getResources()
         for resource in resources:
-            if resource['RESOURCE NAME'] == resourceName:
-                resourceId = resource['RESOURCE ID']
+            if resource[self.const.resourceKeys_resourceName] == resourceName:
+                resourceId = resource[self.const.resourceKeys_resourceID]
                 break
         self.logger.debug("resource id for (" + str(resourceName) + ') is (' + str(resourceId) + ')')
         return resourceId
@@ -149,11 +175,13 @@ class PMP(object):
         url = 'https://' + self.baseUrl + self.restDir + \
               'resources' + '/' + str(resId) + '/accounts'
         tokenDict = self.getTokenDict()
+        self.logger.debug("using the url: {0}".format( url))
         r = requests.get(url, params=tokenDict, verify=False)
+        #self.logger.debug("r.text: {0}".format(r.text))
         accnts = r.json()
         #print 'account json: ', accnts
 
-        justAccnts = accnts['operation']['Details']['ACCOUNT LIST']
+        justAccnts = accnts[self.const.resourcekeys_operation][self.const.resourcekeys_Details][self.const.resourceKeys_accountList]
         #print 'justAccnts', justAccnts
         return justAccnts
         
@@ -164,8 +192,8 @@ class PMP(object):
         #pp.pprint(accnts)
         
         for accnt in accnts:
-            if accnt['ACCOUNT NAME'].lower().strip() == accntName.lower().strip():
-                accntId = accnt['ACCOUNT ID']
+            if accnt[self.const.resourceKeys_accountName].lower().strip() == accntName.lower().strip():
+                accntId = accnt[self.const.resourceKeys_accountList]
                 break
         self.logger.debug("Account id for the account name (" + \
                           "(" + str(accntName)+") is (" + str(accntId) + ')')
@@ -195,14 +223,15 @@ class PMP(object):
         return psswd
     
     def getAccountDetails(self, accntId, resourceId):
-        # resources/303/accounts/307?AUTHTOKEN=B9A1809A-5BF7-4459-9ED2-8D4F499CB902
         url = 'https://' + self.baseUrl + self.restDir + \
               'resources/' + str(resourceId) + '/accounts/' + \
               str(accntId)
         tokenDict = self.getTokenDict()
-        print 'url:', url
+        self.logger.debug( 'url: {0}'.format( url ))
         r = requests.get(url, params=tokenDict, verify=False)
+        self.logger.debug("status_code: {0}".format( r.status_code))
         accntDtls = r.json()
+        self.logger.debug("rsponse: {0}".format(accntDtls))
         return accntDtls
     
     def getRestAPIPassword(self, accountName, apiUrl, ResourceName):
@@ -275,10 +304,12 @@ class PMP(object):
         accnts = self.getAccountsForResourceID(resId)
         # will be where the extracted account name is stored assuming it is found
         extractedAccntId = None
+        self.logger.debug("found ({0}) accounts in the resource".format(len(accnts)))
         for accnt in accnts:
             #pp.pprint(accnt)
             # splitting up the received account name and url in case
             # the version stored in pmp is username@url
+            self.logger.debug("current Account name: {0}, searching for: {1}".format( accnt['ACCOUNT NAME'], justUser))
             if '@' in accnt['ACCOUNT NAME']:
                 currAccntName, currAccntUrl = accnt['ACCOUNT NAME'].split('@')
                 parsed_uri = urlparse.urlparse( currAccntUrl )
@@ -288,27 +319,25 @@ class PMP(object):
                 currAccntName = accnt['ACCOUNT NAME']
                 currAccntUrl = None
             currAccntId = accnt['ACCOUNT ID']
+            self.logger.debug("account id: {0}".format(currAccntId))
             # if the usernames match, next we want to check if the 
             # urls matches
             if currAccntName.lower() == justUser.lower():
                 # get the details for the account and pull the url 
                 # from the details field
                 details = self.getAccountDetails(currAccntId, resId)
-                # Making sure there is a details field, and if there is
-                # putting the contents into urlFromDetails
-                if ((details.has_key('operation')) and \
-                     details['operation'].has_key('Details') ) and \
-                     details['operation']['Details'].has_key('DESCRIPTION'):
-                    urlFromDetails = details['operation']['Details']['DESCRIPTION']
-                    parsed_uri = urlparse.urlparse( urlFromDetails )
-                    urlFromDetails = parsed_uri.netloc
-                    self.logger.debug("urlFromDetails: {0}".format(urlFromDetails))
+                server = self.getServerColumn(details)
 
-                    # now if the urlFromDetails matches apiUrl provided as an arg
+                parsed_uri = urlparse.urlparse( server )
+                urlFromDetails = parsed_uri.netloc
+                self.logger.debug("Server from Details: {0}".format(urlFromDetails))
+
+                # now if the urlFromDetails matches apiUrl provided as an arg
                     # then assume this is the account
-                    if urlFromDetails.lower().strip() == apiUrl.lower().strip():
-                        extractedAccntId = currAccntId
-                        break
+                if urlFromDetails.lower().strip() == apiUrl.lower().strip():
+                    extractedAccntId = currAccntId
+                    break
+                
                 # otherwise check to see if the url in the account name in 
                 # pmp matches the url sent as an arg
                 elif currAccntUrl:
@@ -324,6 +353,94 @@ class PMP(object):
         
         return self.getAccountPasswordWithAccountId(extractedAccntId, resId)
             
+    def getServerColumn(self, struct):
+        '''
+        Takes the structure returned by a getAccountDetails() method call
+        parses and returns the contents of the custom column 'Server'
+        
+        example of a struct expected data structure.
+        
+        {u'operation': {u'Details': {
+            u'PASSWORD STATUS': u'****',
+            u'LAST ACCESSED TIME': u'Nov 21, 2005 01:24 PM',
+            u'DESCRIPTION': u'',
+            u'EXPIRY STATUS': u'Valid',
+            u'COMPLIANT REASON': u'Password must have mixed case alphabets',
+            u'PASSWORD POLICY': u'APIs',
+            u'LAST MODIFIED TIME': u'N/A',
+            u'COMPLIANT STATUS': u'Non-Compliant',
+            u'CUSTOM FIELD': [{
+                u'CUSTOMFIELDTYPE': u'Character',
+                u'CUSTOMFIELDCOLUMNNAME': u'COLUMN_CHAR3',
+                u'CUSTOMFIELDVALUE': u'',
+                u'CUSTOMFIELDLABEL': u'API',
+                }, {
+                u'CUSTOMFIELDTYPE': u'Character',
+                u'CUSTOMFIELDCOLUMNNAME': u'COLUMN_CHAR4',
+                u'CUSTOMFIELDVALUE': u'https://google.com/googlerestapi',
+                u'CUSTOMFIELDLABEL': u'Server',
+                }, {
+                u'CUSTOMFIELDTYPE': u'Character',
+                u'CUSTOMFIELDCOLUMNNAME': u'COLUMN_CHAR1',
+                u'CUSTOMFIELDVALUE': u'',
+                u'CUSTOMFIELDLABEL': u'Login ID',
+                }, {
+                u'CUSTOMFIELDTYPE': u'Character',
+                u'CUSTOMFIELDCOLUMNNAME': u'COLUMN_CHAR2',
+                u'CUSTOMFIELDVALUE': u'',
+                u'CUSTOMFIELDLABEL': u'KeePassNotes',
+                }],
+            u'PASSWDID': u'74281',
+            }, u'name': u'GET RESOURCE ACCOUNT DETAILS',
+                u'result': {u'status': u'Success',
+                            u'message': u'Account details fetched successfully'}}}
+
+                    
+        '''
+        server = self.getCustomFieldLabel(struct, self.const.customFieldLblServer)  
+        return server
+        
+    def getCustomFieldLabel(self, struct, labelName2Get):
+        retVal = None
+        if self.const.resourcekeys_operation in struct:
+            operation = struct[self.const.resourcekeys_operation]
+            if self.const.resourcekeys_Details in operation:
+                details = operation[self.const.resourcekeys_Details]
+                if self.const.resourceKeys_customFields in details:
+                    customFields = details[self.const.resourceKeys_customFields]
+                    for fld in customFields:
+                        fldLabel = fld[self.const.resourceKeys_customFieldLabel]
+                        if fldLabel.lower() == labelName2Get.lower():
+                            retVal = fld[self.const.resourceKeys_customFieldValue]
+                            break
+        return retVal
+        
+    def getDetailsColumn(self, struct):
+        '''
+        This will return the contents of the details column parsed out
+        of the structure returned by a getAccountDetails() returned 
+        structure.
+        :param struct: the data structure returned by the getAccountDetails()
+                       method
+        :type struct: dictionary
+        :return: Returns the contents of the "description" column from the 
+                 struct that is sent
+        :rtype: str
+        '''
+        details = None
+        if ((struct.has_key(self.const.resourcekeys_operation)) and \
+             struct[self.const.resourcekeys_operation].has_key(self.const.resourcekeys_Details) ) and \
+             struct[self.const.resourcekeys_operation][self.const.resourcekeys_Details].has_key(self.const.resourceKeys_description):
+            
+            
+            urlFromDetails = struct[self.const.resourcekeys_operation][self.const.resourcekeys_Details][self.const.resourceKeys_description]
+            self.logger.debug("url details: {0}".format(urlFromDetails))
+
+            parsed_uri = urlparse.urlparse( urlFromDetails )
+            details = parsed_uri.netloc
+            self.logger.debug("urlFromDetails: {0}".format(details))
+        return details
+            
     def getAccountPasswordWithAccountId(self, accntId, resourceId):
         url = 'https://' + self.baseUrl + self.restDir + \
               'resources/' + str(resourceId) + '/accounts/' + \
@@ -332,7 +449,7 @@ class PMP(object):
         print 'url:', url
         r = requests.get(url, params=tokenDict, verify=False)
         passwdStruct = r.json()
-        psswd =  passwdStruct['operation']['Details']['PASSWORD']
+        psswd =  passwdStruct[self.const.resourcekeys_operation][self.const.resourcekeys_Details][self.const.resourceKeys_password]
         if psswd.upper() == '[Request]'.upper():
             msg = 'PMP response for the resource ID ({0}) and account ID ({1}) was {2}. ' + \
                   'which indicates the token used ({3}) does not have permissions to ' + \
