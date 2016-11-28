@@ -49,7 +49,8 @@ class Constants(object):
     
     # the format we are expecting the datetime string to come in
     # example: "2016-09-03T00:43:57Z"
-    expectedDateFormat = '%Y-%m-%dT%H:%M:%SZ'
+    expectedDateFormat = '%Y-%m-%dT%H:%M:%S.%fZ'
+    expectedDateFormatMillisec = '%Y-%m-%dT%H:%M:%S.%fZ'
     
     # This is the time in seconds that the script will wait
     # before it polls the server about the status of an 
@@ -418,8 +419,16 @@ class parcelMapAPI(RestBase, Constants):
         self.logger.debug("expectedDate is: {0} and has a type of {1}".format(expectedDate, type(expectedDate)))
         pacificTZ = pytz.timezone('Canada/Pacific')
         if type(expectedDate) is str or type(expectedDate) is unicode:
-            expectedDateUTC = datetime.datetime.strptime(expectedDate, 
-                                                  self.expectedDateFormat)
+            # parcelmap api seems to erratically format the datestring, was
+            # returning seconds as ints, but then changed to a float.  This
+            # line will split the string on the '.' character in an attempt to 
+            # decipher what the hell the data string format is.
+            if len(expectedDate.split('.')) == 2:
+                expectedDateUTC = datetime.datetime.strptime(expectedDate, 
+                                                      self.expectedDateFormatMillisec)
+            else:
+                expectedDateUTC = datetime.datetime.strptime(expectedDate, 
+                                                      self.expectedDateFormat)
             expectedDate = pytz.utc.localize(expectedDateUTC, is_dst=None).astimezone(pacificTZ)
             self.logger.info("expected date in local time zone is: {0}, original time string {1}".format(expectedDate, expectedDateUTC))
 
