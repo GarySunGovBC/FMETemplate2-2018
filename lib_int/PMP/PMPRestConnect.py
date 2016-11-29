@@ -89,11 +89,17 @@ class PMP(object):
         resourceId = None
         self.logger.debug("getting the log id for the resource name:" + str(resourceName))
         resources = self.getResources()
+        iterResourceNames = []
         for resource in resources:
-            if resource[self.const.resourceKeys_resourceName] == resourceName:
+            iterResourceName = resource[self.const.resourceKeys_resourceName]
+            iterResourceNames.append(iterResourceName)
+            if resource[self.const.resourceKeys_resourceName].upper() == resourceName.upper():
                 resourceId = resource[self.const.resourceKeys_resourceID]
                 break
         self.logger.debug("resource id for (" + str(resourceName) + ') is (' + str(resourceId) + ')')
+        if not resourceId:
+            msg = 'Unable to find the resource: {0}.  Resources that are currently visible: {1}'
+            raise ResourceNotFound, msg.format(resourceName, ', '.join(iterResourceNames))
         return resourceId
     
     def getAccounts(self, resourceName='DA-BCGWDLV-WHSE'):
@@ -302,6 +308,7 @@ class PMP(object):
         # to search for the userName.
         # start by getting all the accounts for the userid
         accnts = self.getAccountsForResourceID(resId)
+        accntsRetrieved = []
         # will be where the extracted account name is stored assuming it is found
         extractedAccntId = None
         self.logger.debug("found ({0}) accounts in the resource".format(len(accnts)))
@@ -309,16 +316,17 @@ class PMP(object):
             #pp.pprint(accnt)
             # splitting up the received account name and url in case
             # the version stored in pmp is username@url
-            self.logger.debug("current Account name: {0}, searching for: {1}".format( accnt['ACCOUNT NAME'], justUser))
-            if '@' in accnt['ACCOUNT NAME']:
-                currAccntName, currAccntUrl = accnt['ACCOUNT NAME'].split('@')
+            self.logger.debug("current Account name: {0}, searching for: {1}".format( accnt[self.const.resourceKeys_accountName], justUser))
+            accntsRetrieved.append(accnt[self.const.resourceKeys_accountName])
+            if '@' in accnt[self.const.resourceKeys_accountName]:
+                currAccntName, currAccntUrl = accnt[self.const.resourceKeys_accountName].split('@')
                 parsed_uri = urlparse.urlparse( currAccntUrl )
                 currAccntUrl = parsed_uri.netloc
                 self.logger.debug("currAccntUrl: {0}".format(currAccntUrl))
             else:
-                currAccntName = accnt['ACCOUNT NAME']
+                currAccntName = accnt[self.const.resourceKeys_accountName]
                 currAccntUrl = None
-            currAccntId = accnt['ACCOUNT ID']
+            currAccntId = accnt[self.const.resourceKeys_accountID]
             self.logger.debug("account id: {0}".format(currAccntId))
             # if the usernames match, next we want to check if the 
             # urls matches
@@ -347,8 +355,8 @@ class PMP(object):
         if not extractedAccntId:
             self.logger.debug("account name: {0}".format(accountName))
             msg = 'unable to find an account that matches the account name: {0} and ' + \
-                  'the resource name {1}'
-            msg = msg.format(accountName, ResourceName)
+                  'the resource name {1}, accounts that are visible: {2}'
+            msg = msg.format(accountName, ResourceName, ', '.join(accntsRetrieved))
             raise AccountNotFound, msg
         
         return self.getAccountPasswordWithAccountId(extractedAccntId, resId)
@@ -461,4 +469,7 @@ class PMP(object):
 class AccountNotFound(Exception):
     def __init__(self,*args,**kwargs):
         Exception.__init__(self,*args,**kwargs)
-
+        
+class ResourceNotFound(Exception):
+    def __init__(self,*args,**kwargs):
+        Exception.__init__(self,*args,**kwargs)

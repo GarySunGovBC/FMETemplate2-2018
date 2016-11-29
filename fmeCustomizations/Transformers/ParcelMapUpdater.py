@@ -10,7 +10,7 @@ import sys
 import os.path
 import urlparse
 import ParcelMapLib
-import PMP.PMPRestConnect
+import PMP.PMPRestConnect  # @UnresolvedImport
 import shutil
 
 class Constants(object):
