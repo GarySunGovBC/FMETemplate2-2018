@@ -25,9 +25,6 @@ template.startup()
 '''
 # for some reason this has to manually added
 #import sys
-import importlib
-import os
-import pprint
 
 # for fmeobjects to import properly the fme dir has 
 # to be closer to the front of the pathlist
@@ -41,8 +38,10 @@ import pprint
 # sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
 # os.environ['PATH'] = ';'.join(pathList)
 
+import importlib
+import os
+import pprint
 import site
-#import fmeobjects  # @UnresolvedImport
 import platform
 import ConfigParser
 import json
@@ -53,6 +52,7 @@ import datetime
 import re
 import inspect
 import shutil
+#import fmeobjects  # @UnresolvedImport
 
 class TemplateConstants(object):
     # no need for a logger in this class as its just
@@ -212,7 +212,7 @@ class Start(object):
         fmwDir = fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
         fmwName = fme.macroValues[self.const.FMWMacroKey_FMWName]
         # set up logging
-        ModuleLogConfig(fmwDir, fmwName)        
+        ModuleLogConfig(fmwDir, fmwName)    
         modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         self.logger = logging.getLogger(modDotClass)
 
