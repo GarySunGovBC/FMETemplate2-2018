@@ -388,6 +388,7 @@ class TemplateConfigFileReader(object):
             self.logger.debug("sections in the config file are: {0}".format(self.parser.sections()))
     
     def getChangeLogsDirFullPath(self):
+        #if self.isDataBCNode():
         rootDir = self.getTemplateRootDirectory()
         outputs = self.getOutputsDirectory()
         changeLogDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_changeLogDir)
@@ -673,8 +674,6 @@ class TemplateConfigFileReader(object):
             retVal = True
         self.logger.debug("isFMEServerNode return val: {0}".format(retVal))
         return retVal
-
-        
     
 class PMPSourceAccountParser(object):
     

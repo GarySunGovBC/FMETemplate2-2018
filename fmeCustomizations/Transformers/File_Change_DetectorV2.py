@@ -61,11 +61,17 @@ class ChangeFlagFetcher(object):
         self.changeDetectionEnabledParam = self.fmeMacroValues[self.fileChngKey]
         print 'changeDetectionEnabledParam', self.changeDetectionEnabledParam
         
+        
         # create ChangeLogFilePath object
+        #   is a databc node?
         self.paramObj = DataBCFMWTemplate.TemplateConfigFileReader(self.fmeMacroValues[self.const.FMWParams_DestKey])
-        changeLogRootDir = self.paramObj.getChangeLogsDirFullPath()
         changeLogFileName = self.paramObj.getChangeLogFile()
+        if self.paramObj.isDataBCNode():
+            changeLogRootDir = self.paramObj.getChangeLogsDirFullPath()
+        else:
+            changeLogRootDir = self.fmeMacroValues[self.const.FMWMacroKey_FMWDirectory]
         self.changeLogFilePath = ChangeDetectLib2.ChangeLogFilePath(changeLogRootDir, changeLogFileName, self.fmwFileName, self.changeDetectionEnabledParam)
+
         
         # create change detect object, all future transactions should 
         # be managed through this object.  Should be no need
