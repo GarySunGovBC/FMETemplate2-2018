@@ -72,6 +72,7 @@ class TemplateConstants(object):
     ConfFileSection_global_key_rootDir = 'rootscriptdir'
     ConfFileSection_global_key_outDir =  'outputsbasedir'
     ConfFileSection_global_key_govComputers = 'gov_computers'
+    ConfFileSection_global_key_govFmeServer = 'gov_fmeservernodes'
     ConfFileSection_global_configDirName = 'configdirname'
     ConfFileSection_global_devCredsFile = 'development_credentials_file'
     ConfFileSection_global_customScriptDir = 'customizescriptdir'
@@ -562,7 +563,12 @@ class TemplateConfigFileReader(object):
         nodeString = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_govComputers)
         nodeList = nodeString.split(',')
         return nodeList
-        
+    
+    def getDataBCFmeServerNodes(self):
+        nodeString = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_govFmeServer)
+        nodeList = nodeString.split(',')
+        return nodeList
+
     def getDWMTable(self):
         dwmTab = self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_table )
         return dwmTab
@@ -648,6 +654,27 @@ class TemplateConfigFileReader(object):
             retVal = True
         self.logger.debug("isDataBCNode return val: {0}".format(retVal))
         return retVal
+    
+    def isFMEServerNode(self):
+        nodeList = self.getDataBCFmeServerNodes()
+        for indx in range(0, len(nodeList)):
+            nodeList[indx] = nodeList[indx].lower()
+            nodeList[indx] = nodeList[indx].strip()
+        curMachine = platform.node()
+        if '.' in curMachine:
+            curMachineList = curMachine.split('.')
+            curMachine = curMachineList[0]
+        curMachine = curMachine.lower()
+        retVal = False
+        msg = 'current machine is {0} and node list is {1}'
+        msg = msg.format(curMachine, nodeList)
+        self.logger.debug(msg)
+        if curMachine in nodeList:
+            retVal = True
+        self.logger.debug("isFMEServerNode return val: {0}".format(retVal))
+        return retVal
+
+        
     
 class PMPSourceAccountParser(object):
     
@@ -804,6 +831,7 @@ class CalcParamsBase( object ):
         
     def addPlugin(self, forceDevel=False):
         if forceDevel:
+            self.logger.debug("Template is operating in Development mode.")
             self.plugin = CalcParamsDevelopment(self)
         elif self.paramObj.isDataBCNode():
             self.logger.debug("Template is operating in Production mode.")
@@ -855,7 +883,7 @@ class CalcParamsBase( object ):
         port = self.paramObj.getDestinationOraclePort()
         return port 
     
-    def getSchemaForPasswordRetrieval(self, passwordPosition):
+    def getSchemaForPasswordRetrieval(self, passwordPosition=None):
         schemaMacroKey = self.const.FMWParams_SrcSchema
         instanceMacroKey = self.const.FMWParams_SrcInstance
         proxySchemaMacroKey = self.const.FMWParams_SrcProxySchema
@@ -1234,7 +1262,14 @@ class CalcParamsDataBC(object):
             destKey = self.paramObj.getDestinationDatabaseKey(destKey)
         self.logger.debug("destination key used in password retrieval: {0}".format(destKey) )
         if not schema:
-            schema = self.fmeMacroVals[self.const.FMWParams_DestSchema]   
+            if self.const.FMWParams_DestSchema in self.fmeMacroVals:
+                schema = self.fmeMacroVals[self.const.FMWParams_DestSchema]
+        if not schema:
+            msg = 'Unable to retrieve a destination password because there is ' + \
+                  'no destination schema defined in the fmw.  Create a parameter ' +\
+                  'called {0} and populate it with your destination schema ' + \
+                  'and then re-run'
+            raise ValueError, msg.format(self.const.FMWParams_DestSchema)
                  
         pmpRes = self.paramObj.getDestinationPmpResource(destKey)
         computerName = Util.getComputerName()

@@ -68,7 +68,7 @@ API DOC:
 
 import DataBCFMWTemplate
 import os.path
-import FMEUtil.PyFMEServerV2
+import FMEUtil.PyFMEServerV2  # @UnresolvedImport
 import logging
 import pprint
 import pickle

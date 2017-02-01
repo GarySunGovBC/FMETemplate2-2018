@@ -31,6 +31,10 @@ class PMPConst(object):
     resourceKeys_description = 'DESCRIPTION'
     resourceKeys_password = 'PASSWORD'
     
+    connectKey_token = 'token'
+    connectKey_baseurl = 'baseurl'
+    connectKey_restdir = 'restdir'
+    
     # server custom field name, these are possible values
     # that can exist in the column resourceKeys_customFieldLabel
     customFieldLblServer = 'Server'
@@ -49,9 +53,13 @@ class PMP(object):
     def __init__(self, configDict):
         self.__initLogging()
         self.const = PMPConst()
-        self.token = configDict['token']
-        self.baseUrl = configDict['baseurl']
-        self.restDir = configDict['restdir']
+        self.token = configDict[self.const.connectKey_token]
+        self.baseUrl = configDict[self.const.connectKey_baseurl]
+        self.restDir = configDict[self.const.connectKey_restdir]
+        # make sure the last character on the rest dir is /
+        if self.restDir[-1] <> '/':
+            self.restDir = self.restDir + '/'
+        print 'self.restDir', self.restDir, self.restDir[-1]
         #self.tokenKey = 'AUTHTOKEN'
         
     def __initLogging(self):
@@ -69,7 +77,10 @@ class PMP(object):
         tokenDict = self.getTokenDict()
         
         r = requests.get(url, params=tokenDict, verify=False)
-        #r = requests.get(url, verify=False)
+        if r.status_code >= 400 and r.status_code < 600:
+            # stop
+            msg = "unsuccessful connection status code: {0}"
+            raise ValueError, msg.format(r.status_code)
         resources = r.json()
         resourcObjects = None
         if ( resources.has_key(self.const.resourcekeys_operation) ) and \
@@ -177,6 +188,21 @@ class PMP(object):
         '''
         Given a resource id will return the accounts
         for that resource id.
+        
+        structure returned is a list of dictionaries, example :
+        [   {   u'ACCOUNT ID': u'2454',
+                u'ACCOUNT NAME': u'someaccnt@server',
+                u'AUTOLOGONLIST': [u'something'],
+                u'AUTOLOGONSTATUS': u'text text text ...',
+                u'ISFAVPASS': u'false',
+                u'ISREASONREQUIRED': u'false',
+                u'IS_TICKETID_REQD': u'false',
+                u'IS_TICKETID_REQD_ACW': u'false',
+                u'IS_TICKETID_REQD_MANDATORY': u'false',
+                u'PASSWDID': u'2454',
+                u'PASSWORD STATUS': u'****'}, 
+                ...
+        ]
         '''
         url = 'https://' + self.baseUrl + self.restDir + \
               'resources' + '/' + str(resId) + '/accounts'
@@ -465,6 +491,61 @@ class PMP(object):
             msg = msg.format(resourceId, accntId, psswd, self.token) 
             raise ValueError, msg
         return psswd
+        
+    def getExtDBPassword(self, accountName, serviceName, resourceName):
+        '''
+        accounts for passwords for external databases need to be 
+        entered as username@service_name in order for them to be 
+        unique.
+        
+        long term plan is to consolidate the 4 external database 
+        password resources into a single resource.  Once that happens
+        parameters will come from:
+          - login name
+          - server
+        Until that happens we are using the username or account name
+        and parsing out the server portion.
+        '''
+        password = None
+        # get accounts for the resourceName
+        resId = self.getResourceId(resourceName)
+        accntList = self.getAccountsForResourceID(resId)
+        accntid = None
+        for accntDict in accntList:
+            if accntDict['ACCOUNT NAME'] == accountName or \
+              accntDict['ACCOUNT NAME'].upper() == accountName.upper():
+                accntid = accntDict['ACCOUNT ID']
+                break
+            else:
+                # TODO: Once the consolidation of external passwords is complete will retrieve the server from the server column and the schema or username from the login-id column
+                # if no exact match then will check for 
+                # a match after removing the domains.  example
+                # idwprod1.bcgov becomes just idwprod1
+                accntTemplateStr = '{0}@{1}'
+                if '@' in accntDict['ACCOUNT NAME']:
+                    iterAccntName = accntDict['ACCOUNT NAME']
+                    iterAccnt, server = accntDict['ACCOUNT NAME'].split('@')
+                    server = server.strip()
+                    stringList = server.split('.')
+                    server = stringList[0].strip()
+                    iterAccntName = accntTemplateStr.format(iterAccnt, server)
+
+                    
+                    # parse kevin@something.com to 
+                    # kevin@something
+                    curAccnt, server = accountName.split('@')
+                    server = server.strip()
+                    stringList = server.split('.')
+                    server = stringList[0].strip()
+                    curAccnt = accntTemplateStr.format(curAccnt, server)
+                    if curAccnt == iterAccntName or \
+                      curAccnt.upper() == iterAccntName.upper():
+                        accntid = accntDict['ACCOUNT ID']
+                        break
+        if accntid:
+            # now get the password for the account id
+            password = self.getAccountPasswordWithAccountId(accntid, resId)
+        return password
         
 class AccountNotFound(Exception):
     def __init__(self,*args,**kwargs):

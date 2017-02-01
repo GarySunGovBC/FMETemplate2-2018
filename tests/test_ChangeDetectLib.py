@@ -75,7 +75,6 @@ class Test_ChangeDetect(unittest.TestCase):
     def test_getFileModificationTime(self):
         print 'getting here'
         file = '//data.bcgov/data_staging/bcgw/physical_infrastructure/diagnostic_facilities_data_structure.csv'
-        changeLog = 
         modDate = self.chngObj.getFileModificationUTCDateTime(__file__)
         print 'modDate', modDate, type(modDate)
         
@@ -181,10 +180,19 @@ class Test_ChangeDetect(unittest.TestCase):
         msg = msg.format(dt.microsecond)
         self.assertEqual(0, dt.microsecond, msg)
         
+class Test_ChangeLog(unittest.TestCase):
     
+    def setUp(self):
+        # testData\outputs\changeLogs\FileChangeLog_1.txt
+        self.changeLogFile = os.path.join(os.path.dirname(__file__), 'testData',  'outputs', 'changeLogs', 'FileChangeLog_1.txt')
+        
+    def test_LoadLogFile(self):
+        changeLog = ChangeDetectLib.ChangeLog(self.changeLogFile)
+        
+        
 
 if __name__ == "__main__":
-    sys.argv = ['', 'Test_ChangeDetect.test_getFileModificationTime']
+    sys.argv = ['', 'Test_ChangeLog.test_LoadLogFile']
     unittest.main()
     
     
