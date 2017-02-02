@@ -13,7 +13,8 @@ class ChangeFlagFetcher(File_Change_DetectorV2.ChangeFlagFetcher):
     def __init__(self):
         File_Change_DetectorV2.ChangeFlagFetcher.__init__(self)
         
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         self.logger.debug("Logging set up in the module: " + str(os.path.basename(__file__)))
         

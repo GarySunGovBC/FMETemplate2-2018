@@ -2,10 +2,8 @@
 keys=root,
 	 fileChangeLogger, 
 	 changeDetectLibLogger, 
-	 changeCache, 
-	 dataBCTemplate, 
-	 dbcTemp_Start
-
+	 dataBCTemplate
+	 
 [handlers]
 keys=consoleHandler,FMELogHandler
 
@@ -22,28 +20,16 @@ handlers=consoleHandler
 [logger_fileChangeLogger]
 level = DEBUG
 handlers=FMELogHandler
-qualname=File_Change_DetectorV2.ChangeFlagFetcher
+qualname=File_Change_DetectorV2
 propagate=0
 
 [logger_changeDetectLibLogger]
 level = DEBUG
-qualname=ChangeDetectLib.ChangeDetect
+qualname=ChangeDetectLib
 handlers=FMELogHandler
-propagate=0
-
-[logger_changeCache]
-level = DEBUG
-handlers=FMELogHandler
-qualname=ChangeDetectLib.changeCache
 propagate=0
 
 [logger_dataBCTemplate]
-level = DEBUG
-handlers=FMELogHandler
-qualname=DataBCFMWTemplate
-propagate=0
-
-[logger_dbcTemp_Start]
 level = DEBUG
 handlers=FMELogHandler
 qualname=DataBCFMWTemplate

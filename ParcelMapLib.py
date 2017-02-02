@@ -153,7 +153,8 @@ class Constants(object):
     
 class RestBase():
     def __init__(self, url, userName, passWord):
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         self.logger.debug("first log message")
         self.baseurl = url
@@ -252,7 +253,8 @@ class RestBase():
 class parcelMapAPI(RestBase, Constants):
     
     def __init__(self, url, userName, passWord, destDir, orderStatusFileName=None):
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         #self.configLogging()
 
@@ -285,7 +287,8 @@ class parcelMapAPI(RestBase, Constants):
         be taken care of by the template logging configuration.
         
         '''
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         
         logFile = os.path.join(os.path.dirname(__file__), self.configDir, self.logConfigFile)
         logOutputsDir =  os.path.join(os.path.dirname(__file__), self.logDir)
@@ -712,7 +715,8 @@ class parcelMapAPI(RestBase, Constants):
 class FingerPrinting(Constants):
 
     def __init__(self, destFile, fingerPrintFile):
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         #self.logger.setLevel(logging.DEBUG)
         
@@ -785,7 +789,8 @@ class FingerPrinting(Constants):
 class ParcelMapUtil():
     
     def __init__(self):
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         # TODO: figure out how to config logging for this fucker
         self.logger = logging.getLogger(modDotClass)
         
@@ -862,7 +867,8 @@ class ParcelMapOrder(Constants):
     
     def __init__(self, requestData):
         Constants.__init__(self)
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         self.requestData = requestData
         

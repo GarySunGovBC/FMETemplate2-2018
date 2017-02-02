@@ -213,7 +213,8 @@ class Start(object):
         fmwName = fme.macroValues[self.const.FMWMacroKey_FMWName]
         # set up logging
         ModuleLogConfig(fmwDir, fmwName)    
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
 
         self.fme = fme
@@ -288,7 +289,8 @@ class Shutdown(object):
         fmwDir = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
         fmwName = self.fme.macroValues[self.const.FMWMacroKey_FMWName]
         ModuleLogConfig(fmwDir, fmwName)
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         self.logger.debug("Shutdown has been called...")
         self.logger.debug("log file name: {0}".format(self.fme.logFileName))
@@ -332,7 +334,8 @@ class DefaultShutdown(object):
         self.const = TemplateConstants()
         self.params = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
         
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         
     def shutdown(self):
@@ -358,7 +361,8 @@ class TemplateConfigFileReader(object):
     
     def __init__(self, key, confFile=None):
         #ModuleLogConfig()
-        modDotClass = '{0}.{1}'.format(__name__, self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__, self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
 
         self.confFile = confFile
@@ -399,7 +403,11 @@ class TemplateConfigFileReader(object):
     def getChangeLogFile(self):
         changeLogFile = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_changeLogFileName)
         return changeLogFile
-            
+    
+    def getApplicationLogFileName(self):
+        logConfFileName = self.parser.get(self.const.ConfFileSection_global, self.const.AppConfigAppLogFileName)
+        return logConfFileName
+        
     def validateKey(self, key):
         key = self.getDestinationDatabaseKey(key)
         if not key:
@@ -675,11 +683,37 @@ class TemplateConfigFileReader(object):
         self.logger.debug("isFMEServerNode return val: {0}".format(retVal))
         return retVal
     
+    def calcEnhancedLoggingFileOutputDirectory(self, fmwDir, fmwName):
+        '''
+        If running on fme server, then will output a path 
+        relative to the template directory, 
+        
+        If run on a non fme server node then will output a path
+        relative to the actual fmw being run.
+        
+        '''
+        justFmwName, fmwSuffix  = os.path.splitext(fmwName)
+        if not self.isFMEServerNode():
+            outputsDir = self.getOutputsDirectory()
+            logDir = self.const.AppConfigLogDir
+            fullPath = os.path.join(fmwDir, outputsDir, logDir, justFmwName)
+        else:
+            templateDir = self.getTemplateRootDirectory()
+            outputsDir = self.getOutputsDirectory()
+            fullPath = os.path.join(templateDir,outputsDir,'log', justFmwName )
+        fullPath = os.path.normpath(fullPath)
+        if not os.path.exists(fullPath):
+            os.makedirs(fullPath)
+            
+        fullPath = fullPath.replace('\\', '/')
+        return fullPath
+    
 class PMPSourceAccountParser(object):
     
     def __init__(self, accntName):
         #ModuleLogConfig()
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
 
         self.accntName = accntName
@@ -716,7 +750,7 @@ class Util(object):
         return stringList[0].strip()
     
     @staticmethod
-    def calcLogFilePath(fmwDir, fmwName, returnPathList=False):
+    def calcLogFilePath(fmwDir, fmwName):
         '''
         This method will recieve the full path to where the current 
         fmw that is being processed is located, and the name of the fmw
@@ -756,21 +790,14 @@ class Util(object):
         outDirFullPath = os.path.join(fmwDir, const.AppConfigOutputsDir)
         logDirFullPath = os.path.join(outDirFullPath, const.AppConfigLogDir)
         fmwFileNoExt, fileExt = os.path.splitext(fmwName)
+        logDirFullPath = os.path.join(logDirFullPath, fmwFileNoExt)
+
         del fileExt
         fmwLogFile = fmwFileNoExt + const.AppConfigLogFileExtension
-        absFullPath = os.path.join( logDirFullPath, fmwLogFile)
-        relativePath = os.path.join('.', const.AppConfigOutputsDir, const.AppConfigLogDir, fmwLogFile)
-        # making sure all output paths are properly formatted
-        relativePath = os.path.realpath(relativePath)
-        absFullPath = os.path.realpath(absFullPath)
-        logDirFullPath = os.path.realpath(logDirFullPath)
-        outDirFullPath = os.path.realpath(outDirFullPath)
+        fullPath2LogFile = os.path.join(logDirFullPath, fmwLogFile)
+        fullPath2LogFile = os.path.realpath(fullPath2LogFile)
         
-        retVal = None
-        if returnPathList:
-            retVal = [relativePath,absFullPath, logDirFullPath, outDirFullPath]
-        else:
-            retVal = relativePath
+        retVal = fullPath2LogFile
         return retVal
     
     @staticmethod
@@ -798,6 +825,16 @@ class Util(object):
                 return True
         return False
         
+    @staticmethod
+    def calcEnhancedLoggingFileName(fmwName):
+        # strip off the .fmw
+        fmwFileNameNoSuffix, suffix = os.path.splitext(fmwName)
+        const = TemplateConstants()
+        enhancedLogKeyword = '_extra'
+        logFileNameTmplt = '{0}{1}.{2}'
+        logFileName = logFileNameTmplt.format(fmwFileNameNoSuffix, enhancedLogKeyword, 'log')
+        return logFileName
+        
 class CalcParamsBase( object ):
     '''
     This method contains the base functionality which 
@@ -821,13 +858,14 @@ class CalcParamsBase( object ):
         ModuleLogConfig(fmwDir, fmwName)
 
         #ModuleLogConfig()
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
 
         self.paramObj = TemplateConfigFileReader(self.fmeMacroVals[self.const.FMWParams_DestKey])
                 
         #self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable       
-        
+            
     def addPlugin(self, forceDevel=False):
         if forceDevel:
             self.logger.debug("Template is operating in Development mode.")
@@ -841,17 +879,17 @@ class CalcParamsBase( object ):
             self.plugin = CalcParamsDevelopment(self)
         
     def getFMWLogFileRelativePath(self, create=True):
-        pathList = Util.calcLogFilePath(self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory], 
-                             self.fmeMacroVals[self.const.FMWMacroKey_FMWName], 
-                             True)
+        logFileFullPath = Util.calcLogFilePath(self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory], 
+                             self.fmeMacroVals[self.const.FMWMacroKey_FMWName])
         # retVal = [relativePath,absFullPath, logDirFullPath, outDirFullPath]
-        outDir = pathList.pop()
-        fmwDir = pathList.pop()
-        if not os.path.exists(outDir) and create:
-            os.mkdir(outDir)
-        if not os.path.exists(fmwDir) and create:
-            os.mkdir(fmwDir)
-            
+        logFileDir = os.path.dirname(logFileFullPath)
+        #outDir = pathList.pop()
+        #fmwDir = pathList.pop()
+        if not os.path.exists(logFileDir) and create:
+            os.makedirs(logFileDir)
+        #if not os.path.exists(fmwDir) and create:
+        #    os.mkdir(fmwDir)
+        self.logger.debug("FME LOG FILE TEST STATEMNET")
         #curDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
         #outDirFullPath = os.path.join(curDir, self.const.AppConfigOutputsDir)
         #if not os.path.exists(outDirFullPath) and create:
@@ -862,7 +900,8 @@ class CalcParamsBase( object ):
         #fmwFileNoExt, fileExt = os.path.splitext(self.fmeMacroVals[self.const.FMWMacroKey_FMWName])
         #fmwLogFile = fmwFileNoExt + self.const.AppConfigLogFileExtension
         #relativePath = os.path.join('.', self.const.AppConfigOutputsDir, self.const.AppConfigLogDir, fmwLogFile)
-        return pathList[0]
+        #return pathList[0]
+        return logFileFullPath
         
     def getDestinationServer(self):
         #self.logger.logMessageString('Setting the destination server')
@@ -1021,7 +1060,8 @@ class CalcParamsDevelopment(object):
         ModuleLogConfig(fmwDir, fmwName)
         
         #ModuleLogConfig()
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         
         self.logger.debug("constructing a CalcParamsDevelopment object")
@@ -1248,7 +1288,8 @@ class CalcParamsDataBC(object):
         #ModuleLogConfig(fmwDir, fmwName)
         
         #ModuleLogConfig()
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         self.fmeMacroVals = self.parent.fmeMacroVals
         self.currentPMPResource = None
@@ -1544,8 +1585,10 @@ class CalcParams(CalcParamsBase):
         fmwName = fmeMacroVals[self.const.FMWMacroKey_FMWName]
         ModuleLogConfig(fmwDir, fmwName)
         
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
+        
         self.logger.info("inheriting the CalcParamsBase class")
         CalcParamsBase.__init__(self, fmeMacroVals)
         self.logger.debug("adding plugin functionality")
@@ -1553,38 +1596,31 @@ class CalcParams(CalcParamsBase):
         
 class ModuleLogConfig(object):
     def __init__(self, fmwDir, fmwName):
-        pathList = Util.calcLogFilePath(fmwDir, fmwName, True)
+        logFileFullPath = Util.calcLogFilePath(fmwDir, fmwName)
         # get the tmpLog to test to see if the logger has been 
         # initialized yet or not
         tmpLog = logging.getLogger(__name__)
         if not tmpLog.handlers:
-            #print 'no handlers found'
-            logging.logFileName = pathList[1]
-            #print 'logFileName', logging.logFileName  # @UndefinedVariable
-            #print 'Loading log configs from log config file'
+            logging.logFileName = logFileFullPath
             const = TemplateConstants()
-            #print 'created the constants'
             confFile = TemplateConfigFileReader('DEV')
+            
             # Get the log config file name from the app config file
-            #print 'confFile is', confFile
-            logConfFileName = confFile.parser.get(const.ConfFileSection_global, const.AppConfigAppLogFileName)
-            #print 'logConfFileName', logConfFileName
+            logConfFileName = confFile.getApplicationLogFileName()            
             
             # get the name of the conf dir
             configDir = const.AppConfigConfigDir
             dirname = os.path.dirname(__file__)
-            #print 'dirname', dirname
             logConfFileFullPath = os.path.join(dirname,configDir,logConfFileName )
-            #print 'logconfig full path:', logConfFileFullPath
-            # logFileName
-            #logging.logFileName = logFileName
-            logging.config.fileConfig(logConfFileFullPath)
-            #print 'got here'
+            
+            enhancedLoggingFileName = Util.calcEnhancedLoggingFileName(fmwName)
+            enhancedLoggingDir = confFile.calcEnhancedLoggingFileOutputDirectory(fmwDir, fmwName)
+            enhancedLoggingFullPath = os.path.join(enhancedLoggingDir, enhancedLoggingFileName)
+            logging.config.fileConfig(logConfFileFullPath, defaults={'logfilename': enhancedLoggingFullPath})
             logger = logging.getLogger(__name__)
-            #print 'and here'
             logger.debug("logger should be configured")
+            logger.debug("enhancedLoggingFullPath: {0}".format(enhancedLoggingFullPath))
         else:
-            #print 'logger already loaded'
             pass
             
 class DWMWriter(object ):
@@ -1666,7 +1702,8 @@ class DWMWriter(object ):
         if not self.const:
             self.const = TemplateConstants()
         self.fme = fme
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
         self.config = TemplateConfigFileReader(destKey)

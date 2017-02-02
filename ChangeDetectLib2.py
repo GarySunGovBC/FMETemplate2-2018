@@ -86,7 +86,8 @@ class ChangeDetect(object):
     are dealt with by the function that is using this module 
     '''
     def __init__(self, changeLogPath):
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         
         self.const = Constants()
@@ -196,7 +197,8 @@ class ChangeLogFilePath(object):
     directories etc..
     '''
     def __init__(self, changeLogRootDir, changeLogFileName, fmwFilePath, changeLogDirParameterName):
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         
         self.fullPathToChangeLog = None # gets populated by method calculateAndVerifyChangeLogFilePath
@@ -249,7 +251,8 @@ class ChangeLogFile(object):
     
     '''
     def __init__(self, chngLogFilePath, const=None):
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         
         self.const = const
@@ -302,7 +305,8 @@ class ChangeEventCollection(object):
     change log, with an api for analyzing it.
     '''
     def __init__(self):
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         
         self.eventList = []
@@ -336,7 +340,8 @@ class ChangeEvent(object):
     these objects
     '''
     def __init__(self, logLineString, const=None):
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         
         self.const = const
@@ -400,7 +405,8 @@ class SourceDataCollection(object):
     This object keeps track of the collection of source data.
     '''
     def __init__(self, const):
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         
         self.const = const
@@ -474,7 +480,8 @@ class SourceFileData(object):
     that are in this object etc.
     '''
     def __init__(self, srcPath, destDbEnv, const=None):
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         self.const  = const
         if not self.const:
@@ -634,7 +641,8 @@ class ChangeDetectBCDC(ChangeDetect):
     
     def __init__(self, changeLogPath):
         ChangeDetect.__init__(self, changeLogPath)
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         self.logger.debug("creating ChangeDetectBCDC object")
         
@@ -651,7 +659,8 @@ class SourceDataCollectionBCDC(SourceDataCollection):
     
     def __init__(self, const):
         SourceDataCollection.__init__(self, const)
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         self.logger.debug("created a SourceDataCollectionBCDC object")
         
@@ -691,7 +700,8 @@ class SourceBCDC(SourceFileData):
     def __init__(self, srcPath, destDbEnv, const=None):
         SourceFileData.__init__(self, srcPath, destDbEnv, const)
         
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         self.const  = const
         if not self.const:
