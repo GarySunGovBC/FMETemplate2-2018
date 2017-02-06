@@ -7,29 +7,76 @@ import site
 import platform
 import os.path
 import sys
+import getpass
+import json
+
+# notify that usercustomize is being run
 print 'RUNNING USERCUSTOMIZE {0}'.format(__file__)
-#print 'platform.node()', platform.node()
-rootDir = os.path.dirname(__file__)
-#print 'ROOTDIR: {0}'.format(rootDir)
-if platform.node().lower() == 'matar':
-    # comment these out once development is complete
-    devPath = r'Z:\Workspace\kjnether\proj\FMETemplateRevisions_Python'
-    lib_ext = os.path.join(devPath, 'lib_ext')
-    lib_int = os.path.join(devPath, 'lib_int')
-    #matarPath = r'\\data.bcgov\work\scripts\python\DataBCPyLib'
+
+# get the devpaths.json file
+curDir = os.path.dirname(__file__)
+configDirName = 'config'
+devpathsFileName = 'devpaths.json'
+path2devpathsJson = os.path.join(curDir, configDirName, devpathsFileName)
+
+expectedKeys = ['template_dev_directory', 'host', 'username']
+dir2Add = None
+if os.path.exists(path2devpathsJson):
+    fh = open(path2devpathsJson, 'r')
+    struct = json.load(fh)
+    fh.close()
     
-    #site.addsitedir(devPath)
-    #site.addsitedir(lib_ext)
-    #site.addsitedir(lib_int)
+    proceed = False
+    # make sure the expected keys exist
+    for expectKey in expectedKeys:
+        if not expectKey in struct:
+            proceed = False
+            break
     
-    #print '{0} path has been added'.format(devPath)
-    print 'sys.path', sys.path
-    pass
+    currentUser = getpass.getuser()
+    node = (platform.node()).lower()
+    if node.lower() == struct['host'].lower() and \
+       currentUser.lower() == struct['username']:
+        dir2Add = struct['template_dev_directory']
+        dir2Add = os.path.realpath(dir2Add)
+
+if dir2Add:
+    # subdirs 
+    subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
+    for subDir in subDirs:
+        pth = os.path.join(dir2Add, subDir)
+        sys.path.insert(0, pth)
+        print 'added path: {0}'.format(pth)
+    
+
+
+
+
+# # delete all this once this is working
+# rootDir = os.path.dirname(__file__)
+# if platform.node().lower() == 'matar':    
+#     # comment these out once development is complete
+#     devPath = r'\\data.bcgov\work\Workspace\kjnether\proj\FMETemplateRevisions_Python'
+#     #devPath = r'Z:\Workspace\kjnether\proj\FMETemplateRevisions_Python'
+#     lib_ext = os.path.join(devPath, 'lib_ext')
+#     lib_int = os.path.join(devPath, 'lib_int')
+#     #matarPath = r'\\data.bcgov\work\scripts\python\DataBCPyLib'
+#     
+#     #site.addsitedir(devPath)
+#     #site.addsitedir(lib_ext)
+#     #site.addsitedir(lib_int)
+#     sys.path.insert(0, devPath)
+#     sys.path.insert(1, lib_ext)
+#     sys.path.insert(2, lib_int)
+#     
+#     #print '{0} path has been added'.format(devPath)
+#     print 'sys.path', sys.path
+#     pass
 
 else:
     # now make sure these are at the start of the path list
-    lib_intPath = os.path.join(rootDir, 'lib_int')
-    pathsToAdd = [rootDir, lib_intPath]
+    lib_intPath = os.path.join(curDir, 'lib_int')
+    pathsToAdd = [curDir, lib_intPath]
     for pth2Rerder in pathsToAdd:
         pthCntr = 0
         for curPth in sys.path:

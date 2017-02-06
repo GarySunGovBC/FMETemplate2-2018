@@ -52,6 +52,7 @@ import datetime
 import re
 import inspect
 import shutil
+import sys
 #import fmeobjects  # @UnresolvedImport
 
 class TemplateConstants(object):
@@ -726,13 +727,40 @@ class PMPSourceAccountParser(object):
         return self.accntList[0].strip()
     
     def getInstance(self):
+        # deprecated
+        inst = self.getServiceName()
         return self.accntList[1].strip()
     
+    def getServiceName(self):
+        '''
+        This is the same as getInstance, however the name was changed
+        to reflect the idea that we are moving towards using service 
+        names instead of instance names to refer to databases
+        '''
+        self.logger.debug("accntList obj: {0}".format(self.accntList))
+        sn = self.accntList[1].strip()
+        snList = sn.split(':')
+        return snList[0]
+    
     def getInstanceNoDomain(self):
-        noDomain = Util.removeDomain(self.accntList[1])
+        '''
+        returns just the instance which is actually the 
+        servicename for this account object
+        
+        changed recently as we have transitioned from using the 
+        ETL-OPERATIONAL-DBLINKS resource to EXTERNAL-DB
+        '''
+        #noDomain = Util.removeDomain(self.accntList[1])
+        # return noDomain
         #accntList = self.accntList[1].strip().split('.')
         #return accntList[0].strip()
-        return noDomain
+        # The source format being used in pmp has changed to 
+        # s
+        connectionEntryList = self.accntList[1].split(':')
+        serviceName = connectionEntryList[0]
+        serviceNameList = serviceName.split('.')
+        serviceNameNoDomain = serviceNameList[0]
+        return serviceNameNoDomain
     
 class Util(object):
     @staticmethod
@@ -1359,13 +1387,14 @@ class CalcParamsDataBC(object):
             self.logger.error(msg)
             raise ValueError, msg
                   
-        accntName = self.fmeMacroVals[schemaMacroKey]
+        accntNameInFMW = self.fmeMacroVals[schemaMacroKey]
+
         if not self.fmeMacroVals.has_key(instanceMacroKey):
             msg = missingParamMsg.format(instanceMacroKey)
             self.logger.error(msg)
             raise ValueError, msg
         
-        instance = self.fmeMacroVals[instanceMacroKey]
+        instanceInFMW = self.fmeMacroVals[instanceMacroKey]
         
         pswd = None
 
@@ -1379,11 +1408,11 @@ class CalcParamsDataBC(object):
                   'keyword {0}'
             msg = msg.format(srcDestKey)
             self.logger.info(msg)
-            pswd = self.getDestinationPassword(srcDestKey, accntName)
+            pswd = self.getDestinationPassword(srcDestKey, accntNameInFMW)
         else:
         
-            msg = 'retreiving source password from pmp for schema: ({0}), instance: ({1})'
-            msg = msg.format(accntName, instance)
+            msg = 'retrieving source password from pmp for schema: ({0}), instance: ({1})'
+            msg = msg.format(accntNameInFMW, instanceInFMW)
             srcResources = self.paramObj.getSourcePmpResources()
             
             for pmpResource in srcResources:
@@ -1392,14 +1421,41 @@ class CalcParamsDataBC(object):
                 # start by trying to just retrieve the account using 
                 # destSchema@instance as the "User Account" parameter
                 try:
-                    accntATInstance = accntName.strip() + '@' + instance.strip()
-                    self.logger.debug("account@instance search string: {0}".format(accntATInstance))
-                    pswd = pmp.getAccountPassword(accntATInstance, pmpResource)
-                    
+                    #accntATInstance = accntNameInFMW.strip() + '@' + instance.strip()
+                    #self.logger.debug("account@instance search string: {0}".format(accntATInstance))
+                    # todo, need to modify so it can find the account associated with
+                    # user@inst:host:port
+                    resId = pmp.getResourceId(pmpResource)
+                    if not resId:
+                        msg = 'Unable to retrieve a resource id in pmp for the resource name {0} using the token {1}'
+                        msg = msg.format(pmpResource, self.token)
+                        raise ValueError, msg
+                    self.logger.debug("getting account ids")
+                    accnts = pmp.getAccountsForResourceID(resId)
+                    for accntDict in accnts:
+                        accntName = PMPSourceAccountParser(accntDict['ACCOUNT NAME'])
+                        schema = accntName.getSchema()
+                        #self.logger.debug("cur schema / search schema: {0} / {1}".format(schema, accntNameInFMW))
+                        if schema.lower() == accntNameInFMW.lower():
+                            self.logger.debug("schemas match {0}".format(accntDict['ACCOUNT NAME']))
+                            instance = accntName.getServiceName()
+                            self.logger.debug("cur inst / search inst: {0}, {1}".format(instance, instanceInFMW))
+                            if instance.lower() == instanceInFMW.lower():
+                                # match return password for this account
+                                accntId = accntDict['ACCOUNT ID']
+                                pswd = pmp.getAccountPasswordWithAccountId(accntId, resId)
+                                break
+                    if not pswd:
+                        msg = 'unable to get password for the account name: {0} and ' +\
+                              'database service name {1}'
+                        raise ValueError, msg.format(accntNameInFMW, instanceInFMW)
+                    #pswd = pmp.getAccountPassword(accntATInstance, pmpResource)
                 except ValueError:
                     # TODO: Add a proper FME log message here
-                    msg = 'There is no account {0} in pmp for the resource {1} using the token {2} from the machine {3}'
-                    msg = msg.format(accntName, pmpResource, pmp.token, platform.node())
+                    msg = 'There is no account for schema {0} / instance {1} in pmp for the resource {2} using the token {3} from the machine {4}'
+                    msg = msg.format(accntNameInFMW,
+                                     instanceInFMW,
+                                     pmpResource, pmp.token, platform.node())
                     self.logger.warning(msg)
                     # Going to do a search for accounts that might match the user
                     pswd = self.getSourcePasswordHeuristic(position)
@@ -1439,10 +1495,8 @@ class CalcParamsDataBC(object):
         # is stripped out, example idwprod1.env.gov.bc.ca becomes just idwprod1
         srcInstanceInFMWLst = srcInstanceInFMW.split('.')
         srcInstanceInFMW = srcInstanceInFMWLst[0]
-
         msg = "Using a heuristic to try to find the password for schema/instance: {0}/{1}"
-        msg = msg.format(srcSchemaInFMW, srcInstanceInFMW)
-        self.logger.debug(msg)
+        self.logger.debug(msg.format(srcSchemaInFMW, srcInstanceInFMW))
         pmpResource = self.currentPMPResource
         if not pmpResource:
             srcResources = self.paramObj.getSourcePmpResources()
@@ -1458,15 +1512,20 @@ class CalcParamsDataBC(object):
             # list of accounts attached to the resource
             accounts = pmp.getAccountsForResourceID(resId)
             instList = []
+            msg = 'iterating through the accounts in resource id {0}, resource name {1}'
+            self.logger.debug(msg.format(resId, pmpResource))
             # source instance, and the source instance less the domain portion
             for accntDict in accounts:
                 accntName = PMPSourceAccountParser(accntDict['ACCOUNT NAME'])
+                self.logger.debug("account name: {0}".format(accntName.getSchema()))
                 schema = accntName.getSchema()
                 if schema.lower().strip() == srcSchemaInFMW:
                     # found the srcSchema
                     # now check see if the instance matches
                     #print 'schemas {0} : {1}'.format(destSchema, self.fmeMacroVals[self.const.FMWParams_SrcSchema])
+                    self.logger.debug("schemas match {0} {1}".format(schema, srcSchemaInFMW))
                     inst = accntName.getInstanceNoDomain()
+                    self.logger.debug("instances {0} {1}".format(inst, srcInstanceInFMW))
                     if inst.lower().strip() == srcInstanceInFMW:
                         instList.append([accntDict['ACCOUNT NAME'], accntDict['ACCOUNT ID']])
         if instList:
@@ -1720,8 +1779,14 @@ class DWMWriter(object ):
         instance = self.config.getDestinationInstance()
         pmpResource = self.config.getDestinationPmpResource()
         passwrd = pmp.getAccountPassword(accntName, pmpResource)
-        self.logger.debug("accntName: {0}".format(accntName))
-        self.logger.debug("instance: {0}".format(instance))
+        if isinstance(passwrd, unicode):
+            # when attempting to connect to database using unicode encoded password
+            # am getting a error message:
+            # "argument 2 must be str, not unicode"
+            # this is an attempt to addresss that problem
+            passwrd = str(passwrd)
+        self.logger.debug(u"accntName: {0}".format(accntName))
+        self.logger.debug(u"instance: {0}".format(instance))
         self.db = DB.DbLib.DbMethods()
         try:
             self.db.connectParams(accntName, passwrd, instance)
@@ -1729,19 +1794,20 @@ class DWMWriter(object ):
             try:
                 self.logger.warning(str(e))
                 server = self.config.getDestinationServer()
-                msg = 'unable to create a connection to the schema: {0}, instance {1} ' + \
-                      'going to try to connect directly to the server: {2}'
+                msg = u'unable to create a connection to the schema: {0}, instance {1} ' + \
+                      u'going to try to connect directly to the server: {2}'
                 msg = msg.format(accntName, instance, server)
                 self.logger.warning(msg)
                 port = self.config.getDestinationOraclePort()
-                self.logger.debug("port: {0}".format(port))
-                self.logger.debug("server: {0}".format(server))
+                self.logger.debug(u"port: {0}".format(port))
+                self.logger.debug(u"server: {0}".format(server))
                 self.db.connectNoDSN(accntName, passwrd, instance, server, port)
-                self.logger.debug("successfully connected to database using direct connect")
+                self.logger.debug(u"successfully connected to database using direct connect")
                 # TODO: Should really capture the specific error type here
             except Exception, e:
-                self.logger.error(str(e))
-                self.logger.info(msg)
+                self.logger.error(u"unable to create the database connection, error message to follow...")
+                self.logger.error(u"error message: {0}".format(sys.exc_info()[0]))
+                #self.logger.info(msg)
                 msg = 'database connection used to write to DWM has failed, ' + \
                       'dwm record for this replication will not be written'
                 self.logger.error(msg)

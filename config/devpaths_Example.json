@@ -1,0 +1,11 @@
+{"_comment": "This file is used to simplify development on a particular machine", 
+ "_comment": "To use it you would take this file, rename it to devpaths.json", 
+ "_comment": "then fill in the username, and host for the username and host", 
+ "_comment": "that correspond with the development work that is being done", 
+ "_comment": "the usercustomize will detect this file and rearrage the python", 
+ "_comment": "paths so that they use, the development directory specified",
+ "_comment": "use unix path delimiters when specifying paths, ie '/'",
+ "template_dev_directory": "<root directory of development code base>",
+ "host": "<hostname of development computer>",
+ "username": "<name of user doing the development>"
+}
