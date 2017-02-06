@@ -1808,8 +1808,8 @@ class DWMWriter(object ):
                 self.logger.error(u"unable to create the database connection, error message to follow...")
                 self.logger.error(u"error message: {0}".format(sys.exc_info()[0]))
                 #self.logger.info(msg)
-                msg = 'database connection used to write to DWM has failed, ' + \
-                      'dwm record for this replication will not be written'
+                msg = u'database connection used to write to DWM has failed, ' + \
+                      u'dwm record for this replication will not be written'
                 self.logger.error(msg)
                 raise
         else:
