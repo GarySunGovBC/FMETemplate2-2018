@@ -32,6 +32,7 @@ if os.path.exists(path2devpathsJson):
         if not expectKey in struct:
             proceed = False
             break
+        
     
     currentUser = getpass.getuser()
     node = (platform.node()).lower()
