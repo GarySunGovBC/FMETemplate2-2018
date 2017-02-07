@@ -39,6 +39,9 @@ if os.path.exists(path2devpathsJson):
        currentUser.lower() == struct['username']:
         dir2Add = struct['template_dev_directory']
         dir2Add = os.path.realpath(dir2Add)
+else:
+    dir2Add = os.path.dirname(__file__)
+    #['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
 
 if dir2Add:
     # subdirs 
