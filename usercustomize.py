@@ -40,8 +40,8 @@ if os.path.exists(path2devpathsJson):
        currentUser.lower() == struct['username']:
         dir2Add = struct['template_dev_directory']
         dir2Add = os.path.realpath(dir2Add)
-else:
-    dir2Add = os.path.dirname(__file__)
+#else:
+#    dir2Add = os.path.dirname(__file__)
     #['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
 
 if dir2Add:
@@ -79,18 +79,23 @@ if dir2Add:
 
 else:
     # now make sure these are at the start of the path list
-    lib_intPath = os.path.join(curDir, 'lib_int')
-    pathsToAdd = [curDir, lib_intPath]
+    #subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
+    #lib_intPath = os.path.join(curDir, 'lib_int')
+    pathsToAdd = [curDir, os.path.join(curDir, 'lib_int'), os.path.join(curDir, 'lib_ext'), os.path.join(curDir, 'fmeCustomizations', 'Transformers')]
     for pth2Rerder in pathsToAdd:
         pthCntr = 0
-        for curPth in sys.path:
-            if pth2Rerder == curPth:
-                del sys.path[pthCntr]
-                sys.path.insert(0, pth2Rerder)
-                print 'inserted', pth2Rerder, 'to the front of the pathlist'
-                break
-            pthCntr += 1
-
+        pth2Rerder = os.path.realpath(pth2Rerder)
+        sys.path.insert(0, pth2Rerder)
+        print 'inserted', pth2Rerder, 'to the front of the pathlist'
+        #for curPth in sys.path:
+        #    if pth2Rerder == curPth:
+        #        del sys.path[pthCntr]
+        #        sys.path.insert(0, pth2Rerder)
+        #        print 'inserted', pth2Rerder, 'to the front of the pathlist'
+        #        break
+        #    pthCntr += 1
+print 'pathlist:', sys.path
+#print 'pathlist:', sys.path
 
 
 #sys.path.insert(0, sys.path.pop())
