@@ -1170,13 +1170,21 @@ class CalcParamsDevelopment(object):
             dbInst = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbInst]
             dbPass = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbPswd]
             
+            if dbUser == None or dbInst == None or dbPass == None:
+                msg = "dbuser {0}, dbInst {1}, dbPass {2}.  These values: " + \
+                      "are extracted from the file {3}.  The file has not " + \
+                      "been properly filled out as one or more of the values " + \
+                      "has a 'None' Type"
+                ValueError, msg.format(dbUser, dbInst, "*"*len(dbPass),  self.credsFileFullPath)
+            
             msg = 'dbuser from credentials file: {0}, dbInstance {1}'
             msg = msg.format(dbUser.lower().strip(), dbInst.lower().strip())
             self.logger.debug(msg)
+            
             if dbInst.lower().strip() == destInstance.lower().strip() and \
                dbUser.lower().strip() == destSchema.lower().strip():
                 msg = "Found password in creds file for user ({0}) instance ({1})"
-                msg = msg.format(dbUser.lower().strip(), dbInst.lower().strip())
+                msg = msg.format((dbUser.lower()).strip(), (dbInst.lower()).strip())
                 self.logger.info(msg)
                 retVal =  dbPass
                 break
@@ -1675,7 +1683,21 @@ class ModuleLogConfig(object):
             enhancedLoggingFileName = Util.calcEnhancedLoggingFileName(fmwName)
             enhancedLoggingDir = confFile.calcEnhancedLoggingFileOutputDirectory(fmwDir, fmwName)
             enhancedLoggingFullPath = os.path.join(enhancedLoggingDir, enhancedLoggingFileName)
-            logging.config.fileConfig(logConfFileFullPath, defaults={'logfilename': enhancedLoggingFullPath})
+            enhancedLoggingFullPath = os.path.realpath(enhancedLoggingFullPath)
+            enhancedLoggingFullPath = enhancedLoggingFullPath.replace(os.path.sep, '/')
+            if not os.path.exists(enhancedLoggingFullPath):
+                fh = open(enhancedLoggingFullPath, 'w')
+                fh.close()
+            
+            print 'type(enhancedLoggingFullPath)', type(enhancedLoggingFullPath)
+            print 'logConfFileFullPath', logConfFileFullPath
+            print 'enhancedLoggingFullPath', enhancedLoggingFullPath
+            print 'os.path.sep', os.path.sep
+            
+            
+            
+            
+            logging.config.fileConfig(logConfFileFullPath, defaults={'logfilename': str(enhancedLoggingFullPath)})
             logger = logging.getLogger(__name__)
             logger.debug("logger should be configured")
             logger.debug("enhancedLoggingFullPath: {0}".format(enhancedLoggingFullPath))
