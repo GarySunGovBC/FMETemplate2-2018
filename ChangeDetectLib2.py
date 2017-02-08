@@ -110,12 +110,12 @@ class ChangeDetect(object):
         
     def hasChanged(self, srcDataPath, destDbEnvKey=None):
         retVal = False
-        self.logger.debug("called has changed")
+        #self.logger.debug("called has changed")
         # standardize the path:
         srcDataPathNormalized = Util.formatDataSet(srcDataPath)
         if self.sourceDataCollection.exists(srcDataPathNormalized, destDbEnvKey):
             retVal = self.sourceDataCollection.getChangeParam(srcDataPathNormalized, destDbEnvKey)
-            self.logger.debug("using the cached version of source data, {0} {1}".format(srcDataPathNormalized, retVal))
+            #self.logger.debug("using the cached version of source data, {0} {1}".format(srcDataPathNormalized, retVal))
         else:
             # havent' seen this source data set yet.
             
@@ -136,8 +136,8 @@ class ChangeDetect(object):
                 srcDataUTCTimeStamp = srcData.getUTCTimeStamp()
                 logEventUTCTimeStamp = chgLogEvent.getLastTimeRanAsUTCTimeStamp()
                 # add the source data to the source data collection
-                print 'srcDataUTCTimeStamp', srcDataUTCTimeStamp
-                print 'logEventUTCTimeStamp', logEventUTCTimeStamp
+                #print 'srcDataUTCTimeStamp', srcDataUTCTimeStamp
+                #print 'logEventUTCTimeStamp', logEventUTCTimeStamp
                 if srcDataUTCTimeStamp > logEventUTCTimeStamp:
                     # source data has been modified since last replication
                     retVal = True
@@ -148,7 +148,7 @@ class ChangeDetect(object):
                 # that we should replicate data
                 self.logger.debug("no change event for source {0}".format(srcDataPathNormalized))
                 retVal = True
-        self.logger.debug("change detected on {1} value {0}".format(retVal, srcDataPathNormalized))
+        #self.logger.debug("change detected on {1} value {0}".format(retVal, srcDataPathNormalized))
         return retVal
     
     def getSourceDataObj(self, srcDataPathNormalized, destDbEnvKey):
@@ -451,7 +451,7 @@ class SourceDataCollection(object):
         srcData = self.getSrcDataObj(srcDataPath, destDbEnv)
         if srcData:
             retVal = srcData.changeParam
-            self.logger.debug("found source data object for {0}, change param {1}".format(srcDataPath, retVal))
+            #self.logger.debug("found source data object for {0}, change param {1}".format(srcDataPath, retVal))
         return retVal
     
     def incrementFeatureCount(self, srcDataPath, destEnvDbKey):
@@ -464,10 +464,10 @@ class SourceDataCollection(object):
         '''
         srcFile = self.getSrcDataObj(srcDataPath, destEnvDbKey)
         if srcFile:
-            self.logger.debug("found existing object for path {0}".format(srcDataPath))
+            #self.logger.debug("found existing object for path {0}".format(srcDataPath))
             srcFile.incrementFeatureCount()
         else:
-            self.logger.debug("creatting a new object for path {0}".format(srcDataPath))
+            #self.logger.debug("creatting a new object for path {0}".format(srcDataPath))
             srcFile = SourceFileData(srcDataPath, destEnvDbKey, self.const)
             srcFile.incrementFeatureCount()
             self.addSourceDataSet(srcFile)        

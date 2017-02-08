@@ -100,7 +100,7 @@ class ChangeFlagFetcher(object):
         # making sure that the file change detection global parameter has
         # been created.  This parameter can be used to turn change detection
         # on and off each time the job is run.  This parameter must exist
-        self.logger.debug("input called")
+        #self.logger.debug("input called")
         
         #atribNames = feature.getAllAttributeNames()
         #fmeDatasetRaw = feature.getAttribute('fme_dataset')
