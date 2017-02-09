@@ -153,6 +153,7 @@ class TemplateConstants(object):
     ConfFileSection_pmpConfig = 'pmp_server_params'
     ConfFileSection_pmpConfig_baseurl = 'baseurl'
     ConfFileSection_pmpConfig_restdir = 'restdir'
+    ConfFileSection_pmpConfig_alturl = 'alturl'
     ConfFileSection_pmpSrc = 'pmp_source_info'
     ConfFileSection_pmpSrc_resources = 'sourceresource'
     
@@ -495,6 +496,10 @@ class TemplateConfigFileReader(object):
     def getPmpBaseUrl(self):
         pmpBaseUrl = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_baseurl)
         return pmpBaseUrl
+    
+    def getPmpAltUrl(self):
+        pmpAltUrl = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_alturl)
+        return pmpAltUrl
     
     def getPmpRestDir(self):
         restDir = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_restdir)
@@ -1373,16 +1378,42 @@ class CalcParamsDataBC(object):
             
         return passwrd
         
-    def getPmpDict(self):
+    def getPmpDict(self, url=None):
+        if not url:
+            url = self.paramObj.getPmpBaseUrl()
         computerName = Util.getComputerName()
         pmpDict = {'token': self.paramObj.getPmpToken(computerName),
-                   'baseurl': self.paramObj.getPmpBaseUrl(), 
+                   'baseurl': url,
                    'restdir': self.paramObj.getPmpRestDir()}
         return pmpDict
     
     def getSourcePassword(self, position=None):
         pmpDict = self.getPmpDict()
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
+        
+        # first try to connect using the default pmp params
+        try:
+            resrcs = pmp.getResources()
+        except:
+            # failed to communicate with pmp, try the alt url
+            pmpAltUrl = self.paramObj.getPmpAltUrl()
+            msg = 'failed to communicate with PMP, trying the alternative ' + \
+                   'url {0}'
+            msg = msg.format()
+            self.logger.warn(msg.format(pmpAltUrl))
+            
+            pmpDict = self.getPmpDict(url=pmpAltUrl)
+            pmp = PMP.PMPRestConnect.PMP(pmpDict)
+            try:
+                resrcs = pmp.getResources()
+            except:
+                msg = 'Communication problem with pmp, tried both these urls ' + \
+                      '({0}) ({1})neither is responding'
+                url = self.paramObj.getPmpBaseUrl()
+                altUrl = self.paramObj.getPmpAltUrl()
+                self.logger.error(msg.format(url, altUrl))
+                raise
+        
         schemaMacroKey, instanceMacroKey = self.parent.getSchemaForPasswordRetrieval(position)
 
         missingParamMsg = 'Trying to retrieve the source password from PMP.  In ' + \

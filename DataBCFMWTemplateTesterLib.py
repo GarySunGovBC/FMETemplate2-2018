@@ -72,21 +72,21 @@ class ParameterTester(object):
         
         '''
         self.testAllParameters_ProdMode()
-        self.logger.debug("running devmod tests now...")
-        self.testAllParameters_DevMode()
+#         self.logger.debug("running devmod tests now...")
+#         self.testAllParameters_DevMode()
     
     def testAllParameters_ProdMode(self):
-        self.test_isSourceBCGW()
-        self.test_MD5Calc()
-        self.test_getDestinationPassword()
-        self.test_getDatabaseConnectionFilePath()
+#         self.test_isSourceBCGW()
+#         self.test_MD5Calc()
+#         self.test_getDestinationPassword()
+#         self.test_getDatabaseConnectionFilePath()
         self.test_getSourcePassword()
-        self.test_getSourcePasswordHeuristic()
-        self.test_getDestinationOraclePort()
-        self.test_getDestinationSDEPort()
-        self.test_getDestinationServer()
-        self.test_getDestinationInstance()
-        self.test_getFMWLogFileRelativePath()
+#         self.test_getSourcePasswordHeuristic()
+#         self.test_getDestinationOraclePort()
+#         self.test_getDestinationSDEPort()
+#         self.test_getDestinationServer()
+#         self.test_getDestinationInstance()
+#         self.test_getFMWLogFileRelativePath()
         
     def testAllParameters_DevMode(self):
         # only do this if not on arneb

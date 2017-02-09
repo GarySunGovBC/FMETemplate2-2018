@@ -33,50 +33,21 @@ if os.path.exists(path2devpathsJson):
             proceed = False
             break
         
-    
     currentUser = getpass.getuser()
     node = (platform.node()).lower()
     if node.lower() == struct['host'].lower() and \
        currentUser.lower() == struct['username']:
         dir2Add = struct['template_dev_directory']
         dir2Add = os.path.realpath(dir2Add)
-#else:
-#    dir2Add = os.path.dirname(__file__)
-    #['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
 
 if dir2Add:
     # subdirs 
-    subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
+    #subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
+    subDirs = ['lib', 'fmeCustomizations/Transformers', '']
     for subDir in subDirs:
         pth = os.path.join(dir2Add, subDir)
         sys.path.insert(0, pth)
         print 'added path: {0}'.format(pth)
-    
-
-
-
-
-# # delete all this once this is working
-# rootDir = os.path.dirname(__file__)
-# if platform.node().lower() == 'matar':    
-#     # comment these out once development is complete
-#     devPath = r'\\data.bcgov\work\Workspace\kjnether\proj\FMETemplateRevisions_Python'
-#     #devPath = r'Z:\Workspace\kjnether\proj\FMETemplateRevisions_Python'
-#     lib_ext = os.path.join(devPath, 'lib_ext')
-#     lib_int = os.path.join(devPath, 'lib_int')
-#     #matarPath = r'\\data.bcgov\work\scripts\python\DataBCPyLib'
-#     
-#     #site.addsitedir(devPath)
-#     #site.addsitedir(lib_ext)
-#     #site.addsitedir(lib_int)
-#     sys.path.insert(0, devPath)
-#     sys.path.insert(1, lib_ext)
-#     sys.path.insert(2, lib_int)
-#     
-#     #print '{0} path has been added'.format(devPath)
-#     print 'sys.path', sys.path
-#     pass
-
 else:
     # now make sure these are at the start of the path list
     #subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
@@ -95,29 +66,4 @@ else:
         #        break
         #    pthCntr += 1
 print 'pathlist:', sys.path
-#print 'pathlist:', sys.path
 
-
-#sys.path.insert(0, sys.path.pop())
-#sys.path.insert(0, sys.path.pop())
-#sys.path.insert(0, sys.path.pop())
-#print sys.path
-
-# development should be commented out later
-# pth2Remove = r'\\data.bcgov\work\scripts\python\DataBCFmeTemplate2'   
-# # While debugging remove the path to \\data.bcgov\work\scripts\python\DataBCFmeTemplate2
-# number2Remove = 0
-# for cnt in range(0, len(sys.path)):
-#     pth = sys.path[cnt]
-#     #print pth
-#     if pth == pth2Remove:
-#         number2Remove += 1
-# print '----------------------------'
-# if number2Remove:
-#     for i in range(0, number2Remove):
-#         sys.path.remove(pth2Remove)
-#         #print 'PATH REMOVED', pth2Remove
-
-
-    
-#print 'END OF THE USERCUSTOMIZE'
