@@ -59,7 +59,12 @@ import pprint
 
 class Constants(object):
     
+    
     # constants used by this library
+    # these parameters describe the columns in the log file and their positions
+    # in the log file.
+    #  
+    
     logFileParam_LastCheckedDateStr = 0
     logFileParam_LastCheckedUTCTimeStamp = 1
     logFileParam_FMW = 2
@@ -100,6 +105,7 @@ class ChangeDetect(object):
         
         # This is a change log object (ChangeLogFilePath)
         self.chngLogFilePath = changeLogPath
+        self.logger.debug("Change log file path: {0}".format(self.chngLogFilePath))
         self.chngLog = ChangeLogFile(self.chngLogFilePath, self.const)
         #self.chngLogFile = ChangeLogFile(self.chngLogFilePath)
         self.chngLog.readChangeDetectLogFile()
@@ -338,6 +344,11 @@ class ChangeEvent(object):
     '''
     each line in the change log can be represented by one of 
     these objects
+    
+    columns in the the change log and their positions are described 
+    by the constant parameters: 
+      1 - 
+    
     '''
     def __init__(self, logLineString, const=None):
         #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)

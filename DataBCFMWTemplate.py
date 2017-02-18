@@ -129,6 +129,7 @@ class TemplateConstants(object):
     # getSrcInstanceParam to retrieve it
     
     FMWParams_SrcInstance = 'SRC_ORA_INSTANCE'
+    FMWParams_SrcServiceName = 'SRC_ORA_SERVICENAME'
     # if there is more than one source instance use the method
     # getSrcInstanceParam to retrieve it
     

@@ -15,8 +15,6 @@ import sys
 import os.path
 import DataBCFMWTemplate
 
-print 'in file change detector'
-
 class ChangeFlagFetcher(object):
     
     def __init__(self):
@@ -88,7 +86,7 @@ class ChangeFlagFetcher(object):
         #self.logger.debug("returned from reading the log file")
         #self.featuresIn = 0
         #directory = self.fmeMacroValues[self.chng.const.FMWMacroKey_FMWDirectory]
-        directory = os.path.dirname(__file__)
+        #directory = os.path.dirname(__file__)
         
         # get the run environment (DLV|TST|PRD) from DEST_DB_ENV_KEY
         self.destDbEnvKey = None
@@ -116,14 +114,14 @@ class ChangeFlagFetcher(object):
         if self.changeDetectionEnabledParam.upper() == 'FALSE':
             feature.setAttribute('CHANGE_DETECTED', 'TRUE')
             self.chng.addFeatureChange(fmeDatasetRaw, self.destDbEnvKey)
-            #self.logger.debug("CHANGE DISABLED")
+            self.logger.debug("CHANGE DISABLED")
         elif self.chng.hasChanged(fmeDatasetRaw, self.destDbEnvKey):
             feature.setAttribute('CHANGE_DETECTED', 'TRUE')
             self.chng.addFeatureChange(fmeDatasetRaw, self.destDbEnvKey)
-            #self.logger.debug("CHANGE: TRUE")
+            self.logger.debug("CHANGE: TRUE")
         else:
             feature.setAttribute('CHANGE_DETECTED', 'FALSE')
-            #self.logger.debug("CHANGE: FALSE")
+            self.logger.debug("CHANGE: FALSE")
         self.pyoutput(feature)
         
     def close(self):

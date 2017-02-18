@@ -28,7 +28,7 @@
  "           in one of the hashs below to retrieve the password.  Currently there  ", 
  "           only one hash defined but you can include as many as you require "], 
  "sourceCredentials" : [
-     {"instance": "envprod1.nrs.bcgov", 
+     {"instance": "envprod1.nrs.bcgov",
       "username": "USERNAME",
       "password": "thisIsNotThePassword"
      }
