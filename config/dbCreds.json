@@ -8,7 +8,7 @@
  "             its rest api.  When in development credentials are retrieved from this  ", 
  "             file.  The instance defined in the config file needs to match the  ", 
  "             destination instance defined below for the credential retrieval  ", 
- "             to function correctly " ], 
+ "             to function correctly " ],   
  "destinationCreds" : [
      { "servicename": "bcgwdlv.bcgov", 
        "username": "WHSE_MONTREAL_CANADIANS",
