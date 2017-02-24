@@ -108,7 +108,7 @@ class ChangeFlagFetcher(object):
         # get the run environment (dlv|tst|prd) if it exists / is defined
         # in the fmw macro values
         fmeDatasetRaw = feature.getAttribute('fme_dataset')
-        print 'fmeDatasetRaw', fmeDatasetRaw
+        #print 'fmeDatasetRaw', fmeDatasetRaw
         
         # indicates that change detection has been disabled
         if self.changeDetectionEnabledParam.upper() == 'FALSE':

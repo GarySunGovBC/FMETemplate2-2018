@@ -5,63 +5,63 @@
 #    Command-line to run this workspace:
 #    
 #    
-#    E:\sw_nt\FME2015\fme.exe Z:\Workspace\kjnether\proj\FMETemplateRevisions_Python\FMWTemplates\NOSRC_TO_BCGW.fmw
+#    E:\sw_nt\FME2015\fme.exe \\data.bcgov\work\Workspace\kjnether\proj\FMETemplateRevisions_Python\FMWTemplates\nosrc_to_bcgw.fmw
 #          --DEST_SCHEMA "<DESTINATION SCHEMA>"
 #          --DEST_FEATURE_1 "<DESTINATION TABLE>"
 #          --DEST_DB_ENV_KEY "DLV"
 #    
 #    
-#! ZOOM_SCALE="77"
-#! FME_DOCUMENT_GUID="01427a6b-9cd7-4b34-a4a3-ea8612160df2"
-#! SHOW_ANNOTATIONS="true"
-#! USAGE="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Describe expected replication schedule &lt;/p&gt;&#10;"
+#! FME_DOCUMENT_GUID="59588f63-f8af-47d4-8848-4ff9c2165cd6"
+#! PASSWORD=""
 #! DOC_TOP_LEFT="100 -3887"
-#! DESTINATION_ROUTING_FILE=""
-#! REQUIREMENTS_KEYWORD="none"
+#! FME_DOCUMENT_PRIORGUID="2c011f65-c579-45c9-9da8-8d3b2e3c0014,a56a6293-df80-43ab-83b6-7068a543836f,59238750-f6c9-4bbe-8573-05485dacd91d,af965862-1c5d-453a-80fa-5dd1e02a4500,2ee443c8-7d8b-4019-9be4-78c770b3c0f6,e2fe7d06-21d0-4ae2-a1b4-9bfc3d52d1ba,01427a6b-9cd7-4b34-a4a3-ea8612160df2"
+#! REQUIREMENTS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List dependencies specific to this replication &lt;/p&gt;&#10;"
 #! LOG_FILE="$(LOGFILE)"
+#! SHOW_INFO_NODES="true"
+#! LAST_SAVE_DATE="2017-02-22T16:42:08"
+#! SHOW_ANNOTATIONS="true"
+#! MULTI_WRITER_DATASET_ORDER="BY_ID"
+#! REQUIREMENTS_KEYWORD="none"
+#! STRICT_PARAMETER_VALIDATION="false"
+#! FME_STROKE_MAX_DEVIATION="0"
+#! LOG_MAX_RECORDED_FEATURES="200"
+#! END_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;shutIt&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Shutdown&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;shutIt.shutdown&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! FME_SERVER_SERVICES=""
+#! FME_BUILD_NUM="15538"
+#! TITLE="nosrc_to_bcgw"
+#! REDIRECT_TERMINATORS="NONE"
 #! ATTR_TYPE_ENCODING="SDF"
 #! DESTINATION="NONE"
-#! DESCRIPTION="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List Source and Destination datasets and describe any inline data manipulations &lt;/p&gt;&#10;"
-#! REDIRECT_TERMINATORS="NONE"
-#! BEGIN_TCL=""
-#! END_TCL=""
-#! FME_SERVER_SERVICES=""
-#! SHOW_INFO_NODES="true"
-#! END_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;shutIt&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Shutdown&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;shutIt.shutdown&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
-#! WARN_INVALID_XFORM_PARAM="No"
-#! FME_GEOMETRY_HANDLING="Classic"
-#! FME_BUILD_NUM="15538"
-#! FME_IMPLICIT_CSMAP_REPROJECTION_MODE="Datum"
 #! LOG_MAX_PRECISION="Yes"
-#! SOURCE_ROUTING_FILE=""
 #! WORKSPACE_VERSION="1"
-#! MULTI_WRITER_DATASET_ORDER="BY_ID"
-#! TITLE="nosrc_to_bcgw"
 #! HISTORY=""
-#! VIEW_POSITION="7.79229 0"
-#! PASSWORD=""
-#! REQUIREMENTS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List dependencies specific to this replication &lt;/p&gt;&#10;"
-#! FME_REPROJECTION_ENGINE="FME"
-#! CATEGORY="DataBC Warehouse Replication"
-#! LOG_MAX_RECORDED_FEATURES="200"
-#! DOC_EXTENTS="3273 3887"
 #! LAST_SAVE_BUILD="FME(R) 2015.1.2.0 (20150911 - Build 15538 - WIN32)"
-#! STRICT_PARAMETER_VALIDATION="false"
 #! LEGAL_TERMS_CONDITIONS="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Any portion of this document, or any information supplied by the Province in relation to this document may not be used or disclosed for any purpose other than for DataBC Warehouse Population Services. Without limiting the generality of the foregoing, the User agrees to hold in confidence all information supplied by the Province in relation to this document. &lt;/p&gt;&#10;"
-#! FME_STROKE_MAX_DEVIATION="0"
 #! SOURCE="NONE"
-#! FME_DOCUMENT_PRIORGUID="2c011f65-c579-45c9-9da8-8d3b2e3c0014,a56a6293-df80-43ab-83b6-7068a543836f,59238750-f6c9-4bbe-8573-05485dacd91d,af965862-1c5d-453a-80fa-5dd1e02a4500,2ee443c8-7d8b-4019-9be4-78c770b3c0f6,e2fe7d06-21d0-4ae2-a1b4-9bfc3d52d1ba"
-#! BEGIN_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;start&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Start&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;start.startup&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;lf&gt;"
+#! SOURCE_ROUTING_FILE=""
+#! DESCRIPTION="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;List Source and Destination datasets and describe any inline data manipulations &lt;/p&gt;&#10;"
+#! VIEW_POSITION="7.79229 0"
+#! DESTINATION_ROUTING_FILE=""
 #! MAX_LOG_FEATURES="200"
-#! LAST_SAVE_DATE="2016-10-04T11:06:46"
+#! CATEGORY="DataBC Warehouse Replication"
+#! FME_IMPLICIT_CSMAP_REPROJECTION_MODE="Datum"
+#! END_TCL=""
+#! FME_REPROJECTION_ENGINE="FME"
+#! USAGE="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Describe expected replication schedule &lt;/p&gt;&#10;"
+#! BEGIN_PYTHON="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;start&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.Start&lt;openparen&gt;fme&lt;closeparen&gt;&lt;lf&gt;start.startup&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;lf&gt;"
+#! FME_GEOMETRY_HANDLING="Classic"
+#! WARN_INVALID_XFORM_PARAM="No"
 #! IGNORE_READER_FAILURE="No"
+#! ZOOM_SCALE="77"
+#! BEGIN_TCL=""
+#! DOC_EXTENTS="3273 3887"
 #! >
 #! <DATASETS>
 #! <DATASET
 #! IS_SOURCE="false"
 #! ROLE="WRITER"
 #! FORMAT="SDE30"
-#! DATASET="$(DEST_INSTANCE)"
+#! DATASET="$(DEST_SERVICENAME)"
 #! KEYWORD="SDE30_1"
 #! MULTI_GEOM_ALLOWED="true"
 #! ATTR_MAX_LENGTH="30"
@@ -70,7 +70,7 @@
 #! WRITE_DEFS="true"
 #! DEFLINE_TEMPLATE="SDE_CONFIG_KEYWORD $(_OUT_SDE3Config) SDE_COORD_SYS_ID &quot;&quot; SDE_COORD_SYS_DESCRIPTION &quot;&quot; SDE_DROP_TABLE N SDE_TRUNCATE_TABLE N SDE_LAYER SHAPE SDE_PRECISION 64 SDE_GRID{0} $(_OUT_SDE3Grid0) SDE_GRID{1} $(_OUT_SDE3Grid1) SDE_GRID{2} $(_OUT_SDE3Grid2) SDE_DIMENSION $(_OUT_SDE3Dimension) SDE_MEASURED N SDE_ANNOTATED Y SDE_AREA Y SDE_LINE Y SDE_POINT Y SDE_SIMPLE_LINE Y SDE_NIL Y SDE_MULTIPART Y SDE_CAD N SDE_XORIGIN $(_OUT_SDE3XOrigin) SDE_YORIGIN $(_OUT_SDE3YOrigin) SDE_ZORIGIN 0 SDE_MEASURED_ORIGIN 0 SDE_SCALE $(_OUT_SDE3Scale) SDE_ZSCALE 1 SDE_MEASURED_SCALE 1 SDE_TOLERANCE &quot;&quot; SDE_ZTOLERANCE &quot;&quot; SDE_MEASURED_TOLERANCE &quot;&quot;"
 #! DEFLINE_ATTRS="true"
-#! EXPOSABLE_ATTRS="fme_text_size double sde30_text_level integer sde30_major_axis double fme_start_angle double sde30_num_points integer fme_dataset char(50) fme_type char(50) sde30_text_gap_ratio double fme_sweep_angle double sde30_text_x_leader char(50) fme_secondary_axis double sde30_text_x double sde30_text_y double sde30_text_string char(50) sde30_rotation double sde30_text_y_leader char(50) sde30_text_z double fme_text_string char(50) sde30_measures char(50) sde30_text_x_location char(50) fme_basename char(50) fme_rotation double sde30_justification char(50) sde30_radius double sde30_text_symbol integer fme_geometry fme_char(50) sde30_text_z_location char(50) fme_primary_axis double fme_color char(50) sde30_text_x_offset double fme_feature_type char(50) sde30_text_z_leader char(50) sde30_type char(50) sde30_text_y_offset double fme_db_operation char(6) SE_ROW_ID integer sde30_minor_axis double fme_fill_color char(50) sde30_text_y_location char(50) sde30_text_size double"
+#! EXPOSABLE_ATTRS="fme_geometry fme_char(50) sde30_measures char(50) sde30_text_x_leader char(50) sde30_text_string char(50) sde30_type char(50) sde30_text_y_leader char(50) sde30_text_gap_ratio double sde30_text_level integer sde30_num_points integer fme_primary_axis double fme_dataset char(50) fme_color char(50) fme_feature_type char(50) fme_secondary_axis double sde30_text_y_location char(50) fme_rotation double fme_type char(50) sde30_justification char(50) fme_db_operation char(6) SE_ROW_ID integer sde30_text_symbol integer sde30_text_x double sde30_minor_axis double sde30_text_y double sde30_text_z double sde30_major_axis double sde30_text_x_offset double fme_fill_color char(50) sde30_text_z_leader char(50) sde30_text_y_offset double sde30_text_size double sde30_text_x_location char(50) fme_start_angle double fme_basename char(50) fme_sweep_angle double fme_text_size double sde30_rotation double sde30_radius double fme_text_string char(50) sde30_text_z_location char(50)"
 #! DEFLINE_PARMS="&quot;GUI DISABLE disabled Table exists&quot; No &quot;GUI TEXT SDE_CONFIG_KEYWORD Configuration Keyword&quot; DEFAULTS &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_COORD_SYS_ID Coordsys ID&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_COORD_SYS_DESCRIPTION Coordsys Description&quot; &quot;&quot; &quot;GUI OPTIONAL ALWAYS_ENABLED CHOICE SDE_DROP_TABLE Y%N Drop Table First&quot; N &quot;GUI OPTIONAL DISABLED_ONLY CHOICE SDE_TRUNCATE_TABLE Y%N Truncate Table First&quot; N &quot;GUI OPTIONAL WHOLE_LINE DISABLED_ONLY FORCE_DEFS ATTRLIST_COMMAS SDE_UPDATE_FIELDS Update Key Fields&quot; &quot;&quot; &quot;GUI TEXT SDE_LAYER Layer Keyword&quot; SHAPE &quot;GUI CHOICE SDE_PRECISION 32%64 Layer Precision&quot; 64 &quot;GUI FLOAT SDE_GRID{0} Grid 0 Size&quot; 100 &quot;GUI OPTIONAL FLOAT SDE_GRID{1} Grid 1 Size&quot; 0 &quot;GUI OPTIONAL FLOAT SDE_GRID{2} Grid 2 Size&quot; 0 &quot;GUI CHOICE SDE_DIMENSION 2%3 Dimension&quot; 2 &quot;GUI CHOICE SDE_MEASURED Y%N Allow Measures&quot; N &quot;GUI CHOICE SDE_ANNOTATED Y%N Allow Annotation&quot; Y &quot;GUI CHOICE SDE_AREA Y%N Allow Areas&quot; Y &quot;GUI CHOICE SDE_LINE Y%N Allow Lines&quot; Y &quot;GUI CHOICE SDE_POINT Y%N Allow Points&quot; Y &quot;GUI CHOICE SDE_SIMPLE_LINE Y%N Allow Simple Lines&quot; Y &quot;GUI CHOICE SDE_NIL Y%N Allow NIL Geometry&quot; Y &quot;GUI CHOICE SDE_MULTIPART Y%N Allow Multi Part Geometry&quot; Y &quot;GUI CHOICE SDE_CAD Y%N Allow CAD Data&quot; N &quot;GUI FLOAT SDE_XORIGIN X Origin &quot; 0 &quot;GUI FLOAT SDE_YORIGIN Y Origin &quot; 0 &quot;GUI FLOAT SDE_ZORIGIN Z Origin &quot; 0 &quot;GUI FLOAT SDE_MEASURED_ORIGIN Measures Origin &quot; 0 &quot;GUI FLOAT SDE_SCALE Scaling Factor&quot; 100 &quot;GUI FLOAT SDE_ZSCALE Z Scaling Factor&quot; 1 &quot;GUI FLOAT SDE_MEASURED_SCALE Measures Scaling Factor&quot; 1 &quot;GUI OPTIONAL FLOAT SDE_TOLERANCE Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL FLOAT SDE_ZTOLERANCE Z Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL FLOAT SDE_MEASURED_TOLERANCE Measures Tolerance&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE CHOICE SDE_STORAGE_TYPE SDE_BINARY%WKB%SQL%NORMALIZED Storage Type&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE TEXT SDE_DESCRIPTION Layer Description&quot; &quot;&quot; &quot;GUI OPTIONAL WHOLE_LINE INTEGER SDE_MINIMUM_FID Minimum FID&quot; &quot;&quot; "
 #! ATTR_INDEX_TYPES=""
 #! ATTR_NAME_INVALID_CHARS=". %-#[]&quot;()!?*&apos;&amp;+\/"
@@ -80,12 +80,12 @@
 #! DATASET_TYPE="DATABASE"
 #! GENERATE_FME_BUILD_NUM="5210"
 #! NAME="BCGW.BCGOV [SDE30]"
-#! FANOUT_DIRECTORY=""
 #! FANOUT_SUFFIX=""
-#! FANOUT_ID_ATTR=""
-#! FANOUT_PREFIX=""
-#! FANOUT="No"
 #! COORDSYS="BCALB-83"
+#! FANOUT_PREFIX=""
+#! FANOUT_ID_ATTR=""
+#! FANOUT_DIRECTORY=""
+#! FANOUT="No"
 #! >
 #! <METAFILE_PARAMETER
 #! NAME="ADVANCED_PARMS"
@@ -295,41 +295,41 @@
 #! ENABLED="true"
 #! SCHEMA_ATTRIBUTE_SOURCE="1"
 #! >
-#! <DEFLINE_PARM PARM_NAME="SDE_CONFIG_KEYWORD" PARM_VALUE="DEFAULTS"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_ID" PARM_VALUE="&lt;Unused&gt;"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_ANNOTATED" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_ZORIGIN" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_POINT" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_TRUNCATE_TABLE" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_STORAGE_TYPE" PARM_VALUE="&lt;Unused&gt;"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_NIL" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_YORIGIN" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_ZSCALE" PARM_VALUE="1"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_XORIGIN" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_GRID{2}" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MULTIPART" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_SCALE" PARM_VALUE="100"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_UPDATE_FIELDS" PARM_VALUE=""/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_ORIGIN" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_GRID{1}" PARM_VALUE="0"/>
-#! <DEFLINE_PARM PARM_NAME="disabled" PARM_VALUE="Yes"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_LINE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_CAD" PARM_VALUE="N"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_CONFIG_KEYWORD" PARM_VALUE="DEFAULTS"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_LAYER" PARM_VALUE="SHAPE"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ZSCALE" PARM_VALUE="1"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MULTIPART" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED" PARM_VALUE="N"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_TRUNCATE_TABLE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ZORIGIN" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_STORAGE_TYPE" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="disabled" PARM_VALUE="Yes"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_ID" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_YORIGIN" PARM_VALUE="0"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_ZTOLERANCE" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_XORIGIN" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_LINE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_POINT" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_DROP_TABLE" PARM_VALUE="N"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{2}" PARM_VALUE="0"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_TOLERANCE" PARM_VALUE=""/>
-#! <DEFLINE_PARM PARM_NAME="SDE_GRID{0}" PARM_VALUE="100"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_PRECISION" PARM_VALUE="64"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_MINIMUM_FID" PARM_VALUE="&lt;Unused&gt;"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_LAYER" PARM_VALUE="SHAPE"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_DROP_TABLE" PARM_VALUE="N"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_SCALE" PARM_VALUE="1"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_SIMPLE_LINE" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED" PARM_VALUE="N"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_AREA" PARM_VALUE="Y"/>
-#! <DEFLINE_PARM PARM_NAME="SDE_COORD_SYS_DESCRIPTION" PARM_VALUE="&lt;Unused&gt;"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{1}" PARM_VALUE="0"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_NIL" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_UPDATE_FIELDS" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_ORIGIN" PARM_VALUE="0"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_TOLERANCE" PARM_VALUE=""/>
+#! <DEFLINE_PARM PARM_NAME="SDE_SIMPLE_LINE" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_SCALE" PARM_VALUE="100"/>
 #! <DEFLINE_PARM PARM_NAME="SDE_DIMENSION" PARM_VALUE="2"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_AREA" PARM_VALUE="Y"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_GRID{0}" PARM_VALUE="100"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_MEASURED_SCALE" PARM_VALUE="1"/>
+#! <DEFLINE_PARM PARM_NAME="SDE_ANNOTATED" PARM_VALUE="Y"/>
 #! </FEATURE_TYPE>
 #! </FEATURE_TYPES>
 #! <FMESERVER>
@@ -384,13 +384,8 @@
 #! IS_STAND_ALONE="true"
 #! />
 #! <GLOBAL_PARAMETER
-#! GUI_LINE="GUI OPTIONAL IGNORE TEXT_EDIT_PYTHON_PARM DEST_SERVER Python Script:"
-#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationServer&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
-#! IS_STAND_ALONE="false"
-#! />
-#! <GLOBAL_PARAMETER
-#! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_PORT Python Script:"
-#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationSDEPort&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! GUI_LINE="GUI OPTIONAL IGNORE TEXT_EDIT_PYTHON_PARM DEST_HOST Python Script:"
+#! DEFAULT_VALUE="#&lt;space&gt;NOT&lt;space&gt;required&lt;space&gt;anymore&lt;comma&gt;&lt;space&gt;was&lt;space&gt;only&lt;space&gt;used&lt;space&gt;for&lt;space&gt;application&lt;space&gt;connects.&lt;space&gt;&lt;space&gt;&lt;lf&gt;#&lt;space&gt;the&lt;space&gt;host&lt;space&gt;is&lt;space&gt;now&lt;space&gt;included&lt;space&gt;in&lt;space&gt;the&lt;space&gt;DEST_DIRECTCONNECT&lt;space&gt;string&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationHost&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
 #! IS_STAND_ALONE="false"
 #! />
 #! <GLOBAL_PARAMETER
@@ -399,8 +394,13 @@
 #! IS_STAND_ALONE="false"
 #! />
 #! <GLOBAL_PARAMETER
-#! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_INSTANCE Python Script:"
-#! DEFAULT_VALUE="&lt;lf&gt;import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationInstance&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_SERVICENAME Python Script:"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestinationServiceName&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
+#! IS_STAND_ALONE="false"
+#! />
+#! <GLOBAL_PARAMETER
+#! GUI_LINE="GUI IGNORE TEXT_EDIT_PYTHON_PARM DEST_DIRECTCONNECT Python Script:"
+#! DEFAULT_VALUE="import&lt;space&gt;DataBCFMWTemplate&lt;lf&gt;params&lt;space&gt;=&lt;space&gt;DataBCFMWTemplate.CalcParams&lt;openparen&gt;FME_MacroValues&lt;closeparen&gt;&lt;lf&gt;return&lt;space&gt;params.getDestSDEDirectConnectString&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;"
 #! IS_STAND_ALONE="false"
 #! />
 #! <GLOBAL_PARAMETER
@@ -618,7 +618,7 @@
 #! BOUNDING_RECT="107 -2014 1125 1869"
 #! STICKY="true"
 #! COLOUR="0.0784314,0.0784314,0.756863"
-#! CONTENTS="8 10 21 "
+#! CONTENTS="10 21 8 "
 #! />
 #! <BOOKMARK
 #! IDENTIFIER="16"
@@ -629,7 +629,7 @@
 #! BOUNDING_RECT="1268 -2021 2088 682"
 #! STICKY="true"
 #! COLOUR="1,0.501961,0"
-#! CONTENTS="15 14 12 13 "
+#! CONTENTS="13 14 15 12 "
 #! />
 #! <BOOKMARK
 #! IDENTIFIER="25"
@@ -640,7 +640,7 @@
 #! BOUNDING_RECT="1276 -2753 2097 1134"
 #! STICKY="true"
 #! COLOUR="0.819608,0.501961,0.976471"
-#! CONTENTS="23 24 22 "
+#! CONTENTS="24 22 23 "
 #! />
 #! </BOOKMARKS>
 #! <TRANSFORMERS>
@@ -654,27 +654,27 @@
 #! <SUBDOCUMENTS>
 #! <SUBDOCUMENT
 #! NAME="ArcSDELockRemover"
-#! SUPPRESS_UPGRADE="false"
-#! XFORM_DEPRECATED="No"
-#! DOC_TOP_LEFT="0 0"
-#! REQUIREMENTS_KEYWORD=""
-#! IS_VISIBLE="false"
-#! FME_DOCUMENT_GUID=""
-#! DOC_DYNAMIC_INPUT_ATTRS="0"
-#! DESCRIPTION="Test description&#10;"
-#! CATEGORY="DataBC"
-#! LEGAL_TERMS_CONDITIONS=""
-#! FME_PROCESS_GROUP_BY=""
-#! FME_PROCESS_COUNT="NO_PARALLELISM"
-#! HISTORY=""
-#! ZOOM_SCALE="99"
-#! VIEW_POSITION="0 0"
-#! REQUIREMENTS=""
 #! USAGE=""
 #! TITLE="ArcSDELockRemover"
-#! FME_DOCUMENT_PRIORGUID=""
+#! REQUIREMENTS=""
 #! DOC_EXTENTS="0 0"
 #! FME_PROCESS_GROUPS_ORDERED="No"
+#! IS_VISIBLE="false"
+#! HISTORY=""
+#! CATEGORY="DataBC"
+#! SUPPRESS_UPGRADE="false"
+#! XFORM_DEPRECATED="No"
+#! REQUIREMENTS_KEYWORD=""
+#! FME_DOCUMENT_GUID=""
+#! DOC_TOP_LEFT="0 0"
+#! DESCRIPTION="Test description&#10;"
+#! LEGAL_TERMS_CONDITIONS=""
+#! ZOOM_SCALE="99"
+#! DOC_DYNAMIC_INPUT_ATTRS="0"
+#! FME_PROCESS_GROUP_BY=""
+#! VIEW_POSITION="0 0"
+#! FME_PROCESS_COUNT="NO_PARALLELISM"
+#! FME_DOCUMENT_PRIORGUID=""
 #! >
 #! <GLOBAL_PARAMETERS>
 #! <GLOBAL_PARAMETER
@@ -722,25 +722,14 @@ DEFAULT_MACRO DEST_DB_ENV_KEY DLV
 GUI OPTIONAL STRING_OR_CHOICE DEST_DB_ENV_KEY DLV%TST%PRD Destination Database Keyword (DLV|TST|PRD):
 INCLUDE PYTHON
 def ParamFunc():
+  # NOT required anymore, was only used for application connects.  
+  # the host is now included in the DEST_DIRECTCONNECT string
   import DataBCFMWTemplate
   params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
-  return params.getDestinationServer()
+  return params.getDestinationHost()
   
 value = ParamFunc()
-macroName = 'DEST_SERVER'
-if value == None:
-  return { macroName : '' }
-else:
-  return { macroName : str(value) }
-END_INCLUDE
-INCLUDE PYTHON
-def ParamFunc():
-  import DataBCFMWTemplate
-  params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
-  return params.getDestinationSDEPort()
-  
-value = ParamFunc()
-macroName = 'DEST_PORT'
+macroName = 'DEST_HOST'
 if value == None:
   return { macroName : '' }
 else:
@@ -761,13 +750,25 @@ else:
 END_INCLUDE
 INCLUDE PYTHON
 def ParamFunc():
-  
   import DataBCFMWTemplate
   params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
-  return params.getDestinationInstance()
+  return params.getDestinationServiceName()
   
 value = ParamFunc()
-macroName = 'DEST_INSTANCE'
+macroName = 'DEST_SERVICENAME'
+if value == None:
+  return { macroName : '' }
+else:
+  return { macroName : str(value) }
+END_INCLUDE
+INCLUDE PYTHON
+def ParamFunc():
+  import DataBCFMWTemplate
+  params = DataBCFMWTemplate.CalcParams(FME_MacroValues)
+  return params.getDestSDEDirectConnectString()
+  
+value = ParamFunc()
+macroName = 'DEST_DIRECTCONNECT'
 if value == None:
   return { macroName : '' }
 else:
@@ -788,8 +789,8 @@ else:
 END_INCLUDE
 INCLUDE [ if {{$(DEST_SCHEMA)} == {}} { puts_real {Parameter 'DEST_SCHEMA' must be given a value.}; exit 1; }; ]
 INCLUDE [ if {{$(DEST_FEATURE_1)} == {}} { puts_real {Parameter 'DEST_FEATURE_1' must be given a value.}; exit 1; }; ]
-INCLUDE [ if {{$(DEST_PORT)} == {}} { puts_real {Parameter 'DEST_PORT' must be given a value.}; exit 1; }; ]
-INCLUDE [ if {{$(DEST_INSTANCE)} == {}} { puts_real {Parameter 'DEST_INSTANCE' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(DEST_SERVICENAME)} == {}} { puts_real {Parameter 'DEST_SERVICENAME' must be given a value.}; exit 1; }; ]
+INCLUDE [ if {{$(DEST_DIRECTCONNECT)} == {}} { puts_real {Parameter 'DEST_DIRECTCONNECT' must be given a value.}; exit 1; }; ]
 #! START_HEADER
 # ============================================================================
 # The following line defines the title presented to the user when this
@@ -846,17 +847,17 @@ INCLUDE [ if {"$(DestDataset)" != ""} {                          \
  } ]
 #! END_WB_HEADER
 #! START_DEST_HEADER SDE30 SDE30_1
-DEFAULT_MACRO DestDataset_SDE30_1 $(DEST_INSTANCE)
+DEFAULT_MACRO DestDataset_SDE30_1 $(DEST_SERVICENAME)
 GUI TEXT DestDataset_SDE30_1 Destination ArcSDE Dataset:
 # ============================================================================
 # The following GUI line prompts for the name of the host machine on which.
 # the SDE Server runs.
-DEFAULT_MACRO _OUT_SDE3Server_SDE30_1 $(DEST_SERVER)
+DEFAULT_MACRO _OUT_SDE3Server_SDE30_1 $(DEST_HOST)
 GUI OPTIONAL TEXT _OUT_SDE3Server_SDE30_1 Server Name:
 SDE30_1_SERVER "$(_OUT_SDE3Server_SDE30_1)"
 # ============================================================================
 # The following GUI line prompts for the instance
-DEFAULT_MACRO _OUT_SDE3Instance_SDE30_1 $(DEST_PORT)
+DEFAULT_MACRO _OUT_SDE3Instance_SDE30_1 $(DEST_DIRECTCONNECT)
 GUI TEXT _OUT_SDE3Instance_SDE30_1 Instance:
 SDE30_1_INSTANCE "$(_OUT_SDE3Instance_SDE30_1)"
 # ============================================================================
@@ -1010,7 +1011,7 @@ FME_END_PYTHON_ENC import<space>fme<lf>import<space>DataBCFMWTemplate<lf>shutIt<
 
 # -------------------------------------------------------------------------
 
-MACRO WORKSPACE_NAME NOSRC_TO_BCGW
+MACRO WORKSPACE_NAME nosrc_to_bcgw
 MACRO FME_VIEWER_APP fmedatainspector
 DEFAULT_MACRO WB_CURRENT_CONTEXT
 # -------------------------------------------------------------------------

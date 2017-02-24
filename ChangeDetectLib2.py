@@ -152,7 +152,7 @@ class ChangeDetect(object):
             else:
                 # if there is no change event in the changelog, then assume
                 # that we should replicate data
-                self.logger.debug("no change event for source {0}".format(srcDataPathNormalized))
+                #self.logger.debug("no change event for source {0}".format(srcDataPathNormalized))
                 retVal = True
         #self.logger.debug("change detected on {1} value {0}".format(retVal, srcDataPathNormalized))
         return retVal
