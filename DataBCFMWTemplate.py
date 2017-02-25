@@ -2060,9 +2060,6 @@ class ModuleLogConfig(object):
             print 'enhancedLoggingFullPath', enhancedLoggingFullPath
             print 'os.path.sep', os.path.sep
             
-            
-            
-            
             logging.config.fileConfig(logConfFileFullPath, defaults={'logfilename': str(enhancedLoggingFullPath)})
             logger = logging.getLogger(__name__)
             logger.debug("logger should be configured")
