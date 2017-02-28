@@ -26,6 +26,7 @@ import unittest
 import os.path
 import json
 import platform
+import sys
 
 class ParameterTester(object):
     '''
@@ -84,6 +85,7 @@ class ParameterTester(object):
     def testAllParameters_ProdMode(self):
         self.test_getSrcSDEDirectConnectString()
         self.test_isSourceBCGW()
+        self.test_isSourceBCGWLinkedParameters()
         self.test_MD5Calc()
         self.test_getDestinationPassword()
         self.test_getDatabaseConnectionFilePath()
@@ -93,7 +95,7 @@ class ParameterTester(object):
         self.test_getDestinationOraclePort()
         self.test_getDestinationSDEPort()
         self.test_getDestinationServer()
-        self.test_getDestinationInstance()
+        self.test_getDestinationServiceName()
         self.test_getFMWLogFileRelativePath()
         
     def test_getSrcSDEDirectConnectString(self):
@@ -130,6 +132,7 @@ class ParameterTester(object):
             self.test_getDbCredsFile()
             self.test_getPasswordsDevMode()
             self.test_getFMWLogFileRelativePath()
+            self.test_getDestinationServiceName()
         
     def test_MD5Calc(self):
         '''
@@ -192,10 +195,12 @@ class ParameterTester(object):
         
         # get the destination schema / instance / password
         schema = self.params.fmeMacroVals[self.params.const.FMWParams_DestSchema]
-        instance = self.params.getDestinationInstance()
+        #instance = self.params.getDestinationInstance()
+        sn = self.params.getDestinationServiceName()
+        
         #destPass = self.params.getDestinationPassword()
         destPass= self.dummyDstPassword
-        destParams = {const.DevelopmentDatabaseCredentialsFile_dbServName : instance, 
+        destParams = {const.DevelopmentDatabaseCredentialsFile_dbServName : sn, 
                       const.DevelopmentDatabaseCredentialsFile_dbUser : schema, 
                       const.DevelopmentDatabaseCredentialsFile_dbPswd : destPass
                       }
@@ -217,6 +222,29 @@ class ParameterTester(object):
         self.logger.debug("return value from isSourceBCGW: ".format(isSrc))
         if isSrc:
             msg = 'The FMW incorrectly detected that that source is a BCGW source'
+            raise ValueError, msg
+        
+    def test_isSourceBCGWLinkedParameters(self):
+        '''
+        Sometimes the source database is the same as the destination database, 
+        
+        when this happens you can link SRC_HOST to DEST_HOST and SRC_SERVICENAME to DEST_ORA_SERVICENAME
+        
+        When parameters are linked the values of one value can be equal to a parameter name.
+        
+        To address this problem the method Util.getParamValue() was created.  This 
+        method simulates that situation for testing purposes
+        '''
+        self.resetFMEMacroValues()
+        self.params.fmeMacroVals[self.params.const.FMWParams_SrcServiceName] = '$({0})'.format(self.params.const.FMWParams_DestServiceName)
+        self.params.fmeMacroVals[self.params.const.FMWParams_DestServiceName] = 'idwdlvr1.bcgov'
+        SrcServiceName = DataBCFMWTemplate.Util.getParamValue(self.params.const.FMWParams_SrcServiceName, self.params.fmeMacroVals)
+        if SrcServiceName <> self.params.fmeMacroVals[self.params.const.FMWParams_DestServiceName]:
+            msg = 'Not properly retriving the linked parameter values'
+            raise ValueError, msg
+        isSrc = self.params.isSourceBCGW()
+        if not isSrc:
+            msg = 'incorrectly detecting source as not a bcgw source'
             raise ValueError, msg
         
     def test_getSourcePassword(self):
@@ -340,11 +368,11 @@ class ParameterTester(object):
         self.resetFMEMacroValues()
         pswd = self.params.getDestinationPassword()
         destSchema = self.params.fmeMacroVals[self.params.const.FMWParams_DestSchema]
-        destInst = self.params.getDestinationInstance()
+        destServName = self.params.getDestinationServiceName()
         if not pswd:
             msg = 'unable to get the password for the schema {0} and ' + \
                   'the instance {1}'
-            raise ValueError, msg.format(destSchema, destInst)
+            raise ValueError, msg.format(destSchema, destServName)
         self.logger.debug("set destination schema to null. should raise error")
         self.params.fmeMacroVals[self.params.const.FMWParams_DestSchema] = None
         self.params.plugin.fmeMacroVals[self.params.const.FMWParams_DestSchema] = None
@@ -375,11 +403,11 @@ class ParameterTester(object):
         msg = 'sde port for destination {0}'
         self.logger.debug(msg.format(sdePort))
         
-    def test_getDestinationInstance(self):
-        self.logger.debug("test_getDestinationInstance")
-        inst  = self.params.getDestinationInstance()
+    def test_getDestinationServiceName(self):
+        self.logger.debug("test_getDestinationServiceName")
+        servName  = self.params.getDestinationServiceName()
         msg = 'oracle db instance for destination {0}'
-        self.logger.debug(msg.format(inst))
+        self.logger.debug(msg.format(servName))
         
     def test_getDestinationServer(self):
         self.logger.debug("test_getDestinationServer")

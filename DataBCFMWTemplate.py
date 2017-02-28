@@ -119,7 +119,8 @@ class TemplateConstants(object):
     FMWParams_DestFeatPrefix = 'DEST_FEATURE_'
     FMWParams_DestServer = 'DEST_SERVER'
     FMWParams_DestPort = 'DEST_PORT'
-    FMWParams_DestInstance = 'DEST_INSTANCE'
+    #FMWParams_DestInstance = 'DEST_INSTANCE'
+    FMWParams_DestServiceName = 'DEST_ORA_SERVICENAME'
     FMWParams_DestPassword = 'DEST_PASSWORD'
     
     # published parameters - source
@@ -262,8 +263,10 @@ class Start(object):
         self.const = TemplateConstants()
         fmwDir = fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
         fmwName = fme.macroValues[self.const.FMWMacroKey_FMWName]
+        destKey = fme.macroValues[self.const.FMWParams_DestKey]
+        
         # set up logging
-        ModuleLogConfig(fmwDir, fmwName)    
+        ModuleLogConfig(fmwDir, fmwName, destKey)    
         #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
@@ -339,7 +342,9 @@ class Shutdown(object):
         # logging configuration
         fmwDir = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
         fmwName = self.fme.macroValues[self.const.FMWMacroKey_FMWName]
-        ModuleLogConfig(fmwDir, fmwName)
+        destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
+
+        ModuleLogConfig(fmwDir, fmwName, destKey)
         #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
@@ -929,6 +934,37 @@ class Util(object):
         logFileNameTmplt = '{0}{1}.{2}'
         logFileName = logFileNameTmplt.format(fmwFileNameNoSuffix, enhancedLogKeyword, 'log')
         return logFileName
+    
+    @staticmethod
+    def getParamValue(paramNameRaw, fmwMacros):
+        '''
+        When you link parameters together, the parameter ends up being equal 
+        to the name of the parameter it is linked to.  Example:
+        
+        PARAM1 is linked to PARAM2, then when you retrieve PARAM1 it will 
+        be equal to $(PARAM2).  This method will retrieve the actual 
+        value.
+        '''
+        logger = logging.getLogger(__name__)
+        paramName = paramNameRaw.strip()
+
+        # start by getting the parameter value
+        if not paramName in fmwMacros:
+            msg = 'Trying to retrieve the published parameter {0} however it is ' + \
+                  'undefined in the FMW.  Current values include: {1}'
+            raise KeyError, msg.format(paramName, fmwMacros.keys())
+        
+        paramValue = fmwMacros[paramName]
+        
+        logger.debug('input param value/name: -{0}/{1}-'.format(paramName, paramValue))
+        isParamNameRegex = re.compile('^\$\((.*?)\)$')
+        if isParamNameRegex.match(paramValue):
+            justParamName = (isParamNameRegex.search(paramValue)).group(1)
+            logger.debug('detected parameter {0}'.format(paramValue))
+            paramValue = Util.getParamValue(justParamName, fmwMacros)
+            print 'Value extracted from linked parameter {0}'.format(paramValue)
+            logger.debug('Value extracted from linked parameter {0}'.format(paramValue))
+        return paramValue
         
 class CalcParamsBase( object ):
     '''
@@ -950,7 +986,9 @@ class CalcParamsBase( object ):
 
         fmwDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
         fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
-        ModuleLogConfig(fmwDir, fmwName)
+        destKey = self.fmeMacroVals[self.const.FMWParams_DestKey]
+
+        ModuleLogConfig(fmwDir, fmwName, destKey)
 
         #ModuleLogConfig()
         #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
@@ -1027,8 +1065,9 @@ class CalcParamsBase( object ):
                       'arg must have a type of int.'
                 raise ValueError, msg
             srcHostMacroKey = self.const.getSrcHost(position)
-        if srcHostMacroKey in self.fmeMacroVals:
-            srcHost = self.fmeMacroVals[srcHostMacroKey]
+        srcHost = Util.getParamValue(srcHostMacroKey, self.fmeMacroVals)
+        #if srcHostMacroKey in self.fmeMacroVals:
+        #    srcHost = self.fmeMacroVals[srcHostMacroKey]
         return srcHost
     
     def getDestSDEDirectConnectString(self, position=None):
@@ -1096,12 +1135,15 @@ class CalcParamsBase( object ):
             raise ValueError, msg.format(srcHostMacroKey, srcServiceNameMacroKey)
         
         # now get the actual values for host and service name
-        srcServiceName = self.fmeMacroVals[srcServiceNameMacroKey]
-        srcHost = self.fmeMacroVals[srcHostMacroKey]
+        srcServiceName = Util.getParamValue(srcServiceNameMacroKey, self.fmeMacroVals)
+        srcHost = Util.getParamValue(srcHostMacroKey, self.fmeMacroVals)
+        #srcServiceName = self.fmeMacroVals[srcServiceNameMacroKey]
+        #srcHost = self.fmeMacroVals[srcHostMacroKey]
         
         # now get the client string
         if srcOraClientStringMacroKey in self.fmeMacroVals:
-            oraClientString = self.fmeMacroVals[srcOraClientStringMacroKey]
+            #oraClientString = self.fmeMacroVals[srcOraClientStringMacroKey]
+            oraClientString = Util.getParamValue(srcOraClientStringMacroKey, self.fmeMacroVals)
         else:
             # use the default, get from the config properties
             oraClientString = self.paramObj.getOracleDirectConnectClientString()
@@ -1149,11 +1191,14 @@ class CalcParamsBase( object ):
         if not srcPortMacroKey in self.fmeMacroVals:
             srcPort = self.paramObj.getDefaultOraclePort()
         else:
-            srcPort = self.fmeMacroVals[srcPortMacroKey]
+            #srcPort = self.fmeMacroVals[srcPortMacroKey]
+            srcPort = Util.getParamValue(srcPortMacroKey, self.fmeMacroVals)
         
         # now retrieve the values:
-        srcServiceName = self.fmeMacroVals[srcServiceNameMacroKey]
-        srcHost = self.fmeMacroVals[srcHostMacroKey]
+        srcServiceName = Util.getParamValue(srcServiceNameMacroKey, self.fmeMacroVals)
+        srcHost = Util.getParamValue(srcHostMacroKey, self.fmeMacroVals)
+        #srcServiceName = self.fmeMacroVals[srcServiceNameMacroKey]
+        #srcHost = self.fmeMacroVals[srcHostMacroKey]
         
         # fme easy connect sting reason.bcgov:1521/EWRWPRD1.ENV.GOV.BC.CA
         easyConnectString = '{0}:{1}/{2}'.format(srcHost, srcPort, srcServiceName)
@@ -1174,7 +1219,8 @@ class CalcParamsBase( object ):
                 raise ValueError, msg
             srcPortMacroKey = self.const.getSrcPort(position)
         if srcPortMacroKey in self.fmeMacroVals:
-            srcPort = self.fmeMacroVals[srcPortMacroKey]
+            #srcPort = self.fmeMacroVals[srcPortMacroKey]
+            srcPort = Util.getParamValue(srcPortMacroKey, self.fmeMacroVals)
         return srcPort
     
     def getDestinationSDEPort(self):
@@ -1260,8 +1306,10 @@ class CalcParamsBase( object ):
         if not schemaMacroKey in self.fmeMacroVals:
             raise ValueError, msg.format(schemaMacroKey)
             
-        inst = self.fmeMacroVals[serviceName]
-        schema = self.fmeMacroVals[schemaMacroKey]
+        #inst = self.fmeMacroVals[serviceName]
+        #schema = self.fmeMacroVals[schemaMacroKey]
+        inst = Util.getParamValue(serviceName, self.fmeMacroVals)
+        schema = Util.getParamValue(schemaMacroKey, self.fmeMacroVals)
 
         pswd = self.plugin.getSourcePassword(passwordPosition)
         msg = "retriving password for the service name {0} schema {1} which are the values in " + \
@@ -1311,9 +1359,15 @@ class CalcParamsBase( object ):
         if position:
             srcServiceNameParamName = self.const.getSrcServiceNameParam(position)
         
+        # if the param is linked then it will be equal to the name of the parameter it is 
+        # linked to.  This method will detect that, and retrieve the actual value if necessary.
+        
+        
         if srcServiceNameParamName in self.fmeMacroVals:
             # now get the contents of that parameter
-            sourceOraServName = self.fmeMacroVals[srcServiceNameParamName]
+            sourceOraServName = Util.getParamValue(srcServiceNameParamName, self.fmeMacroVals)
+            self.logger.debug("Oracle source service name parameter / value: {0}/{1}".format(srcServiceNameParamName, sourceOraServName))
+            #sourceOraServName = self.fmeMacroVals[srcServiceNameParamName]
             destKeys = self.paramObj.parser.items(self.const.ConfFileSection_destKeywords)
             for destKeyItems in destKeys:
                 destKey = destKeyItems[0]
@@ -1349,7 +1403,9 @@ class CalcParamsDevelopment(object):
         
         fmwDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
         fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
-        ModuleLogConfig(fmwDir, fmwName)
+        destKey = self.fmeMacroVals[self.const.FMWParams_DestKey]
+        
+        ModuleLogConfig(fmwDir, fmwName, destKey)
         
         #ModuleLogConfig()
         #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
@@ -1422,36 +1478,38 @@ class CalcParamsDevelopment(object):
         retVal = None
         self.logger.debug("getting password in development mode")
         destSchema = self.parent.fmeMacroVals[self.const.FMWParams_DestSchema]
-        destInstance = self.parent.getDestinationInstance()
+        destServiceName = self.parent.getDestinationServiceName()
+        
+        #destInstance = self.parent.getDestinationInstance()
         #destServiceName = self.parent.getServiceName()
         self.logger.debug("destSchema: {0}".format(destSchema))
-        self.logger.debug("destInstance: {0}".format(destInstance))
+        self.logger.debug("destServiceName: {0}".format(destServiceName))
         
-        msg = 'getting password for the schema ({0}) / instance ({1})'
-        msg = msg.format(destSchema, destInstance)
+        msg = 'getting password for the schema ({0}) / servicename ({1})'
+        msg = msg.format(destSchema, destServiceName)
         self.logger.info(msg)
         for dbParams in self.data[self.const.DevelopmentDatabaseCredentialsFile_DestCreds]:
             self.logger.debug("dbParams: {0}".format(dbParams))
             
             dbUser = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbUser]
-            dbInst = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbServName]
+            dbServName = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbServName]
             dbPass = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbPswd]
             
-            if dbUser == None or dbInst == None or dbPass == None:
-                msg = "dbuser {0}, dbInst {1}, dbPass {2}.  These values: " + \
+            if dbUser == None or  dbServName == None or dbPass == None:
+                msg = "dbuser {0}, dbServName {1}, dbPass {2}.  These values: " + \
                       "are extracted from the file {3}.  The file has not " + \
                       "been properly filled out as one or more of the values " + \
                       "has a 'None' Type"
-                ValueError, msg.format(dbUser, dbInst, "*"*len(dbPass),  self.credsFileFullPath)
+                ValueError, msg.format(dbUser, dbServName, "*"*len(dbPass),  self.credsFileFullPath)
             
             msg = 'dbuser from credentials file: {0}, dbInstance {1}'
-            msg = msg.format(dbUser.lower().strip(), dbInst.lower().strip())
+            msg = msg.format(dbUser.lower().strip(), dbServName.lower().strip())
             self.logger.debug(msg)
             
-            if dbInst.lower().strip() == destInstance.lower().strip() and \
+            if dbServName.lower().strip() == destServiceName.lower().strip() and \
                dbUser.lower().strip() == destSchema.lower().strip():
-                msg = "Found password in creds file for user ({0}) instance ({1})"
-                msg = msg.format((dbUser.lower()).strip(), (dbInst.lower()).strip())
+                msg = "Found password in creds file for user ({0}) service name ({1})"
+                msg = msg.format((dbUser.lower()).strip(), (dbServName.lower()).strip())
                 self.logger.info(msg)
                 retVal =  dbPass
                 break
@@ -1459,7 +1517,7 @@ class CalcParamsDevelopment(object):
         if not retVal:
             msg = 'DevMod: Was unable to find a password in the credential file {0} for ' + \
                   'the destSchema: {1} and the instance {2}'
-            msg = msg.format(self.credsFileFullPath, destSchema, destInstance)
+            msg = msg.format(self.credsFileFullPath, destSchema, destServiceName)
             self.logger.error(msg)
             raise ValueError, msg
         
@@ -1738,7 +1796,8 @@ class CalcParamsDataBC(object):
         
         # get the source schema      
         # accntNameInFMW = self.fmeMacroVals[schemaMacroKey]
-        srcSchemaInFMW = self.fmeMacroVals[schemaMacroKey]
+        #srcSchemaInFMW = self.fmeMacroVals[schemaMacroKey]
+        srcSchemaInFMW = Util.getParamValue(schemaMacroKey, self.fmeMacroVals)
         
         # raise error if the servicename is not defined as a published parameter in the FMW
         if not serviceNameMacroKey in self.fmeMacroVals:
@@ -1748,8 +1807,8 @@ class CalcParamsDataBC(object):
         
         # delete this, no longer using the "instance Name" parameter
         #instanceInFMW = self.fmeMacroVals[serviceNameMacroKey]
-        srcServiceNameInFMW = self.fmeMacroVals[serviceNameMacroKey]
-        
+        #srcServiceNameInFMW = self.fmeMacroVals[serviceNameMacroKey]
+        srcServiceNameInFMW = Util.getParamValue(serviceNameMacroKey, self.fmeMacroVals)
         pswd = None
 
         # Need to detect if the source instance is bcgw.  If it is then
@@ -1855,8 +1914,10 @@ class CalcParamsDataBC(object):
             raise ValueError, msg.format(serviceNameMacroKey, 'service name')
         
         # retrieve the source schema and service name from the fmw 
-        srcServiceNameInFMW = self.fmeMacroVals[serviceNameMacroKey].lower().strip()
-        srcSchemaInFMW = self.fmeMacroVals[schemaMacroKey].lower().strip()
+        #srcServiceNameInFMW = self.fmeMacroVals[serviceNameMacroKey].lower().strip()
+        #srcSchemaInFMW = self.fmeMacroVals[schemaMacroKey].lower().strip()
+        srcServiceNameInFMW = Util.getParamValue(serviceNameMacroKey, self.fmeMacroVals)
+        srcSchemaInFMW = Util.getParamValue(schemaMacroKey, self.fmeMacroVals)
         
         # sometimes the source instance includes the domain so making sure this 
         # is stripped out, example idwprod1.env.gov.bc.ca becomes just idwprod1
@@ -1955,6 +2016,7 @@ class CalcParamsDataBC(object):
             os.makedirs(ffDir)
             
         fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
+        #fmwName = Util.getParamValue(self.const.FMWMacroKey_FMWName, self.fmeMacroVals)
         
         fmwName, suffix = os.path.splitext(fmwName)
         del  suffix
@@ -2016,7 +2078,8 @@ class CalcParams(CalcParamsBase):
         self.const = TemplateConstants()
         fmwDir = fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
         fmwName = fmeMacroVals[self.const.FMWMacroKey_FMWName]
-        ModuleLogConfig(fmwDir, fmwName)
+        destKey = fmeMacroVals[self.const.FMWParams_DestKey]
+        ModuleLogConfig(fmwDir, fmwName, destKey)
         
         #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
@@ -2028,7 +2091,9 @@ class CalcParams(CalcParamsBase):
         self.addPlugin(forceDevelMode)
         
 class ModuleLogConfig(object):
-    def __init__(self, fmwDir, fmwName):
+    def __init__(self, fmwDir, fmwName, destKey=None):
+        if not destKey:
+            destKey = 'DEV'
         logFileFullPath = Util.calcLogFilePath(fmwDir, fmwName)
         # get the tmpLog to test to see if the logger has been 
         # initialized yet or not
@@ -2036,10 +2101,10 @@ class ModuleLogConfig(object):
         if not tmpLog.handlers:
             logging.logFileName = logFileFullPath
             const = TemplateConstants()
-            confFile = TemplateConfigFileReader('DEV')
+            confFile = TemplateConfigFileReader(destKey)
             
             # Get the log config file name from the app config file
-            logConfFileName = confFile.getApplicationLogFileName()            
+            logConfFileName = confFile.getApplicationLogFileName()           
             
             # get the name of the conf dir
             configDir = const.AppConfigConfigDir
@@ -2161,7 +2226,9 @@ class DWMWriter(object ):
         # TODO: modify the logging config file so that it captures both the pmp and the database log parameters
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
         accntName = self.config.getDWMDbUser()
-        instance = self.config.getDestinationServiceName()
+        serviceName = self.config.getDestinationServiceName()
+        
+        #instance = self.config.getDestinationServiceName()
         pmpResource = self.config.getDestinationPmpResource()
         passwrd = pmp.getAccountPassword(accntName, pmpResource)
         if isinstance(passwrd, unicode):
@@ -2171,22 +2238,22 @@ class DWMWriter(object ):
             # this is an attempt to addresss that problem
             passwrd = str(passwrd)
         self.logger.debug(u"accntName: {0}".format(accntName))
-        self.logger.debug(u"service name: {0}".format(instance))
+        self.logger.debug(u"service name: {0}".format(serviceName))
         self.db = DB.DbLib.DbMethods()
         try:
-            self.db.connectParams(accntName, passwrd, instance)
+            self.db.connectParams(accntName, passwrd, serviceName)
         except Exception, e:
             try:
                 self.logger.warning(str(e))
-                server = self.config.getDestinationHost()
+                host = self.config.getDestinationHost()
                 msg = u'unable to create a connection to the schema: {0}, instance {1} ' + \
                       u'going to try to connect directly to the server: {2}'
-                msg = msg.format(accntName, instance, server)
+                msg = msg.format(accntName, serviceName, host)
                 self.logger.warning(msg)
                 port = self.config.getDestinationOraclePort()
                 self.logger.debug(u"port: {0}".format(port))
-                self.logger.debug(u"host: {0}".format(server))
-                self.db.connectNoDSN(accntName, passwrd, instance, server, port)
+                self.logger.debug(u"host: {0}".format(host))
+                self.db.connectNoDSN(accntName, passwrd, serviceName, host, port)
                 self.logger.debug(u"successfully connected to database using direct connect")
                 # TODO: Should really capture the specific error type here
             except Exception, e:
@@ -2199,7 +2266,7 @@ class DWMWriter(object ):
                 raise
         else:
             msg = 'successfully connected to the database {0} with the user {1}'
-            msg = msg.format(instance, accntName)
+            msg = msg.format(serviceName, accntName)
             self.logger.info(msg)
                         
     def writeRecord(self):
@@ -2232,7 +2299,9 @@ class DWMWriter(object ):
         returnDict['log_filename'] = self.getLogFileName()
         returnDict['datasource'] = self.getDataSource()
         returnDict['duration'] = self.getDuration()
-        returnDict['dest_instance'] = self.getDestInstance()
+        # Weakness in DWM, set up to use instance.  To resolve we are just writing the destination
+        # servicename to the DWM record
+        returnDict['dest_instance'] = self.getDestServiceName()
         returnDict['dest_schema'] = self.getDestSchema()
         returnDict['dest_table'] = self.getDestTable()        
         return returnDict
@@ -2366,17 +2435,17 @@ class DWMWriter(object ):
     def getDuration(self):
         return self.fme.elapsedRunTime
         
-    def getDestInstance(self):
+    def getDestServiceName(self):
         # retrieve from the published parameters:
-        destInst = None
-        if self.fme.macroValues.has_key(self.const.FMWParams_DestInstance):
-            destInst = self.fme.macroValues[self.const.FMWParams_DestInstance]
+        destServName = None
+        if self.fme.macroValues.has_key(self.const.FMWParams_DestServiceName):
+            destServName = self.fme.macroValues[self.const.FMWParams_DestServiceName]
         else:
             for macroKey in self.fme.macroValues:
                 if macroKey.upper() == self.fme.macroValues[macroKey].upper():
-                    destInst = self.fme.macroValues[macroKey]
+                    destServName = self.fme.macroValues[macroKey]
                     break
-        return destInst    
+        return destServName
      
     def getDestSchema(self):
         return self.fme.macroValues[self.const.FMWParams_DestSchema]
