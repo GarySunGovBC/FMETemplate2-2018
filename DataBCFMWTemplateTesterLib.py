@@ -439,6 +439,7 @@ class ParameterTester(object):
         msg = 'easy connect string retrieved is {0}'
         self.logger.debug(msg.format(easyConnectString))
         
+    
 class StartupTester():
     '''
     This class attempts to test and verify that the various

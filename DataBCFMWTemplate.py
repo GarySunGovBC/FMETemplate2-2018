@@ -766,7 +766,8 @@ class TemplateConfigFileReader(object):
         
         '''
         justFmwName, fmwSuffix  = os.path.splitext(fmwName)
-        if not self.isFMEServerNode():
+        #if not self.isFMEServerNode():
+        if not self.isDataBCNode():
             outputsDir = self.getOutputsDirectory()
             logDir = self.const.AppConfigLogDir
             fullPath = os.path.join(fmwDir, outputsDir, logDir, justFmwName)
@@ -777,7 +778,6 @@ class TemplateConfigFileReader(object):
         fullPath = os.path.normpath(fullPath)
         if not os.path.exists(fullPath):
             os.makedirs(fullPath)
-            
         fullPath = fullPath.replace('\\', '/')
         return fullPath
     
@@ -891,7 +891,6 @@ class Util(object):
         logDirFullPath = os.path.join(outDirFullPath, const.AppConfigLogDir)
         fmwFileNoExt, fileExt = os.path.splitext(fmwName)
         logDirFullPath = os.path.join(logDirFullPath, fmwFileNoExt)
-
         del fileExt
         fmwLogFile = fmwFileNoExt + const.AppConfigLogFileExtension
         fullPath2LogFile = os.path.join(logDirFullPath, fmwLogFile)
@@ -994,6 +993,7 @@ class CalcParamsBase( object ):
         #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
+        self.logger.debug("CalcParamsBase logger name {0}".format(modDotClass))
 
         self.paramObj = TemplateConfigFileReader(self.fmeMacroVals[self.const.FMWParams_DestKey])
                 
@@ -1689,6 +1689,7 @@ class CalcParamsDataBC(object):
         #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
+        self.logger.debug("CalcParamsDataBC logger name: {0}".format(modDotClass))
         self.fmeMacroVals = self.parent.fmeMacroVals
         self.currentPMPResource = None
         
@@ -1711,14 +1712,13 @@ class CalcParamsDataBC(object):
                  
         pmpRes = self.paramObj.getDestinationPmpResource(destKey)
         computerName = Util.getComputerName()
-        self.logger.debug("computer name; {0}".format(computerName))
+        self.logger.debug("computer name: {0}".format(computerName))
         pmpDict = {'token': self.paramObj.getPmpToken(computerName),
                    'baseurl': self.paramObj.getPmpBaseUrl(), 
                    'restdir': self.paramObj.getPmpRestDir()}
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
-        self.logger.debug("TESTING SIMPLE MESSAGE")
         #self.logger.debug("pmp dict used to contruct pmp obj: {0}".format(pmpDict))
-        msg = 'retrieving the destination password for schame: ({0}) db env key: ({1})'
+        msg = 'retrieving the destination password for schema: ({0}) db env key: ({1})'
         msg = msg.format(schema, destKey)
         self.logger.debug(msg)
         
@@ -2104,12 +2104,12 @@ class ModuleLogConfig(object):
             confFile = TemplateConfigFileReader(destKey)
             
             # Get the log config file name from the app config file
-            logConfFileName = confFile.getApplicationLogFileName()           
+            logConfFileName = confFile.getApplicationLogFileName()
             
             # get the name of the conf dir
             configDir = const.AppConfigConfigDir
             dirname = os.path.dirname(__file__)
-            logConfFileFullPath = os.path.join(dirname,configDir,logConfFileName )
+            logConfFileFullPath = os.path.join( dirname,configDir,logConfFileName )
             
             enhancedLoggingFileName = Util.calcEnhancedLoggingFileName(fmwName)
             enhancedLoggingDir = confFile.calcEnhancedLoggingFileOutputDirectory(fmwDir, fmwName)
@@ -2128,8 +2128,10 @@ class ModuleLogConfig(object):
             logging.config.fileConfig(logConfFileFullPath, defaults={'logfilename': str(enhancedLoggingFullPath)})
             logger = logging.getLogger(__name__)
             logger.debug("logger should be configured")
+            logger.debug("log name: {0}".format(__name__))
             logger.debug("enhancedLoggingFullPath: {0}".format(enhancedLoggingFullPath))
         else:
+            tmpLog.debug("Loggin has already been configured")
             pass
             
 class DWMWriter(object ):
