@@ -997,7 +997,8 @@ class CalcParamsBase( object ):
 
         self.paramObj = TemplateConfigFileReader(self.fmeMacroVals[self.const.FMWParams_DestKey])
                 
-        #self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable       
+        #self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
+        self.debugMethodMessage = "method: {0}"
             
     def addPlugin(self, forceDevel=False):
         if forceDevel:
@@ -1020,34 +1021,17 @@ class CalcParamsBase( object ):
         #fmwDir = pathList.pop()
         if not os.path.exists(logFileDir) and create:
             os.makedirs(logFileDir)
-        #if not os.path.exists(fmwDir) and create:
-        #    os.mkdir(fmwDir)
-        self.logger.debug("FME LOG FILE TEST STATEMNET")
-        #curDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
-        #outDirFullPath = os.path.join(curDir, self.const.AppConfigOutputsDir)
-        #if not os.path.exists(outDirFullPath) and create:
-        #    os.mkdir(outDirFullPath)
-        #logDirFullPath = os.path.join(outDirFullPath, self.const.AppConfigLogDir)
-        #if not os.path.exists(logDirFullPath) and create:
-        #    os.mkdir(logDirFullPath)
-        #fmwFileNoExt, fileExt = os.path.splitext(self.fmeMacroVals[self.const.FMWMacroKey_FMWName])
-        #fmwLogFile = fmwFileNoExt + self.const.AppConfigLogFileExtension
-        #relativePath = os.path.join('.', self.const.AppConfigOutputsDir, self.const.AppConfigLogDir, fmwLogFile)
-        #return pathList[0]
+        #self.logger.debug("FME LOG FILE TEST STATEMNET")
+        self.logger.info('log file path: {0}'.format(logFileFullPath))
         return logFileFullPath
-        
-#    def getDestinationServer(self):
-#        #self.logger.logMessageString('Setting the destination server')
-#        self.logger.debug("getting the destination server")
-#        server = self.paramObj.getDestinationServer()
-#        return server
-    
+            
     def getDestinationHost(self):
-        self.logger.debug("getting the destination host")
+        self.logger.debug(self.debugMethodMessage.format("getDestinationHost"))
         host = self.paramObj.getDestinationHost()
         return host
     
     def getDestinationServiceName(self):
+        self.logger.debug(self.debugMethodMessage.format("getDestinationHost"))
         serviceName = self.paramObj.getDestinationServiceName()
         return serviceName
     
@@ -1057,6 +1041,7 @@ class CalcParamsBase( object ):
         this method will return it.  If it does not exist then this 
         method will return none
         '''
+        self.logger.debug(self.debugMethodMessage.format("getSrcHost"))
         srcHost = None
         srcHostMacroKey = self.const.FMWParams_SrcHost
         if position:
@@ -1071,6 +1056,7 @@ class CalcParamsBase( object ):
         return srcHost
     
     def getDestSDEDirectConnectString(self, position=None):
+        self.logger.debug(self.debugMethodMessage.format("getDestSDEDirectConnectString"))
         destSDEConnectString = None
         destHost = self.getDestinationHost()
         destServName = self.getDestinationServiceName()
@@ -1108,6 +1094,7 @@ class CalcParamsBase( object ):
         included  parameters to retrieve the port in case we later on 
         find a direct connect database that requires us to use the port.
         '''
+        self.logger.debug(self.debugMethodMessage.format("getSrcSDEDirectConnectString"))
         srcSDEDirectConnectString = None
         srcHostMacroKey = self.const.FMWParams_SrcHost
         srcServiceNameMacroKey = self.const.FMWParams_SrcServiceName
@@ -1156,6 +1143,7 @@ class CalcParamsBase( object ):
         return srcSDEDirectConnectString
             
     def getSrcEasyConnectString(self, position=None):
+        self.logger.debug(self.debugMethodMessage.format("getSrcEasyConnectString"))
         srcEasyConnectString = None
         # retrieveing the correct macro keys.  If position is defined it 
         # denotes which set of host / port / service name parameter combinations 
@@ -1210,6 +1198,7 @@ class CalcParamsBase( object ):
         this method will return it.  If it does not exist then this 
         method will return none
         '''
+        self.logger.debug(self.debugMethodMessage.format("getSrcPort"))
         srcPort = None
         srcPortMacroKey = self.const.FMWParams_SrcPort
         if position:
@@ -1224,16 +1213,19 @@ class CalcParamsBase( object ):
         return srcPort
     
     def getDestinationSDEPort(self):
+        self.logger.debug(self.debugMethodMessage.format("getDestinationSDEPort"))
         port = self.paramObj.getDestinationSDEPort()
         return 'port:{0}'.format(port)
     
     def getDestinationOraclePort(self):
+        self.logger.debug(self.debugMethodMessage.format("getDestinationOraclePort"))
         port = self.paramObj.getDestinationOraclePort()
         return port 
     
     def getSchemaAndServiceNameForPasswordRetrieval(self, passwordPosition=None):
         # going to just get the instance to re-use that code then 
         # replace the instance with the service name
+        self.logger.debug(self.debugMethodMessage.format("getSchemaAndServiceNameForPasswordRetrieval"))
         srcSchema, srcInst = self.getSchemaForPasswordRetrieval(passwordPosition)
         serviceNameMacroKey = self.const.FMWParams_SrcServiceName
         if passwordPosition:
@@ -1245,6 +1237,7 @@ class CalcParamsBase( object ):
         return srcSchema, serviceNameMacroKey
     
     def getSchemaForPasswordRetrieval(self, passwordPosition=None):
+        self.logger.debug(self.debugMethodMessage.format("getSchemaForPasswordRetrieval"))
         schemaMacroKey = self.const.FMWParams_SrcSchema
         instanceMacroKey = self.const.FMWParams_SrcInstance
         proxySchemaMacroKey = self.const.FMWParams_SrcProxySchema
@@ -1295,6 +1288,7 @@ class CalcParamsBase( object ):
         :returns: the source password
         :rtype: str
         '''
+        self.logger.debug(self.debugMethodMessage.format("getSourcePassword"))
         #schemaMacroKey, instanceMacroKey = self.getSchemaForPasswordRetrieval(passwordPosition)
         schemaMacroKey, serviceName = self.getSchemaAndServiceNameForPasswordRetrieval(passwordPosition)
         msg = 'source password retrieval uses the service name and schema to retrieve ' + \
@@ -1319,15 +1313,18 @@ class CalcParamsBase( object ):
         return pswd
     
     def getFailedFeaturesFile(self, failedFeatsFileName=None):
+        self.logger.debug(self.debugMethodMessage.format("getFailedFeaturesFile"))
         self.logger.debug("Calling plugin to get the failed features")
         failedFeatures = self.plugin.getFailedFeaturesFile(failedFeatsFileName)
         return failedFeatures
         
     def getDestinationPassword(self):
+        self.logger.debug(self.debugMethodMessage.format("getDestinationPassword"))
         pswd = self.plugin.getDestinationPassword()
         return pswd
     
     def getSourcePasswordHeuristic(self, position=None):
+        self.logger.debug(self.debugMethodMessage.format("getSourcePasswordHeuristic"))
         pswd = self.plugin.getSourcePasswordHeuristic(position)
         return pswd
     
@@ -1336,6 +1333,7 @@ class CalcParamsBase( object ):
         returns the database connection file path, this is a
         relative path to the location of this script
         '''
+        self.logger.debug(self.debugMethodMessage.format("getDatabaseConnectionFilePath"))
         customScriptDir = self.paramObj.getSdeConnFilePath()
         return customScriptDir
        
@@ -1352,6 +1350,7 @@ class CalcParamsBase( object ):
         :returns: Describe the return value
         :rtype: What is the return type
         '''
+        self.logger.debug(self.debugMethodMessage.format("isSourceBCGW"))
         # make sure it has the parameter for SRC_ORA_INSTANCE
         # indicating that it is a source oracle instance
         retVal = None
@@ -1694,6 +1693,7 @@ class CalcParamsDataBC(object):
         self.currentPMPResource = None
         
     def getDestinationPassword(self, destKey=None, schema=None):
+        self.logger.debug("params: getDestinationPassword")
         if not destKey:
             destKey = self.fmeMacroVals[self.const.FMWParams_DestKey]
         else: 
@@ -1751,6 +1751,7 @@ class CalcParamsDataBC(object):
     
     def getSourcePassword(self, position=None):
         # pmp connection
+        self.logger.debug("params: getSourcePassword")
         pmpDict = self.getPmpDict()
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
         
@@ -1823,9 +1824,9 @@ class CalcParamsDataBC(object):
             self.logger.info(msg)
             pswd = self.getDestinationPassword(srcDestKey, srcSchemaInFMW)
         else:
-        
             msg = 'retrieving source password from pmp for schema: ({0}), service name: ({1})'
             msg = msg.format(srcSchemaInFMW, serviceNameMacroKey)
+            self.logger.info(msg)
             srcResources = self.paramObj.getSourcePmpResources()
             
             for pmpResource in srcResources:
@@ -1901,6 +1902,8 @@ class CalcParamsDataBC(object):
                   fmws destSchema / instance combination
         :rtype: str
         '''
+        self.logger.debug("params: getSourcePasswordHeuristic")
+
         #schemaMacroKey, instanceMacroKey = self.parent.getSchemaForPasswordRetrieval(position)
         schemaMacroKey, serviceNameMacroKey = self.parent.getSchemaAndServiceNameForPasswordRetrieval(position)
         
@@ -1998,6 +2001,7 @@ class CalcParamsDataBC(object):
         this is going to put the failed features
         into the template outputs directory.
         '''
+        self.logger.debug("params: getFailedFeaturesFile")
         rootDir = self.paramObj.getTemplateRootDirectory()
         outDir = self.paramObj.getOutputsDirectory()
         outDir = os.path.realpath(os.path.join(rootDir, outDir))
@@ -2085,9 +2089,9 @@ class CalcParams(CalcParamsBase):
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         
-        self.logger.info("inheriting the CalcParamsBase class")
+        #self.logger.info("inheriting the CalcParamsBase class")
         CalcParamsBase.__init__(self, fmeMacroVals)
-        self.logger.debug("adding plugin functionality")
+        #self.logger.debug("adding plugin functionality")
         self.addPlugin(forceDevelMode)
         
 class ModuleLogConfig(object):
@@ -2120,18 +2124,18 @@ class ModuleLogConfig(object):
                 fh = open(enhancedLoggingFullPath, 'w')
                 fh.close()
             
-            print 'type(enhancedLoggingFullPath)', type(enhancedLoggingFullPath)
-            print 'logConfFileFullPath', logConfFileFullPath
-            print 'enhancedLoggingFullPath', enhancedLoggingFullPath
-            print 'os.path.sep', os.path.sep
+            #print 'type(enhancedLoggingFullPath)', type(enhancedLoggingFullPath)
+            #print 'logConfFileFullPath', logConfFileFullPath
+            #print 'enhancedLoggingFullPath', enhancedLoggingFullPath
+            #print 'os.path.sep', os.path.sep
             
             logging.config.fileConfig(logConfFileFullPath, defaults={'logfilename': str(enhancedLoggingFullPath)})
             logger = logging.getLogger(__name__)
-            logger.debug("logger should be configured")
-            logger.debug("log name: {0}".format(__name__))
-            logger.debug("enhancedLoggingFullPath: {0}".format(enhancedLoggingFullPath))
+            #logger.debug("logger should be configured")
+            #logger.debug("log name: {0}".format(__name__))
+            logger.info("enhancedLoggingFullPath: {0}".format(enhancedLoggingFullPath))
         else:
-            tmpLog.debug("Loggin has already been configured")
+            tmpLog.debug("log already configured")
             pass
             
 class DWMWriter(object ):
