@@ -53,6 +53,7 @@ import re
 import inspect
 import shutil
 import sys
+import requests
 
 class TemplateConstants(object):
     # no need for a logger in this class as its just
@@ -111,6 +112,17 @@ class TemplateConstants(object):
     ConfFile_dwm_dbport = 'db_port'
     ConfFile_dwm_table = 'dwmtable'
     
+    # jenkins params
+    jenkinsSection = 'jenkins'
+    jenkinsSection_createSDEconnFile_token = 'buildsdeconnfile_token'
+    jenkinsSection_createSDEconnFile_url = 'buildsdeconnfile_url'
+    # These are the pointers to the config file 
+    # where the names of the args to be sent 
+    # to the rest job are located
+    jenkinsSection_param_ServiceName = 'ServiceName'
+    jenkinsSection_param_SDEConnFilePath = 'SDEConnFilePath'
+    jenkinsSection_param_Host = 'Host'
+    jenkinsSection_param_Token = 'token'
     
     # published parameters - destination
     FMWParams_DestKey = 'DEST_DB_ENV_KEY'
@@ -544,6 +556,14 @@ class TemplateConfigFileReader(object):
         inst = self.parser.get(self.key, self.const.ConfFileSection_serviceNameKey)
         return inst
         
+    def getJenkinsCreateSDEConnectionFileURL(self):
+        url = self.parser.get(self.const.jenkinsSection, self.const.jenkinsSection_createSDEconnFile_url)
+        return url
+    
+    def getJenkinsCreateSDEConnectionFileToken(self):
+        token = self.parser.get(self.const.jenkinsSection, self.const.jenkinsSection_createSDEconnFile_url)
+        return token
+
     def getPmpToken(self, computerName):
         try:
             token = self.parser.get(self.const.ConfFileSection_pmpTokens, computerName)
@@ -555,6 +575,8 @@ class TemplateConfigFileReader(object):
             self.logger.error(msg)
             raise ValueError, msg
         return token
+    
+    
     
     def getPmpBaseUrl(self):
         pmpBaseUrl = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_baseurl)
@@ -667,10 +689,15 @@ class TemplateConfigFileReader(object):
     def getDWMDbPort(self):
         return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbport)
 
-    def getSdeConnFilePath(self):
+    def getSdeConnFileDirectory(self):
+        '''
+        This is going to just return the contents of the sde directory 
+        in the config file.         
+        '''
+        '''
         # getting the name of the sde conn file directory from template config file
-        customScriptDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_sdeConnFileDir)
-        self.logger.debug("customScriptDir: {0}".format(customScriptDir))
+        sdeConnectionFileDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_sdeConnFileDir)
+        self.logger.debug("customScriptDir: {0}".format(sdeConnectionFileDir))
         curDir = os.path.dirname(__file__)
         self.logger.debug("curDir: {0}".format(curDir))
         # calcuting the name of the 
@@ -679,8 +706,8 @@ class TemplateConfigFileReader(object):
         else:
             sdeConnFile = '{0}{1}'.format(self.key, self.const.AppConfigSdeConnFileExtension)
         
-        sdeDir = os.path.join(curDir, customScriptDir)
-        sdeConnFileFullPath = os.path.join(sdeDir, sdeConnFile)
+        #sdeDir = os.path.join(curDir, customScriptDir)
+        sdeConnFileFullPath = os.path.join(sdeConnectionFileDir, sdeConnFile)
         # creating a list of the sde files that should exist
         dbEnvKeys = self.parser.items(self.const.ConfFileSection_destKeywords)
         sdeConnFiles = []
@@ -704,6 +731,9 @@ class TemplateConfigFileReader(object):
             self.logger.error(msg)
             raise IOError, msg
         return sdeConnFileFullPath
+        '''
+        sdeConnectionFileDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_sdeConnFileDir)
+        return sdeConnectionFileDir
 
     def isDestProd(self):
         '''
@@ -1328,14 +1358,23 @@ class CalcParamsBase( object ):
         pswd = self.plugin.getSourcePasswordHeuristic(position)
         return pswd
     
-    def getDatabaseConnectionFilePath(self):
+    def getDestDatabaseConnectionFilePath(self, position=None):
         '''
         returns the database connection file path, this is a
         relative path to the location of this script
         '''
-        self.logger.debug(self.debugMethodMessage.format("getDatabaseConnectionFilePath"))
-        customScriptDir = self.paramObj.getSdeConnFilePath()
-        return customScriptDir
+        # this method is getting forked, 
+        # destination connection file name is calculated based on 
+        # the DEST_HOST, DEST_SERVICENAME which all come from the config file anyways
+        # 
+        #  a) if dev mode this file is expected to be in the same dir as the fmw
+        #  b) if prod mode then the path to the connection file is a hard coded value.
+        #      when in prod mode the connection file will get created by a jenkins call
+        #      in the event that it does not exist.
+        self.logger.debug(self.debugMethodMessage.format("getDestDatabaseConnectionFilePath"))
+        destConnFilePath  = self.plugin.getDestDatabaseConnectionFilePath(position)
+        #customScriptDir = self.paramObj.getSdeConnFilePath()
+        return destConnFilePath
        
     def isSourceBCGW(self, position=None):
         '''
@@ -1691,6 +1730,52 @@ class CalcParamsDataBC(object):
         self.logger.debug("CalcParamsDataBC logger name: {0}".format(modDotClass))
         self.fmeMacroVals = self.parent.fmeMacroVals
         self.currentPMPResource = None
+        
+    def getDestDatabaseConnectionFilePath(self, position=None):
+        '''
+        This method will retrieve the destination database connection file 
+        path.
+        
+        This is the production version so it will:
+          a) calculate the path
+          b) calculate the connection file name
+          c) look for the existence of that file, if it does not exist then
+             call a method to create it via a jenkins rest call
+          d) returns the path to the connection file
+        
+        '''
+        destDir = self.paramObj.getSdeConnFileDirectory()
+        host = self.parent.getDestinationHost()
+        serviceName = self.parent.getDestinationServiceName()
+        fileNameTmpl = '{0}__{1}.sde'
+        connectionFile = fileNameTmpl.format(host, serviceName)
+        connectionFileFullPath = os.path.join(destDir, connectionFile)
+        if not os.path.exists(connectionFileFullPath):
+            # get the url, token
+            jenkinsUrl = self.paramObj.getJenkinsCreateSDEConnectionFileURL()
+            jenkinsToken = self.paramObj.getJenkinsCreateSDEConnectionFileToken()
+            # now assemble the parameters
+            argDict = {}
+            argDict[self.const.jenkinsSection_param_ServiceName] = serviceName
+            argDict[self.const.jenkinsSection_param_SDEConnFilePath] = connectionFileFullPath
+            argDict[self.const.jenkinsSection_param_Host] = host
+            argDict[self.const.jenkinsSection_param_Token] = jenkinsToken
+            
+            r = requests.post(jenkinsUrl, data = {'token':jenkinsToken}, verify=False)
+            if r.status_code < 200 or r.status_code >= 300:
+                msg = 'When placing the rest call to create the jenkins job the returned ' + \
+                      'status code is: {0}.  The url that was called is: {1}'
+                msgWithParams = msg.format(r.status_code, r.url)
+                self.logger.error(msgWithParams)
+                raise IOError, msg
+            
+            # now need to wait till the file is created
+            
+
+            
+            
+            
+        
         
     def getDestinationPassword(self, destKey=None, schema=None):
         self.logger.debug("params: getDestinationPassword")
