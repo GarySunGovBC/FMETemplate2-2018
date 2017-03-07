@@ -26,6 +26,7 @@ import unittest
 import os.path
 import json
 import platform
+import pprint
 import sys
 
 class ParameterTester(object):
@@ -53,7 +54,9 @@ class ParameterTester(object):
         self.logger = logging.getLogger(modDotClass)
         
         self.fmeMacros = fme.macroValues
-
+        #pp = pprint.PrettyPrinter(indent=4)
+        #pp.pprint(self.fmeMacros)
+        
         # This params will use the values in the fmw
         self.params = DataBCFMWTemplate.CalcParams(self.fmeMacros)
         self.origMacros = self.fmeMacros.copy()
@@ -84,6 +87,8 @@ class ParameterTester(object):
     
     def testAllParameters_ProdMode(self):
         self.test_getSrcSDEDirectConnectString()
+        self.test_getDestSDEConnFile()
+        self.test_getSrcSDEConnFile
         self.test_isSourceBCGW()
         self.test_isSourceBCGWLinkedParameters()
         self.test_MD5Calc()
@@ -94,9 +99,19 @@ class ParameterTester(object):
         self.test_getSourcePasswordHeuristic()
         self.test_getDestinationOraclePort()
         self.test_getDestinationSDEPort()
-        self.test_getDestinationServer()
+        self.test_getDestinationHost()
         self.test_getDestinationServiceName()
         self.test_getFMWLogFileRelativePath()
+        
+    def test_getDestSDEConnFile(self):
+        self.resetFMEMacroValues()
+        sdeConnFilePath = self.params.getDestDatabaseConnectionFilePath()
+        self.logger.info("sde conn file path: {0}".format(sdeConnFilePath))
+        
+    def test_getSrcSDEConnFile(self):
+        self.resetFMEMacroValues()
+        sdeConnFilePath = self.params.getSrcDatabaseConnectionFilePath()
+        self.logger.info("source sde conn file is: {0} ".format(sdeConnFilePath))
         
     def test_getSrcSDEDirectConnectString(self):
         self.resetFMEMacroValues()
@@ -129,10 +144,43 @@ class ParameterTester(object):
                 msg = msg.format(self.params.plugin.__class__.__name__ )
                 raise ValueError, msg
             self.logger.debug(self.params.plugin.__class__.__name__)
+            self.test_getDestConnFile_Dev()
+
             self.test_getDbCredsFile()
             self.test_getPasswordsDevMode()
             self.test_getFMWLogFileRelativePath()
             self.test_getDestinationServiceName()
+            
+    def test_getDestConnFile_Dev(self):
+        # setup create the file that is expected
+        
+        fmwDir = self.params.fmeMacroVals[self.params.const.FMWMacroKey_FMWDirectory]
+        expectedSdeFile = 'bcgw-i.bcgov__idwdlvr1.bcgov.sde'
+        expectedFullPath = os.path.join(fmwDir, expectedSdeFile)
+
+        if os.path.exists(expectedFullPath ):
+            os.remove(expectedFullPath)
+        
+        # this will generate an error but it will tell me the name of the file 
+        # i need to create in order to prevent it from crashing
+        try:
+            connFile = self.params.getDestDatabaseConnectionFilePath()
+            # this should raise an error therefor this
+            # line should not get executed
+            raise ValueError, 'The connection file does not exist however the method did not raise an error.'
+        except:
+            self.logger.debug("correctly raised an error because the connection " + \
+                              'file {0} does not exist'.format(expectedFullPath))
+                
+        # creating the file and trying again
+        fh = open(expectedFullPath,'w')
+        fh.close()
+        
+        connFile = self.params.getDestDatabaseConnectionFilePath()
+        self.logger.info('returned path: {0}'.format(connFile))
+        
+        if os.path.exists(expectedFullPath ):
+            os.remove(expectedFullPath)
         
     def test_MD5Calc(self):
         '''
@@ -212,7 +260,7 @@ class ParameterTester(object):
             
     def test_getDatabaseConnectionFilePath(self):
         self.logger.info("test_getDatabaseConnectionFilePath")
-        connFilePath = self.params.getDatabaseConnectionFilePath()
+        connFilePath = self.params.getDestDatabaseConnectionFilePath()
         self.logger.debug(self.msg.format('connection file path', connFilePath))
     
     def test_isSourceBCGW(self):
@@ -409,9 +457,9 @@ class ParameterTester(object):
         msg = 'oracle db instance for destination {0}'
         self.logger.debug(msg.format(servName))
         
-    def test_getDestinationServer(self):
-        self.logger.debug("test_getDestinationServer")
-        host  = self.params.getDestinationServer()
+    def test_getDestinationHost(self):
+        self.logger.debug("test_getDestinationHost")
+        host  = self.params.getDestinationHost()
         msg = 'Sde host is {0}'
         self.logger.debug(msg.format(host))
         

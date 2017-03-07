@@ -54,6 +54,7 @@ import inspect
 import shutil
 import sys
 import requests
+import time
 
 class TemplateConstants(object):
     # no need for a logger in this class as its just
@@ -93,7 +94,6 @@ class TemplateConstants(object):
     ConfFileSection_pmpResKey = 'pmpresource'
     ConfFileSection_oraPortKey = 'oracleport'
     ConfFileSection_sdePortKey = 'sdeport'
-    #ConfFileSection_instanceKey = 'instance'
     ConfFileSection_serviceNameKey = 'servicename'
     ConfFileSection_instanceAliasesKey = 'instance_aliases'
     
@@ -123,7 +123,15 @@ class TemplateConstants(object):
     jenkinsSection_param_SDEConnFilePath = 'SDEConnFilePath'
     jenkinsSection_param_Host = 'Host'
     jenkinsSection_param_Token = 'token'
+    jenkinsSection_param_Port = 'port'
     
+    # When creating a connection file the framework will initiate a jenkins job
+    # it will then wait for this amount of time before testing to see if the 
+    # jenkins job has created the sde file.  If it has not it will retry
+    # ___ number of times
+    sdeConnFileMaxRetries = 20
+    sdeConnFilePollWaitTimeSeconds = 10
+        
     # published parameters - destination
     FMWParams_DestKey = 'DEST_DB_ENV_KEY'
     FMWParams_DestSchema = 'DEST_SCHEMA'
@@ -142,8 +150,6 @@ class TemplateConstants(object):
     FMWParams_SrcFeaturePrefix = 'SRC_FEATURE_'
     FMWParams_SrcSchema = 'SRC_ORA_SCHEMA'
     FMWParams_SrcProxySchema = 'SRC_ORA_PROXY_SCHEMA'
-    # if there is more than one source schema use the method
-    # getSrcInstanceParam to retrieve it
     
     FMWParams_SrcInstance = 'SRC_ORA_INSTANCE'
     FMWParams_SrcServiceName = 'SRC_ORA_SERVICENAME'
@@ -508,6 +514,8 @@ class TemplateConfigFileReader(object):
 #        return server
     
     def getDestinationHost(self):
+        self.logger.debug("key: {0}".format(self.key))
+        self.logger.debug("host key: {0}".format(self.const.ConfFileSection_hostKey))
         host = self.parser.get(self.key, self.const.ConfFileSection_hostKey)
         return host
     
@@ -561,7 +569,7 @@ class TemplateConfigFileReader(object):
         return url
     
     def getJenkinsCreateSDEConnectionFileToken(self):
-        token = self.parser.get(self.const.jenkinsSection, self.const.jenkinsSection_createSDEconnFile_url)
+        token = self.parser.get(self.const.jenkinsSection, self.const.jenkinsSection_createSDEconnFile_token)
         return token
 
     def getPmpToken(self, computerName):
@@ -1076,7 +1084,7 @@ class CalcParamsBase( object ):
         srcHostMacroKey = self.const.FMWParams_SrcHost
         if position:
             if type(position) is not int:
-                msg = 'the arg passwordPosition you provided is {0} which has a type of {1}.  This ' + \
+                msg = 'the arg position you provided is {0} which has a type of {1}.  This ' + \
                       'arg must have a type of int.'
                 raise ValueError, msg
             srcHostMacroKey = self.const.getSrcHost(position)
@@ -1085,6 +1093,26 @@ class CalcParamsBase( object ):
         #    srcHost = self.fmeMacroVals[srcHostMacroKey]
         return srcHost
     
+    def getSrcServiceName(self, position=None):
+        '''
+        if the fmw has the source service name defined as a published parameter
+        this method will return it.  If it does not exist then this 
+        method will return none.
+        '''
+        self.logger.debug(self.debugMethodMessage.format("getSrcServiceName"))
+        srcServName = None
+        srcServNameMacroKey = self.const.FMWParams_SrcServiceName
+        if position:
+            if type(position) is not int:
+                msg = 'the arg position you provided is {0} which has a type of {1}.  This ' + \
+                      'arg must have a type of int.'
+                raise ValueError, msg
+            srcServNameMacroKey = self.const.getSrcServiceNameParam(position)
+        srcServName = Util.getParamValue(srcServNameMacroKey, self.fmeMacroVals)
+        #if srcHostMacroKey in self.fmeMacroVals:
+        #    srcHost = self.fmeMacroVals[srcHostMacroKey]
+        return srcServName
+        
     def getDestSDEDirectConnectString(self, position=None):
         self.logger.debug(self.debugMethodMessage.format("getDestSDEDirectConnectString"))
         destSDEConnectString = None
@@ -1375,6 +1403,23 @@ class CalcParamsBase( object ):
         destConnFilePath  = self.plugin.getDestDatabaseConnectionFilePath(position)
         #customScriptDir = self.paramObj.getSdeConnFilePath()
         return destConnFilePath
+    
+    def getSrcDatabaseConnectionFilePath(self, position=None):
+        '''
+        returns the database connection file path, this is a
+        relative path to the location of this script
+        '''
+        # this method is getting forked, 
+        # destination connection file name is calculated based on 
+        # the DEST_HOST, DEST_SERVICENAME which all come from the config file anyways
+        # 
+        #  a) if dev mode this file is expected to be in the same dir as the fmw
+        #  b) if prod mode then the path to the connection file is a hard coded value.
+        #      when in prod mode the connection file will get created by a jenkins call
+        #      in the event that it does not exist.
+        self.logger.debug(self.debugMethodMessage.format("getSrcDatabaseConnectionFilePath"))
+        srcConnFilePath  = self.plugin.getSrcDatabaseConnectionFilePath(position)
+        return srcConnFilePath
        
     def isSourceBCGW(self, position=None):
         '''
@@ -1712,6 +1757,43 @@ class CalcParamsDevelopment(object):
         self.logger.debug(msg)
         return ffFile
         
+    def getDestDatabaseConnectionFilePath(self, position=None):
+        destDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        host = self.parent.getDestinationHost()
+        serviceName = self.parent.getDestinationServiceName()
+        fileNameTmpl = '{0}__{1}.sde'
+        connectionFile = fileNameTmpl.format(host, serviceName)
+        connectionFileFullPath = os.path.join(destDir, connectionFile)
+        connectionFileFullPath = os.path.realpath(connectionFileFullPath)
+        self.logger.debug("connectionFileFullPath {0}".format(connectionFileFullPath))
+        if not os.path.exists(connectionFileFullPath):
+            msg = 'Looking for a destination connection file with the name {0}.  ' + \
+                  'This file does not exist.  Please create it using arccatalog ' + \
+                  'and then re-run this job'
+            self.logger.error(msg.format(connectionFileFullPath))
+            raise IOError, msg.format(connectionFileFullPath)
+        else:
+            self.logger.debug("SDE connection file {0} exists".format(connectionFileFullPath))
+        return connectionFileFullPath
+    
+    def getSrcDatabaseConnectionFilePath(self, position=None):
+        destDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        host = self.parent.getSrcHost(position)
+        serviceName = self.parent.getSrcServiceName(position)
+        port = self.parent.getSrcPort(position)
+        fileNameTmpl = '{0}__{1}.sde'
+        connectionFile = fileNameTmpl.format(host, serviceName)
+        connectionFileFullPath = os.path.join(destDir, connectionFile)
+        if not os.path.exists(connectionFileFullPath):
+            msg = 'Looking for a destination connection file with the name {0}.' + \
+                  'This file does not exist.  Please create it using arccatalog ' + \
+                  'and then re-run this job'
+            self.logger.error(msg.format(connectionFileFullPath))
+            raise IOError, msg.format(connectionFileFullPath)
+        else:
+            self.logger.debug("SDE connection file {0} exists".format(connectionFileFullPath))
+        return connectionFileFullPath
+        
 class CalcParamsDataBC(object):
     
     def __init__(self, parent):
@@ -1730,6 +1812,78 @@ class CalcParamsDataBC(object):
         self.logger.debug("CalcParamsDataBC logger name: {0}".format(modDotClass))
         self.fmeMacroVals = self.parent.fmeMacroVals
         self.currentPMPResource = None
+        
+    def getSrcDatabaseConnectionFilePath(self, position=None):
+        destDir = self.paramObj.getSdeConnFileDirectory()
+        
+        host = self.parent.getSrcHost()
+        port = self.parent.getSrcPort()
+        servName = self.parent.getSrcServiceName()
+        
+        msg = 'In order to calculate the name of the source database connection ' + \
+              'the {1} parameter: {0} must be defined as a published ' + \
+              'parameter in the fmw.  Currently it is not.  Define the parameter ' + \
+              'and re-run'
+
+        # now verification that we have values
+        if not host:
+            self.logger.error(msg.format(self.const.FMWParams_SrcHost, 'source host'))
+            raise IOError, msg.format(self.const.FMWParams_SrcHost, 'source host')
+        if not servName:
+            self.logger.error(msg.format(self.const.FMWParams_SrcPort, 'source port'))
+            raise IOError, msg.format(self.const.FMWParams_SrcPort, 'source port')
+        
+        connFileName = '{0}__{1}.sde'.format(host, servName)
+        connectionFileFullPath = os.path.join(destDir, connFileName)
+        if not os.path.exists(connectionFileFullPath):
+            # get the url, token
+            self.__createSDEConnectionFile(connectionFileFullPath, host, servName, port )
+        else:
+            self.logger.debug("SDE connection file {0} already exists".format(connectionFileFullPath))
+        return connectionFileFullPath
+        
+    def __createSDEConnectionFile(self, connectionFileFullPath, host, serviceName, port=None):
+        jenkinsUrl = self.paramObj.getJenkinsCreateSDEConnectionFileURL()
+        jenkinsToken = self.paramObj.getJenkinsCreateSDEConnectionFileToken()
+        # now assemble the parameters
+        argDict = {}
+        argDict[self.const.jenkinsSection_param_ServiceName] = serviceName
+        argDict[self.const.jenkinsSection_param_SDEConnFilePath] = connectionFileFullPath
+        argDict[self.const.jenkinsSection_param_Host] = host
+        argDict[self.const.jenkinsSection_param_Token] = jenkinsToken
+        if port:
+            argDict[self.const.jenkinsSection_param_Port] = port
+        
+        self.logger.debug("jenkins url: {0}".format(host))
+        
+        r = requests.post(jenkinsUrl, params=argDict, verify=False)
+        statCode = r.status_code
+        rUrl = r.url
+        if r.status_code < 200 or r.status_code >= 300:
+            msg = 'When placing the rest call to create the jenkins job the returned ' + \
+                  'status code is: {0}.  The url that was called is: {1}'
+            msgWithParams = msg.format(statCode, rUrl)
+            self.logger.error(msgWithParams)
+            raise IOError, msgWithParams
+        
+        retryCnt = 0
+        while retryCnt < self.const.sdeConnFileMaxRetries:
+            if os.path.exists(connectionFileFullPath):
+                self.logger.debug("the connection file exists: {0}".format(connectionFileFullPath))
+                break
+            # file does not exist, wait and retru
+            self.logger.debug("waiting for the file to get created...")
+            retryCnt += 1
+            time.sleep(self.const.sdeConnFilePollWaitTimeSeconds)
+        
+        if retryCnt >= self.const.sdeConnFileMaxRetries:
+            msg = 'Tried {0} times to create the connection file {1} using ' + \
+                  'the jenkins job {2}'
+            msgWithText = msg.format(self.const.sdeConnFileMaxRetries, \
+                                     connectionFileFullPath, 
+                                     host)
+            self.logger.error(msgWithText)
+            raise IOError, msgWithText
         
     def getDestDatabaseConnectionFilePath(self, position=None):
         '''
@@ -1752,30 +1906,11 @@ class CalcParamsDataBC(object):
         connectionFileFullPath = os.path.join(destDir, connectionFile)
         if not os.path.exists(connectionFileFullPath):
             # get the url, token
-            jenkinsUrl = self.paramObj.getJenkinsCreateSDEConnectionFileURL()
-            jenkinsToken = self.paramObj.getJenkinsCreateSDEConnectionFileToken()
-            # now assemble the parameters
-            argDict = {}
-            argDict[self.const.jenkinsSection_param_ServiceName] = serviceName
-            argDict[self.const.jenkinsSection_param_SDEConnFilePath] = connectionFileFullPath
-            argDict[self.const.jenkinsSection_param_Host] = host
-            argDict[self.const.jenkinsSection_param_Token] = jenkinsToken
-            
-            r = requests.post(jenkinsUrl, data = {'token':jenkinsToken}, verify=False)
-            if r.status_code < 200 or r.status_code >= 300:
-                msg = 'When placing the rest call to create the jenkins job the returned ' + \
-                      'status code is: {0}.  The url that was called is: {1}'
-                msgWithParams = msg.format(r.status_code, r.url)
-                self.logger.error(msgWithParams)
-                raise IOError, msg
-            
-            # now need to wait till the file is created
-            
+            self.__createSDEConnectionFile(connectionFileFullPath, host, serviceName )
 
-            
-            
-            
-        
+        else:
+            self.logger.debug("SDE connection file {0} already exists".format(connectionFileFullPath))
+        return connectionFileFullPath
         
     def getDestinationPassword(self, destKey=None, schema=None):
         self.logger.debug("params: getDestinationPassword")
@@ -1867,8 +2002,6 @@ class CalcParamsDataBC(object):
         # TODO: Should actually move the logic to retrieve the schema / service name from the fmw into the parent class
         # Getting the schema and servicename...  then host and port
         schemaMacroKey, serviceNameMacroKey = self.parent.getSchemaAndServiceNameForPasswordRetrieval(position)
-        #srcHost = self.parent.getSrcHost()
-        #srcPort = self.parent.getSrcPort()
 
         missingParamMsg = 'Trying to retrieve the source password from PMP.  In ' + \
                   'order to do so the published parameter {0} needs to exist ' +\
@@ -2036,16 +2169,16 @@ class CalcParamsDataBC(object):
             # source instance, and the source instance less the domain portion
             for accntDict in accounts:
                 accntName = PMPSourceAccountParser(accntDict[self.const.PMPKey_AccountName]) # 'ACCOUNT NAME'
-                self.logger.debug("account name: {0}".format(accntName.getSchema()))
+                self.logger.debug("account name: ({0}) searching for ({1})".format(accntName.getSchema(), srcSchemaInFMW))
                 schema = accntName.getSchema()
-                if schema.lower().strip() == srcSchemaInFMW:
+                if schema.lower().strip() == srcSchemaInFMW.lower().strip():
                     # found the srcSchema
                     # now check see if the instance matches
                     #print 'schemas {0} : {1}'.format(destSchema, self.fmeMacroVals[self.const.FMWParams_SrcSchema])
                     self.logger.debug("schemas match {0} {1}".format(schema, srcSchemaInFMW))
                     inst = accntName.getInstanceNoDomain()
                     self.logger.debug("instances {0} {1}".format(inst, srcServiceNameInFMW))
-                    if inst.lower().strip() == srcServiceNameInFMW:
+                    if inst.lower().strip() == srcServiceNameInFMW.lower().strip():
                         instList.append([accntDict[self.const.PMPKey_AccountName], accntDict[self.const.PMPKey_AccountId]])
         if instList:
             if len(instList) > 1:
@@ -2078,6 +2211,7 @@ class CalcParamsDataBC(object):
         if not pswd:
             msg = 'unable to find the password using the heuristic search for the ' + \
                   'schema: {0}, service name {1}'
+            self.logger.error(msg.format(srcSchemaInFMW, srcServiceNameInFMW))
             raise ValueError, msg.format(srcSchemaInFMW, srcServiceNameInFMW)
         return pswd
             
@@ -2163,12 +2297,16 @@ class CalcParams(CalcParamsBase):
     and then points to either the dev module or the prod one.
     '''
     
-    def __init__(self, fmeMacroVals, forceDevelMode=False):
+    def __init__(self, fmeMacroVals, forceDevelMode=False, customLogConfig=None):
         self.const = TemplateConstants()
         fmwDir = fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
         fmwName = fmeMacroVals[self.const.FMWMacroKey_FMWName]
         destKey = fmeMacroVals[self.const.FMWParams_DestKey]
-        ModuleLogConfig(fmwDir, fmwName, destKey)
+        
+        if destKey.lower() == self.const.ConfFileDestKey_Devel.lower():
+            forceDevelMode = True
+        
+        ModuleLogConfig(fmwDir, fmwName, destKey, customLogConfig)
         
         #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
@@ -2180,7 +2318,18 @@ class CalcParams(CalcParamsBase):
         self.addPlugin(forceDevelMode)
         
 class ModuleLogConfig(object):
-    def __init__(self, fmwDir, fmwName, destKey=None):
+    def __init__(self, fmwDir, fmwName, destKey=None, customLogConfig=None):
+        '''
+        fmwDir - the directory of the fmw that is being run
+        fmwName - the name of the fmw file
+        destKey - contents of the DEST_DB_ENV_KEY
+        customLogConfig - a custom log config file, this parameter was added to allow
+                          for unit_tests to be run independent of fme.  the default
+                          log config is set up to use fmeobjects to write to the fme
+                          log file.  This config file allows for the elimination of 
+                          that depedency.
+        
+        '''
         if not destKey:
             destKey = 'DEV'
         logFileFullPath = Util.calcLogFilePath(fmwDir, fmwName)
@@ -2192,13 +2341,20 @@ class ModuleLogConfig(object):
             const = TemplateConstants()
             confFile = TemplateConfigFileReader(destKey)
             
-            # Get the log config file name from the app config file
-            logConfFileName = confFile.getApplicationLogFileName()
+            # if the log config file has been sent specifically then don't calculate
+            # it
+            if customLogConfig:
+                logConfFileFullPath = customLogConfig
+            else:
             
-            # get the name of the conf dir
-            configDir = const.AppConfigConfigDir
-            dirname = os.path.dirname(__file__)
-            logConfFileFullPath = os.path.join( dirname,configDir,logConfFileName )
+                # Get the log config file name from the app config file
+                logConfFileName = confFile.getApplicationLogFileName()
+                
+                # get the name of the conf dir
+                configDir = const.AppConfigConfigDir
+                dirname = os.path.dirname(__file__)
+                logConfFileFullPath = os.path.join( dirname,configDir,logConfFileName )
+                
             
             enhancedLoggingFileName = Util.calcEnhancedLoggingFileName(fmwName)
             enhancedLoggingDir = confFile.calcEnhancedLoggingFileOutputDirectory(fmwDir, fmwName)
