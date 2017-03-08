@@ -1939,18 +1939,29 @@ class CalcParamsDataBC(object):
         msg = 'retrieving the destination password for schema: ({0}) db env key: ({1})'
         msg = msg.format(schema, destKey)
         self.logger.debug(msg)
-        
-        passwrd = pmp.getAccountPassword(schema, pmpRes)
-        if not passwrd:
-            msg = 'Having trouble retrieving password from PMP.  Going to try a ' + \
-                  'case insensitive search for the password for the account {0}'
-            msg = msg.format(schema)
-            self.logger.warning(msg)
+        try:
+            passwrd = pmp.getAccountPassword(schema, pmpRes)
+        except:
+            pmpAltUrl = self.paramObj.getPmpAltUrl()
+            msg = 'failed to communicate with PMP, trying the alternative ' + \
+                   'url {0}'
+            msg = msg.format()
+            self.logger.warn(msg.format(pmpAltUrl))
+            
+            pmpDict = self.getPmpDict(url=pmpAltUrl)
+            pmp = PMP.PMPRestConnect.PMP(pmpDict)
+            try:
+                passwrd = pmp.getAccountPassword(schema, pmpRes)
+            except:
+                msg = 'Communication problem with pmp, tried both these urls ' + \
+                      '({0}) ({1})neither is responding'
+                url = self.paramObj.getPmpBaseUrl()
+                self.logger.error(msg.format(url, pmpAltUrl))
+                raise
         if not passwrd:
             msg = 'Cant find the password in PMP resource {0} for the account {1}'
             msg = msg.format(pmpRes, schema)
             self.logger.warning(msg)
-            
         return passwrd
         
     def getPmpDict(self, url=None):
@@ -2154,6 +2165,28 @@ class CalcParamsDataBC(object):
         pswd = None
         pmpDict = self.getPmpDict()
         pmp = PMP.PMPRestConnect.PMP(pmpDict)
+        # test pmp connectivity
+        self.logger.debug("testing connectivity with PMP")
+        try:
+            resrcs = pmp.getResources()
+        except:
+            pmpAltUrl = self.paramObj.getPmpAltUrl()
+            msg = 'failed to communicate with PMP, trying the alternative ' + \
+                   'url {0}'
+            msg = msg.format()
+            self.logger.warn(msg.format(pmpAltUrl))
+            
+            pmpDict = self.getPmpDict(url=pmpAltUrl)
+            pmp = PMP.PMPRestConnect.PMP(pmpDict)
+            try:
+                resrcs = pmp.getResources()
+            except:
+                msg = 'Communication problem with pmp, tried both these urls ' + \
+                      '({0}) ({1})neither is responding'
+                url = self.paramObj.getPmpBaseUrl()
+                altUrl = self.paramObj.getPmpAltUrl()
+                self.logger.error(msg.format(url, altUrl))
+                raise
         
         # iterate through pmp resources / accounts looking for a match
         for pmpResource in srcResources:
