@@ -584,8 +584,6 @@ class TemplateConfigFileReader(object):
             raise ValueError, msg
         return token
     
-    
-    
     def getPmpBaseUrl(self):
         pmpBaseUrl = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_baseurl)
         return pmpBaseUrl
