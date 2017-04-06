@@ -92,7 +92,7 @@ class Params(object):
         
         self.currentFMWRepository = 'BCGW_REP_SCHEDULED'
         self.destinationFMWRepository = 'BCGW_SCHEDULED'
-        self.srcTemplate2FMWDirectory = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\templateImplementation\BCGW_REP_SCHEDULED'
+        self.srcTemplate2FMWDirectory = ''#r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\templateImplementation\BCGW_REP_SCHEDULED'
         
     def calcConfigFileAbsPath(self):
         curdir = os.path.dirname(__file__)
@@ -544,10 +544,17 @@ class FMEServerInteraction(T1T2ConversionConstants):
             self.logger.error(msg.format(self.params.srcTemplate2FMWDirectory))
             raise ValueError, msg.format(self.params.srcTemplate2FMWDirectory)
         
-        allFiles = os.listdir(self.params.srcTemplate2FMWDirectory)
-        print allFiles
         fmwFiles = []
 
+#         for root, dir, filesInDir in os.walk(self.params.srcTemplate2FMWDirectory):
+#             for curFile in filesInDir:
+#                 junk, ext = os.path.splitext(curFile)
+#                 if ext.lower() == '.fmw':
+#                     fmwFiles.append(os.path.join(root, curFile))
+        
+        allFiles = os.listdir(self.params.srcTemplate2FMWDirectory)
+        print allFiles
+ 
         for curFile in allFiles:
             junk, ext = os.path.splitext(curFile)
             if ext.lower() == '.fmw':
@@ -640,8 +647,10 @@ class Schedules(T1T2ConversionConstants):
         justFMWFile = os.path.basename(fmwPath)
         retStruct = {}
         for sched in scheds:
+            self.logger.debug('{0} - {1}'.format(sched['workspace'].lower(), justFMWFile.lower()))
             if sched['workspace'].lower() == justFMWFile.lower():
                 # match now check repo
+                self.logger.debug("repo: {0} - {1}".format(sched['repository'].lower(), fmeRepository.lower()))
                 if sched['repository'].lower() == fmeRepository.lower():
                     # bingo get the cron and return it
                     retStruct = sched
@@ -709,17 +718,10 @@ class Schedules(T1T2ConversionConstants):
 if __name__ == '__main__':
     #sourceDir = r'\\data.bcgov\work\Projects\FYE2017\DWACT-497_RMP_WHSE\fmws\converted\TEST'
     #sourceDir = r'\\data.bcgov\work\Projects\FYE2017\DWAACT-667_GRY\fmw'
-    sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2017\2_working\abms_counties_sp_staging_gdb_bcgw'
+    #sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2017\2_working\abms_counties_sp_staging_gdb_bcgw'
+    sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2017\3_fix'
     currentFMEServerRepo = 'BCGW_REP_SCHEDULED'
     destinationFMEServerRepo = 'BCGW_SCHEDULED'
     srvr = FMEServerInteraction(fmwDir=sourceDir, fmwServCurRepo=currentFMEServerRepo, fmwDestRepo=destinationFMEServerRepo)
     srvr.iterator()
     
-    
-        
-        
-        
-        
-        
-        
-        

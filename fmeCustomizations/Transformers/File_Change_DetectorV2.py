@@ -114,14 +114,14 @@ class ChangeFlagFetcher(object):
         if self.changeDetectionEnabledParam.upper() == 'FALSE':
             feature.setAttribute('CHANGE_DETECTED', 'TRUE')
             self.chng.addFeatureChange(fmeDatasetRaw, self.destDbEnvKey)
-            self.logger.debug("CHANGE DISABLED")
+            #self.logger.debug("CHANGE DISABLED")
         elif self.chng.hasChanged(fmeDatasetRaw, self.destDbEnvKey):
             feature.setAttribute('CHANGE_DETECTED', 'TRUE')
             self.chng.addFeatureChange(fmeDatasetRaw, self.destDbEnvKey)
-            self.logger.debug("CHANGE: TRUE")
+            #self.logger.debug("CHANGE: TRUE")
         else:
             feature.setAttribute('CHANGE_DETECTED', 'FALSE')
-            self.logger.debug("CHANGE: FALSE")
+            #self.logger.debug("CHANGE: FALSE")
         self.pyoutput(feature)
         
     def close(self):

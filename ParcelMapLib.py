@@ -49,7 +49,7 @@ class Constants(object):
     
     # the format we are expecting the datetime string to come in
     # example: "2016-09-03T00:43:57Z"
-    expectedDateFormat = '%Y-%m-%dT%H:%M:%S.%fZ'
+    expectedDateFormat = '%Y-%m-%dT%H:%M:%SZ'
     expectedDateFormatMillisec = '%Y-%m-%dT%H:%M:%S.%fZ'
     
     # This is the time in seconds that the script will wait
@@ -411,7 +411,7 @@ class parcelMapAPI(RestBase, Constants):
         
     def calculatePollingStartInterval(self, expectedDate):
         '''
-        This method is going to recieve an expected time for an 
+        This method is going to receive an expected time for an 
         order to be completed.  We will calculate how far in the
         future that date is, then calculate 75% of that time 
         duration and return it that value in seconds
