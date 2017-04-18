@@ -10,7 +10,7 @@ Goals of the template are:
 3. Provide FME source and destination transparency, through
    the implementation of a new strict parameter standard.
    
-# About 
+# About
 
 ## FME Template - User Documentation
 This is a guide to allow FME developers to get started using our new FME 
