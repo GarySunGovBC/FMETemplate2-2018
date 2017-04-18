@@ -8,13 +8,13 @@
  "             its rest api.  When in development credentials are retrieved from this  ", 
  "             file.  The instance defined in the config file needs to match the  ", 
  "             destination instance defined below for the credential retrieval  ", 
- "             to function correctly " ], 
+ "             to function correctly " ],   
  "destinationCreds" : [
-     { "instance": "bcgwdlv.bcgov", 
+     { "servicename": "bcgwdlv.bcgov", 
        "username": "WHSE_MONTREAL_CANADIANS",
        "password": "thisIsNotThePassword"
      }, 
-     {"instance": "bcgwdlv.bcgov", 
+     {"servicename": "bcgwdlv.bcgov", 
        "username": "WHSE_MONTREAL_CANADIANS_2",
        "password": "thisIsNotThePassword"
      }
@@ -28,7 +28,7 @@
  "           in one of the hashs below to retrieve the password.  Currently there  ", 
  "           only one hash defined but you can include as many as you require "], 
  "sourceCredentials" : [
-     {"instance": "envprod1.nrs.bcgov", 
+     {"servicename": "envprod1.nrs.bcgov",
       "username": "USERNAME",
       "password": "thisIsNotThePassword"
      }

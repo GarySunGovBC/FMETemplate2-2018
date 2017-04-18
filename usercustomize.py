@@ -52,7 +52,7 @@ else:
     # now make sure these are at the start of the path list
     #subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
     #lib_intPath = os.path.join(curDir, 'lib_int')
-    pathsToAdd = [curDir, os.path.join(curDir, 'lib_int'), os.path.join(curDir, 'lib_ext'), os.path.join(curDir, 'fmeCustomizations', 'Transformers')]
+    pathsToAdd = [curDir, os.path.join(curDir, 'lib'), os.path.join(curDir, 'fmeCustomizations', 'Transformers')]
     for pth2Rerder in pathsToAdd:
         pthCntr = 0
         pth2Rerder = os.path.realpath(pth2Rerder)

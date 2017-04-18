@@ -1,4 +1,5 @@
 # FME Template
+
 This is the root directory for the new FME Template.  The 
 Goals of the template are:
 
@@ -10,6 +11,8 @@ Goals of the template are:
    the implementation of a new strict parameter standard.
    
 # About
+
+
 
 ## FME Template - User Documentation
 This is a guide to allow FME developers to get started using our new FME 

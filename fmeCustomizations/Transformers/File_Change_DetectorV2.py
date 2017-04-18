@@ -15,8 +15,6 @@ import sys
 import os.path
 import DataBCFMWTemplate
 
-print 'in file change detector'
-
 class ChangeFlagFetcher(object):
     
     def __init__(self):
@@ -62,7 +60,6 @@ class ChangeFlagFetcher(object):
         self.changeDetectionEnabledParam = self.fmeMacroValues[self.fileChngKey]
         print 'changeDetectionEnabledParam', self.changeDetectionEnabledParam
         
-        
         # create ChangeLogFilePath object
         #   is a databc node?
         self.paramObj = DataBCFMWTemplate.TemplateConfigFileReader(self.fmeMacroValues[self.const.FMWParams_DestKey])
@@ -72,14 +69,12 @@ class ChangeFlagFetcher(object):
         else:
             changeLogRootDir = self.fmeMacroValues[self.const.FMWMacroKey_FMWDirectory]
         self.changeLogFilePath = ChangeDetectLib2.ChangeLogFilePath(changeLogRootDir, changeLogFileName, self.fmwFileName, self.changeDetectionEnabledParam)
-
         
         # create change detect object, all future transactions should 
         # be managed through this object.  Should be no need
         # for any other change detection objects
         self.chng = ChangeDetectLib2.ChangeDetect(self.changeLogFilePath)
         self.chng.setDateStrFormat(self.const.FMELogDateFormatString)
-        
         
         self.logger.debug("changelib object created")
         
@@ -88,7 +83,7 @@ class ChangeFlagFetcher(object):
         #self.logger.debug("returned from reading the log file")
         #self.featuresIn = 0
         #directory = self.fmeMacroValues[self.chng.const.FMWMacroKey_FMWDirectory]
-        directory = os.path.dirname(__file__)
+        #directory = os.path.dirname(__file__)
         
         # get the run environment (DLV|TST|PRD) from DEST_DB_ENV_KEY
         self.destDbEnvKey = None
@@ -110,7 +105,7 @@ class ChangeFlagFetcher(object):
         # get the run environment (dlv|tst|prd) if it exists / is defined
         # in the fmw macro values
         fmeDatasetRaw = feature.getAttribute('fme_dataset')
-        print 'fmeDatasetRaw', fmeDatasetRaw
+        #print 'fmeDatasetRaw', fmeDatasetRaw
         
         # indicates that change detection has been disabled
         if self.changeDetectionEnabledParam.upper() == 'FALSE':
