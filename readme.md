@@ -12,13 +12,11 @@ Goals of the template are:
    
 # About
 
-
-
 ## FME Template - User Documentation
 This is a guide to allow FME developers to get started using our new FME 
 template.  Be sure you have at least scanned
 this document before continuing on to read about other pieces related
-to the template.
+to the template .
 
 https://docs.google.com/document/d/1WXUMN-2RDC_7u3OgtbG-NYFevKqZcZlxwF4PEB_lpu4/edit?usp=sharing
 
