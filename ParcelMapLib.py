@@ -21,10 +21,18 @@ import zipfile
 
 class Constants(object):
     # various directory names used by the rest api.
+    
     statusDir = 'status'
     orderDir = 'orders'
+    
+    productDir = 'products'
+    cannedDir = 'precanned'
+    
+    packagedProductType = 'ProvincewideParcelSnapshot'
+    infoDir = 'info'
     extractDir = 'extract'
     extractFile = 'ParcelMapDirect_{0}.zip'
+    packagedProductFile = 'ParcelMapBCSnapshot_{0}.zip'
     restPath = '/pmd/api'
     # the is a default value, can be overridden in the constructor for a parcelmap api object
     orderStatusFileName = 'ParcelMapOrderStatus.json'
@@ -46,6 +54,7 @@ class Constants(object):
     restKey_expectedDate = 'estimatedCompletionTime'
     restKey_status = 'status'
     restKey_extract = 'extract'
+    restKey_packagedProductDate = 'dateCreated'
     
     # the format we are expecting the datetime string to come in
     # example: "2016-09-03T00:43:57Z"
@@ -113,6 +122,12 @@ class Constants(object):
                 'fabricSpatialImprovements': 'No'
                 }
             }
+    
+    packagedProductRequest = {
+            'pregeneratedSnapshot' : {
+                'productType' : 'ProvincewideParcelSnapshot'
+            }
+    }                  
     
     albersBB = [ [ [ 0, 0 ],
                    [ 3000000, 0],
@@ -394,7 +409,45 @@ class parcelMapAPI(RestBase, Constants):
         self.logger.debug("response from rest api for the order status is {0}".format( response))
         return response
     
-    def requestOrderData(self, orderID, destFile):
+    def getPackagedProductInfo(self):
+        url = self.fixUrlPath(self.url)
+        url = urlparse.urljoin(url, self.restPath)
+        url = self.fixUrlPath(url)
+        url = urlparse.urljoin(url, self.productDir)
+        url = self.fixUrlPath(url)
+        url = urlparse.urljoin(url, self.packagedProductType)
+        url = self.fixUrlPath(url)
+        url = urlparse.urljoin(url, self.infoDir)
+        self.logger.debug("url to get packaged product info is {0}".format(url))
+        completed = False
+        retries = 0
+        while not completed:
+            try:
+                response = self.getRequest(url)
+                completed = True
+                self.logger.debug("response from rest api for the order status is {0}".format( response))
+            except requests.ConnectionError, e:
+                msg = "Connection error occurred retrieving the order status, error message is: {0}"
+                self.logger.error(msg.format(str(e)))
+                if retries >= self.ConnectionErrorMaxRetries:
+                    msg = "Have tried to retrieve the packaged product oder info {0} times with no success," + \
+                          " error message is: {1}"
+                    self.logger.error(msg.format(retries, str(e)))
+                    raise
+                else:
+                    intervalMessage = "received a ConnectionError when trying  " + \
+                                      "to retrieve to the packaged product order info.  Pausing {0} " + \
+                                      "seconds before trying again."
+                    self.logger.warning(intervalMessage.format(self.ConnectionErrorRetryInterval))
+                    time.sleep(self.ConnectionErrorRetryInterval)
+                    retryMessage = "number of retries is: {0}.  Will try up to a maximum of {1}"
+                self.logger.info(retryMessage.format(retries, self.ConnectionErrorMaxRetries))
+                retries += 1
+        
+        self.logger.debug("response from rest api for the order status is {0}".format( response))
+        return response
+    
+    def requestOrderData(self, orderID, destFile, packagedProduct=False):
         url = self.fixUrlPath(self.url)
         url = urlparse.urljoin(url, self.restPath)
         url = self.fixUrlPath(url)
@@ -404,9 +457,34 @@ class parcelMapAPI(RestBase, Constants):
         url = self.fixUrlPath(url)
         url = urlparse.urljoin(url, self.extractDir)
         url = self.fixUrlPath(url)
-        mapFile = self.extractFile.format(orderID)
+        if packagedProduct:
+            pkgProdInfo = packagedProductDate = self.getPackagedProductInfo()
+            mapFile = self.packagedProductFile.format(pkgProdInfo[self.restKey_packagedProductDate])
+        else:
+            mapFile = self.extractFile.format(orderID)
         url = urlparse.urljoin(url, mapFile)
         self.logger.info("url used for the order data: {0}".format(url))
+        self.getBinaryRequest(url, destFile, self.maxParcelMapDownloadAttempts)
+        
+    def requestPackagedOrderData(self, orderId, destFile):
+        # https://apps.ltsa.ca/pmd/api/products/precanned/{orderId}.zip
+        url = self.fixUrlPath(self.url)
+        url = urlparse.urljoin(url, self.restPath)
+        url = self.fixUrlPath(url)
+        url = urlparse.urljoin(url, self.productDir)
+        url = self.fixUrlPath(url)
+        url = urlparse.urljoin(url, self.cannedDir)
+        url = self.fixUrlPath(url)
+        cannedDataFile = '{0}.zip'.format(orderId)
+        url = urlparse.urljoin(url, cannedDataFile)
+        self.logger.debug("canned data url: {0}".format(url))
+        
+        #    pkgProdInfo = packagedProductDate = self.getPackagedProductInfo()
+        #    mapFile = self.packagedProductFile.format(pkgProdInfo[self.restKey_packagedProductDate])
+        #else:
+        #    mapFile = self.extractFile.format(orderID)
+        #url = urlparse.urljoin(url, mapFile)
+        #self.logger.info("url used for the order data: {0}".format(url))
         self.getBinaryRequest(url, destFile, self.maxParcelMapDownloadAttempts)
         
     def calculatePollingStartInterval(self, expectedDate):
@@ -642,6 +720,39 @@ class parcelMapAPI(RestBase, Constants):
         destFilePath = self.getDestinationFilePath()
         self.logger.info("Data for the entire province has been downloaded to {0}".format(destFilePath))
     
+    def downloadCannedBC(self):
+        self.logger.info("Retrieving the pre-packaged parcel data for the entire province")
+        requestBody = self.packagedProductRequest
+        
+        fullPathStatusFile = self.getStatusFile()
+        
+        # issue the request and get the response
+        #sys.exit() # debug while I make sure this is getting bypassed
+        response = self.requestParcels(requestBody)
+        self.logger.info("request for pre-packaged parcel map data has been issued")
+        self.logger.debug("returned from order request: {0}".format(response))
+        
+        parcelMapOrder = ParcelMapOrder(response)
+        parcelMapOrder.validateOrder()
+        self.orderId = parcelMapOrder.getOrderId()
+        expectedDate = parcelMapOrder.getExpectedDate()
+        self.logger.info("order id is: {0}".format(self.orderId))
+        
+        # save the parcelmap data to the status file
+        # No need to save the order as its just a canned file
+        #parcelMapOrder.saveOrderToStatusFile(fullPathStatusFile)
+        
+        # order has been placed now monitor it, and when complete continue 
+        # with downloading it.
+        #self.monitorAndCompleteOrder(self.restKey_orderid, self.restKey_expectedDate)
+        # No need to monitor and complete as the data should
+        # just be available
+        #self.monitorAndCompleteOrder(self.orderId, expectedDate)
+        time.sleep(self.ConnectionErrorRetryInterval)
+        destFilePath = self.getDestinationFilePath()
+        self.requestPackagedOrderData(self.orderId, destFilePath)
+        self.logger.info("Data for the entire province has been downloaded to {0}".format(destFilePath))
+            
     def unZipFile(self, destFile, srcFGDB):
         '''
         gets the zip file and the full path to it.  The zip file path

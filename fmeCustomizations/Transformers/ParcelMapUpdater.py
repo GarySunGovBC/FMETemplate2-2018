@@ -93,8 +93,10 @@ class ParcelMapUpdater(object):
         restApiUser = self.fmeMacroValues[self.const.fmeRestAPIUser]
         self.logger.debug('restApiUser: {0}'.format(restApiUser))
         restApiPswd = self.getRestApiPassword(user=restApiUser)
+        
         # getting the DEST_DIR parameter passed to the linked transformer
         destDir = self.fmeMacroValues[self.const.fmeDestinationDirectory]
+        
         # once downloaded we will either replace this file with the downloaded
         # version or if they are the same delete the downloaded file
         destFileName = self.const.parcelMapZipFile # just the file name of the zip file
@@ -106,26 +108,30 @@ class ParcelMapUpdater(object):
         self.pm = ParcelMapLib.parcelMapAPI(restApiURL, restApiUser, restApiPswd, destDir)
         
         # if a status file exists it indicates that the process never completed
-        if self.pm.existsStatusFile():
-            # now check to see if the destination 
-            util = ParcelMapLib.ParcelMapUtil()
-            statusFile = self.pm.getStatusFile()
-            self.logger.debug("status file is {0}".format(statusFile))
-            parcelMapOrder = util.readStatusFile(statusFile)
-            orderId = parcelMapOrder.getOrderId()
-            expectedCompletionDate = parcelMapOrder.getExpectedDate()
-            self.pm.orderId = orderId
-            file2Download = self.pm.getDestinationFilePath()
-            if not os.path.exists(file2Download):
-            # extract the data from the statusFileData data
-                self.logger.debug("file2Download {0} does not exist".format(file2Download))
-                self.pm.monitorAndCompleteOrder(orderId, expectedCompletionDate)
-        else:
+        #if self.pm.existsStatusFile():
+        #    # now check to see if the destination 
+        #    util = ParcelMapLib.ParcelMapUtil()
+        #    statusFile = self.pm.getStatusFile()
+        #    self.logger.debug("status file is {0}".format(statusFile))
+        #    parcelMapOrder = util.readStatusFile(statusFile)
+        #    orderId = parcelMapOrder.getOrderId()
+        #    expectedCompletionDate = parcelMapOrder.getExpectedDate()
+        #    self.pm.orderId = orderId
+        #    file2Download = self.pm.getDestinationFilePath()
+        #    if not os.path.exists(file2Download):
+        #    # extract the data from the statusFileData data
+        #        self.logger.debug("file2Download {0} does not exist".format(file2Download))
+        #        self.pm.monitorAndCompleteOrder(orderId, expectedCompletionDate)
+        #else:
             # this method just will place the order, monitor it and 
             # download.
-            self.logger.debug("placing a new order for the province")
-            self.pm.downloadBC()
+        #    self.logger.debug("placing a new order for the province")
+        #    self.pm.downloadCannedBC()
+            #self.pm.downloadBC()
         # now do the comparison.
+        self.logger.debug("placing a new order for the canned version of the province")
+        self.pm.downloadCannedBC()
+
         self.logger.debug("destFullPath {0}".format(destFullPath))
         self.logger.debug("fingerPrintFile {0}".format(self.const.fingerPrintFile))
         
