@@ -134,11 +134,13 @@ template.
 
 ## ./util
 utility scripts used for implementation of the template.  These are described
-below.
+below.  
 
 ### ServerSync.py
 The script used to sync the various components used by the template 
-with FME Server.
+with FME Server.  Long term need to figure out how to automate this 
+with webhooks.
+
 
 
 
