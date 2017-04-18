@@ -136,9 +136,7 @@ below.
 
 ### ServerSync.py
 The script used to sync the various components used by the template 
-with FME Server.  Long term need to figure out how to automate this 
-with webhooks.
-
+with FME Server. 
 
 
 
