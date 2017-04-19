@@ -1531,6 +1531,7 @@ class CalcParamsDevelopment(object):
         fmwPath = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
         self.logger.debug("fmwPath: {0}".format(fmwPath))
         credsFileFMWPath = os.path.join(fmwPath, exampleCredsFile)
+        credsFileFMWPath = os.path.realpath(credsFileFMWPath)
         self.logger.info("using the credentials file: {0}".format(credsFileFMWPath))        
         if not os.path.exists(credsFileFMWPath):
             # calculate the full path to the example dbcreds.json file.
@@ -1730,7 +1731,7 @@ class CalcParamsDevelopment(object):
         outputsDir = self.paramObj.getOutputsDirectory()
         failedFeatsDir = self.paramObj.getFailedFeaturesDir()
         failedFeatsFile = self.paramObj.getFailedFeaturesFile()
-        
+        self.logger.debug("failedFeatsFile: {0}".format(failedFeatsFile))
         self.logger.debug("Starting dir for failed features is: {0}".format(fmwDir))
         
         outDir = os.path.join(fmwDir, outputsDir)
@@ -1742,17 +1743,20 @@ class CalcParamsDevelopment(object):
         
         ffDir = os.path.join(outDir, failedFeatsDir)
         ffDir = os.path.realpath(ffDir)
+        self.logger.debug("failed features directory (ffDir): {0}".format(ffDir))
         if not os.path.exists(ffDir):
             msg = 'The failed features directory {0} does not exist, creating now'
             self.logger.debug(msg.format(ffDir))
             os.makedirs(ffDir)
-        if not failedFeatsFileName:
+        if failedFeatsFileName:
+            self.logger.debug('ffDir: {0}'.format(ffDir))
+            self.logger.debug('failedFeatsFileName: {0}'.format(failedFeatsFileName))
             ffFile = os.path.join(ffDir, failedFeatsFileName)
         else:
             ffFile = os.path.join(ffDir, failedFeatsFile)
         msg = 'The failed featured file being used is {0}'
         msg = msg.format(ffFile)
-        self.logger.debug(msg)
+        self.logger.info(msg)
         return ffFile
         
     def getDestDatabaseConnectionFilePath(self, position=None):

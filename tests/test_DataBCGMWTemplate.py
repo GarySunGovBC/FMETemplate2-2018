@@ -18,10 +18,18 @@ import unittest
 import site
 import pprint
 import DataBCFMWTemplate
+import logging
 
 class Test_CalcParams(unittest.TestCase):
 
     def setUp(self):
+        self.logger = logging.getLogger()
+        self.logger.setLevel(logging.DEBUG)
+
+        ch = logging.StreamHandler()
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        self.logger.addHandler(ch)
         
         # dummy data used for testing.
         # these are for a file source
@@ -120,7 +128,7 @@ class Test_CalcParams(unittest.TestCase):
                                     'LogURL': 'http://arneb.dmz/fmejobsubmitter/DWRSPUB/fme_logger.fmw',
                                     'NotificationEmail': 'dataetl@gov.bc.ca',
                                     'SRC_FEATURE_1': 'I2K_PERMIT',
-                                    'SRC_ORA_INSTANCE': 'airprod1.nrs.bcgov',
+                                    'SRC_ORA_SERVICENAME': 'airprod1.nrs.bcgov',
                                     'SRC_ORA_SCHEMA': 'inventory2000'}
         self.fmeMacroValues = self.fmeMacroValues_fileSrc
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
@@ -129,8 +137,8 @@ class Test_CalcParams(unittest.TestCase):
         pass
 
     def test_getDestServer(self):
-        server = self.calcParams.getDestinationServer()
-        print 'server', server
+        host = self.calcParams.getDestinationHost()
+        print 'host', host
         
     def test_getDestinationPassword(self):
         
@@ -149,52 +157,61 @@ class Test_CalcParams(unittest.TestCase):
         # CWI_SPI_OPD@ENVPROD1.NRS.BCGOV
         self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] =  'CWI_SPI_OPD'
         self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'ENVPROD1'
+        self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME'] = 'ENVPROD1'
         spass = self.calcParams.getSourcePassword()
-        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE']))
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'], self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME']))
 
         self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] =  'WHSE_CORP'
         self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'IDWPROD1.BCGOV'
+        self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME'] = 'IDWPROD1.BCGOV'
         spass = self.calcParams.getSourcePassword()
-        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE']))
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'], self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME']))
 
         self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] =  'WHSE_CORP'
         self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'BCGW.BCGOV'
+        self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME'] = 'BCGW.BCGOV'
+
         spass = self.calcParams.getSourcePassword()
-        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE']))
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'], self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME']))
         
         self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_1'] =  'WHSE_CORP'
         self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_1'] = 'BCGW.BCGOV'
+        self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME_1'] = 'BCGW.BCGOV'
+
         spass = self.calcParams.getSourcePassword(1)
-        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_1'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_1']))
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_1'], self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME_1']))
         
         self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_3'] =  'WHSE_CORP'
         self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_3'] = 'BCGW.BCGOV'
+        self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME_3'] = 'BCGW.BCGOV'
         spass = self.calcParams.getSourcePassword(3)
-        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_3'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_3']))
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_3'], self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME_3']))
         
         self.calcParams.fmeMacroVals['SRC_ORA_PROXY_SCHEMA_4'] =  'DBLINK_FISS'
         self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_4'] =  'FISS'
         self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_4'] = 'RIBPROD1.NRS.BCGOV'
+        self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME_4'] = 'RIBPROD1.NRS.BCGOV'
         spass = self.calcParams.getSourcePassword(4)
-        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_4'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_4']))
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_4'], self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME_4']))
         
         self.calcParams.fmeMacroVals['SRC_ORA_PROXY_SCHEMA'] =  'DBLINK_FISS'
         self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] =  'FISS'
         self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'RIBPROD1.NRS.BCGOV'
+        self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME'] = 'RIBPROD1.NRS.BCGOV'
         spass = self.calcParams.getSourcePassword()
-        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_4'], self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_4']))
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_4'], self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME_4']))
         
     def test_getSourcePasswordHeuristic(self):
         self.fmeMacroValues = self.fmeMacroValues_DBSrc
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
         self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] =  'CWI_SPI_OPD'
-        self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'ENVPROD1'
+        self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME'] = 'ENVPROD1'
         self.calcParams.plugin.currentPMPResource = 'ETL_OPERATIONAL_DBLINKS'
         spass = self.calcParams.getSourcePasswordHeuristic()
         print 'pass is:', spass
         
         self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA_5'] =  'CWI_SPI_OPD'
-        self.calcParams.fmeMacroVals['SRC_ORA_INSTANCE_5'] = 'ENVPROD1'
+        self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME_5'] = 'ENVPROD1'
         spass = self.calcParams.getSourcePasswordHeuristic(5)
         print 'pass is:', spass
         
@@ -202,7 +219,7 @@ class Test_CalcParams(unittest.TestCase):
         self.fmeMacroValues = self.fmeMacroValues_DBSrc
         self.fmeMacroValues['DEST_DB_ENV_KEY'] = 'DLV'
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
-        connFile = self.calcParams.getDatabaseConnectionFilePath()
+        connFile = self.calcParams.getDestDatabaseConnectionFilePath()
         print 'connFile', connFile
    
     def test_getFailedFeaturesFile(self):
@@ -219,10 +236,18 @@ class Test_CalcParams(unittest.TestCase):
    
 class Test_CalcParamsDevel(unittest.TestCase):
     def setUp(self):
+        self.logger = logging.getLogger()
+        self.logger.setLevel(logging.DEBUG)
+        ch = logging.StreamHandler()
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        self.logger.addHandler(ch)
+
+        
         self.fmeMacroValues_DBSrc = {     
                                     'DEST_DB_ENV_KEY': 'DEV',
                                     'DEST_FEATURE_1': 'AEI_2000_AIR_PERMIT_POINTS_SP',
-                                    'DEST_INSTANCE': 'bcgw.bcgov',
+                                    'DEST_ORA_SERVICENAME': 'bcgw.bcgov',
                                     'DEST_SCHEMA': 'whse_environmental_monitoring',
                                     'FME_BASE': 'no',
                                     'FME_BUILD_DATE': '20141210',
@@ -268,12 +293,14 @@ class Test_CalcParamsDevel(unittest.TestCase):
                                     'NotificationEmail': 'dataetl@gov.bc.ca',
                                     'SRC_FEATURE_1': 'I2K_PERMIT',
                                     'SRC_ORA_INSTANCE': 'airprod1.nrs.bcgov',
+                                    'SRC_ORA_SERVICENAME': 'airprod1.nrs.bcgov',
                                     'SRC_ORA_SCHEMA': 'inventory2000'}
         
         
         self.fmeMacroValues = self.fmeMacroValues_DBSrc
         # for these tests going to change the FME_MF_DIR value for testing
         self.fmeMacroValues['FME_MF_DIR'] = os.path.join(os.path.dirname(__file__), 'testData')
+        self.logger.debug("credentials file path: {0}".format(self.fmeMacroValues['FME_MF_DIR']))
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues, True)
         
     def test_getSourcePassword(self):
@@ -281,8 +308,11 @@ class Test_CalcParamsDevel(unittest.TestCase):
         const = DataBCFMWTemplate.TemplateConstants()
 
         dummyFMWDir = os.path.join(os.path.dirname(__file__), 'testData', 'config')
+        self.logger.debug("dummyFMWDir {0}".format(dummyFMWDir))
+        self.logger.debug("fme parameter {0} was set to {1}".format(const.FMWMacroKey_FMWDirectory,dummyFMWDir))
         msg = 'The method {0} returned {1}, but the test expects it to return {2}'
         self.fmeMacroValues[const.FMWMacroKey_FMWDirectory] = dummyFMWDir
+        self.logger.debug("fme parameter {0} was set to {1}".format(const.FMWMacroKey_FMWDirectory,dummyFMWDir))
         calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues, True)
 
         # Verify that changing the path to a config file that does not
@@ -306,6 +336,7 @@ class Test_CalcParamsDevel(unittest.TestCase):
         
         # should return nothing 
         calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'airprod1'
+        calcParams.fmeMacroVals['SRC_ORA_SERVICENAME'] = 'airprod1'
         #develSrcPasswd = calcParams.getSourcePassword()
         #msg = 'Trying to retrieve the password for {0}, but there is only ' + \
         #      'There is no specific entry for that source database so should ' + \
@@ -317,11 +348,12 @@ class Test_CalcParamsDevel(unittest.TestCase):
         msg = msg.format('getSourcePasswordHeuristic', develSrcPass, expectedPassword)
         self.assertEqual(expectedPassword, develSrcPass, msg)
                 
-        calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'airprod99'
+        calcParams.fmeMacroVals['SRC_ORA_SERVICENAME'] = 'airprod99'
         self.assertRaises(ValueError, lambda:  calcParams.getSourcePassword())
         self.assertRaises(ValueError, lambda:  calcParams.getSourcePasswordHeuristic())
 
         calcParams.fmeMacroVals['SRC_ORA_INSTANCE'] = 'envprod1'
+        calcParams.fmeMacroVals['SRC_ORA_SERVICENAME'] = 'envprod1'
         calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] = 'doodoo'
         calcParams.fmeMacroVals['SRC_ORA_PROXY_SCHEMA'] = 'USERNAME'
         develSrcPass = calcParams.getSourcePassword()
@@ -335,9 +367,9 @@ class Test_CalcParamsDevel(unittest.TestCase):
         develDestPass = calcParams.getDestinationPassword()
         print 'develDestPass', develDestPass
         msg = 'Retrieving the password for the user {0} and the ' +\
-              'instance {1}.  Expecting {2}, but returned {3}'
+              'servicename {1}.  Expecting {2}, but returned {3}'
         msg = msg.format(calcParams.fmeMacroVals[const.FMWParams_DestSchema],
-                         calcParams.fmeMacroVals[const.FMWParams_DestInstance],
+                         calcParams.fmeMacroVals[const.FMWParams_DestServiceName],
                          expectedPassword,
                          develDestPass)
         self.assertEqual(develDestPass, expectedPassword, msg)
@@ -354,6 +386,11 @@ class Test_CalcParamsDevel(unittest.TestCase):
     
     def test_getFailedFeaturesFile(self):
         calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues, True)
+        # forcing the use of this simple root logger in the class, messy I know 
+        # but can't think any other way to get it working quickly.
+        calcParams.logger = self.logger
+        calcParams.plugin.logger = self.logger
+        
         failedFeatsFile = calcParams.getFailedFeaturesFile()
         print 'failedFeatsFile', failedFeatsFile
         failedFeatsDir = os.path.dirname(failedFeatsFile)
@@ -397,8 +434,8 @@ class Test_TemplateConfigFileReader(unittest.TestCase):
             self.assertFalse(authKey, msg)
 
     def test_getServer(self):
-        server = self.confFileReader.getDestinationServer()
-        print 'server', server
+        host = self.confFileReader.getDestinationHost()
+        print 'host', host
         
     def test_getPmpResource(self):
         pmpRes =  self.confFileReader.getDestinationPmpResource()
@@ -413,7 +450,7 @@ class Test_TemplateConfigFileReader(unittest.TestCase):
         print 'sdePort', sdePort
         
     def test_getInstance(self):
-        inst = self.confFileReader.getDestinationInstance()
+        inst = self.confFileReader.getDestinationServiceName()
         print 'instance', inst
         
     def test_getPmpToken(self):
@@ -579,7 +616,7 @@ if __name__ == "__main__":
     #sys.argv = ['', 'Test_Shutdown.test_dbConn']
     #sys.argv = ['', 'Test_Shutdown.test_shutdown']
     #sys.argv = ['','Test_TemplateConfigFileReader.test_shutdown']
-    sys.argv = ['','Test_CalcParamsDevel.test_getDbCredsFile']
+    #sys.argv = ['','Test_CalcParamsDevel.test_getDbCredsFile']
 
     # 'Test_CalcParams.test_getFailedFeaturesFile',
     # 
