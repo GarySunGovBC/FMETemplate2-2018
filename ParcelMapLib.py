@@ -753,6 +753,59 @@ class parcelMapAPI(RestBase, Constants):
         self.requestPackagedOrderData(self.orderId, destFilePath)
         self.logger.info("Data for the entire province has been downloaded to {0}".format(destFilePath))
             
+    def unZipPackagedProduct(self, zipFile, destFGDB):
+        '''
+        zipFile - the zip file to unzip
+        destFGDB - the destination fgdb path to create
+        
+        When downloading a packaged product you will get a zip
+        file who's contents are: 
+        
+        zipFile:
+            ParcelMapBCSnapshot_<year>-<month>-<day>.gdb
+            
+        This method will extract the gdb to a temporary path with 
+        the name ParcelMapBCSnapshot_<year>-<month>-<day>.  The 
+        gdb will reside within that path.  After fully extracted
+        the gdb will be moved from that temporary directory to 
+        the path recieved in the arg/variable: destFGDB
+        
+            
+        '''
+        self.logger.debug(u"unzip packaged product zip file: {0}".format(zipFile))
+        self.logger.debug(u"dest path for output gdb: {0}".format(destFGDB))
+        
+        if os.path.exists(destFGDB):
+            msg = u'the destination fgdb path: {0} already exists so cant unzip there'
+            self.logger.info(msg.format(destFGDB))
+        else:
+            # The destination directory specified for zip file
+            destZipDir = os.path.dirname(zipFile)
+            self.logger.debug(u'destZipDir: {0}'.format(destZipDir))
+            
+            # open from zip file, creating a zip object (zip_ref)
+            zipRef = zipfile.ZipFile(zipFile, 'r')
+            # Get the file list from the zip file
+            nameList = zipRef.namelist()
+            # example element from nameList: ParcelMapBCSnapshot_2017-04-16.gdb/a00000004.CatItemsByPhysicalName.atx
+            # from the filelist extract the root directory of the contents of the file.
+            # this will be the name of the directory geodatabase.  example of
+            # a name is: ParcelMapBCSnapshot_2017-04-16.gdb
+            FGDBInZipFile = os.path.dirname(nameList[0])
+            tmpDir = os.path.join(destZipDir, (os.path.splitext(FGDBInZipFile))[0])
+            tmpGDB = os.path.join(tmpDir, FGDBInZipFile)  
+            self.logger.debug(u"FGDBInZipFile: {0}".format(FGDBInZipFile) )
+            self.logger.debug(u"tmpDir: {0}".format(tmpDir) )
+            self.logger.info(u"extracting from the zip file: {0} to {1}".format(zipFile, tmpDir))
+            if not os.path.exists(tmpDir):
+                zipRef.extractall(tmpDir)
+    
+            zipRef.close()
+            self.logger.info(u'renaming the directory {0} to {1}'.format(tmpGDB, destFGDB))
+            shutil.move(tmpGDB, destFGDB)
+            if os.path.exists(tmpDir):
+                shutil.rmtree(tmpDir)
+                
     def unZipFile(self, destFile, srcFGDB):
         '''
         gets the zip file and the full path to it.  The zip file path
@@ -768,7 +821,11 @@ class parcelMapAPI(RestBase, Constants):
         Finally it will unzip the destFile into the srcFGDB, if 
         the srcFGDB already exists it will be deleted.
                 
-        Delete the existing gdb, replace with the new gdb. 
+        Delete the existing gdb, replace with the new gdb.
+        
+        This is the method to use when you download the data from a 
+        extract request.  If you are downloading a packaged 
+        product use the unZipPackagedProduct() method
         '''
         self.logger.debug("input zip file: {0}".format(destFile))
         self.logger.debug("final destination fgdb {0}".format(srcFGDB))

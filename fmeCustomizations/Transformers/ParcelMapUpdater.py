@@ -61,9 +61,9 @@ class ParcelMapUpdater(object):
     def __init__(self):
         # logging setup
         #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
-        modDotClass = '{0}'.format(__name__)
+        modDotClass = u'{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
-        self.logger.debug("Logging set up in the module: " + str(os.path.basename(__file__)))
+        self.logger.debug(u"Logging set up in the module: " + str(os.path.basename(__file__)))
         
         # loading constants
         self.const = Constants()
@@ -74,24 +74,24 @@ class ParcelMapUpdater(object):
         
         # get the fme published parameters
         self.fmeMacroValues = fme.macroValues
-        self.logger.debug("completed the init of {0}".format(self.__class__.__name__))
+        self.logger.debug(u"completed the init of {0}".format(self.__class__.__name__))
         self.cnt = 0
         # use the published parameters to update the constants  
         # see method call for more details
         self.updateConstants()
 
-        self.logger.debug("            {0} ".format( self.fmeMacroValues))
+        self.logger.debug(u"            {0} ".format( self.fmeMacroValues))
 
         #for key in self.fmeMacroValues:
         #    self.logger.debug("            {0}  :  {1}".format(key, self.fmeMacroValues[key]))
         
         # extracting values from published parameters required to build parcel map connection
-        self.logger.debug("retrieving the macrovalue: {0}".format(self.const.fmeRestAPIUser))
+        self.logger.debug(u"retrieving the macrovalue: {0}".format(self.const.fmeRestAPIUser))
         restApiURL = self.fmeMacroValues[self.const.fmeRestAPIBaseURL]
         
         # get various published parameter values used by the linked transformer.
         restApiUser = self.fmeMacroValues[self.const.fmeRestAPIUser]
-        self.logger.debug('restApiUser: {0}'.format(restApiUser))
+        self.logger.debug(u'restApiUser: {0}'.format(restApiUser))
         restApiPswd = self.getRestApiPassword(user=restApiUser)
         
         # getting the DEST_DIR parameter passed to the linked transformer
@@ -102,9 +102,9 @@ class ParcelMapUpdater(object):
         destFileName = self.const.parcelMapZipFile # just the file name of the zip file
         destFullPath = os.path.join(destDir, destFileName) # calc full path
         destFullPath = os.path.normcase(os.path.normpath(destFullPath)) # normalize it
-        self.logger.debug("destFullPath {0}".format(destFullPath))
+        self.logger.debug(u"destFullPath {0}".format(destFullPath))
         # creating the parcel map object
-        self.logger.debug("creating parcel map api object")
+        self.logger.debug(u"creating parcel map api object")
         self.pm = ParcelMapLib.parcelMapAPI(restApiURL, restApiUser, restApiPswd, destDir)
         
         # if a status file exists it indicates that the process never completed
@@ -129,33 +129,39 @@ class ParcelMapUpdater(object):
         #    self.pm.downloadCannedBC()
             #self.pm.downloadBC()
         # now do the comparison.
-        self.logger.debug("placing a new order for the canned version of the province")
+        self.logger.debug(u"placing a new order for the canned version of the province")
         self.pm.downloadCannedBC()
 
-        self.logger.debug("destFullPath {0}".format(destFullPath))
-        self.logger.debug("fingerPrintFile {0}".format(self.const.fingerPrintFile))
+        self.logger.debug(u"destFullPath {0}".format(destFullPath))
+        self.logger.debug(u"fingerPrintFile {0}".format(self.const.fingerPrintFile))
         
         # currentOrderFile is something like parcelmap_10732.gdb.zip
         currentOrderFile = self.pm.getDestinationFilePath()
         fingerPrintFile = os.path.join(destDir, self.const.fingerPrintFile)
         fp = ParcelMapLib.FingerPrinting(currentOrderFile, fingerPrintFile)
         if fp.hasParcelFabricChanged():
-            # yes it has changed, need to unzip it
+            # yes it has changed!  Delete the orginal version, then 
+            # call the unzip to recreate it.
             fgdbPathReadOnly = self.fmeMacroValues[self.const.fmeFGDBReadOnly]
             zipFileDownloaded = self.pm.getDestinationFilePath()
-            self.pm.unZipFile(zipFileDownloaded, fgdbPathReadOnly)
+            fgdbPathReadWrite = os.path.join(self.pm.destDir, os.path.basename(fgdbPathReadOnly))
+            self.logger.debug(u"fgdbPathReadWrite: {0}".format(fgdbPathReadWrite))
+            if os.path.exists(fgdbPathReadWrite):
+                self.logger.debug(u"Deleting the FGDB {0} so it can be re-created from the zip file".format(fgdbPathReadWrite))
+                shutil.rmtree(fgdbPathReadWrite)
+            self.pm.unZipPackagedProduct(zipFileDownloaded, fgdbPathReadWrite)
             self.updated = True
             # finally update the cache
             fp.cacheFingerPrint()
             if os.path.exists(destFullPath):
-                self.logger.debug("removing {0}".format(destFullPath))
+                self.logger.debug(u"removing {0}".format(destFullPath))
                 os.remove(destFullPath)
             shutil.move(zipFileDownloaded, destFullPath)
         else:
             # The versions have not changed so don't bother downloading.
             zipFileDownloaded = self.pm.getDestinationFilePath()
             if os.path.exists(zipFileDownloaded):
-                self.logger.debug("removing {0}".format(zipFileDownloaded))
+                self.logger.debug(u"removing {0}".format(zipFileDownloaded))
                 os.remove(zipFileDownloaded)
             
         # once order has been placed, retrieved, compared, unzipped, then 
