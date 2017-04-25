@@ -5,6 +5,7 @@ git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=PMP&su
 git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=Misc&subdirectory=Misc
 git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=DB&subdirectory=DB
 git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=BCDCUtil&subdirectory=BCDCUtil
+git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=Secrets&subdirectory=Secrets
 
 
 

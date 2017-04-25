@@ -1122,6 +1122,16 @@ class CalcParamsBase( object ):
         srcSDEDirectConnectString = dirConnectTemplate.format(oraClientString, destHost, destServName)
         self.logger.info("destination direct connect string: {0}".format(srcSDEDirectConnectString))
         return srcSDEDirectConnectString
+    
+    def getDestEasyConnectString(self, position=None):
+        self.logger.debug(self.debugMethodMessage.format("getDestEasyConnectString"))
+        destEasyConnectString = None
+        destHost = self.getDestinationHost()
+        destServName = self.getDestinationServiceName()
+        destPort = self.getDestinationOraclePort()
+        easyConnectString = '{0}:{1}/{2}'.format(destHost, destPort, destServName)
+        self.logger.info("destination easy connect string: {0}".format(easyConnectString))
+        return easyConnectString
         
     def getSrcSDEDirectConnectString(self, position=None):
         '''
