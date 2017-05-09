@@ -1241,7 +1241,7 @@ class CalcParamsBase( object ):
         # going to just get the instance to re-use that code then 
         # replace the instance with the service name
         self.logger.debug(self.debugMethodMessage.format("getSchemaAndServiceNameForPasswordRetrieval"))
-        srcSchema, srcInst = self.getSchemaForPasswordRetrieval(passwordPosition)
+        srcSchema = (self.getSchemaForPasswordRetrieval(passwordPosition))[0]
         serviceNameMacroKey = self.const.FMWParams_SrcServiceName
         if passwordPosition:
             if type(passwordPosition) is not int:
