@@ -1406,7 +1406,7 @@ class CalcParamsBase( object ):
         method will return none
         '''
         self.logger.debug(self.debugMethodMessage.format("getSrcHost"))
-        srcHost = None
+        #srcHost = None
         srcHostMacroKey = self.const.FMWParams_SrcHost
         if position:
             if type(position) is not int:
@@ -2414,7 +2414,7 @@ class CalcParamsDataBC(object):
     def getSourcePassword(self, position=None):
         # pmp connection
         pmp = self.__getPMPObj()
-        resrcs = pmp.getResources()
+        #resrcs = pmp.getResources()
 
         self.logger.debug("params: getSourcePassword")
         
