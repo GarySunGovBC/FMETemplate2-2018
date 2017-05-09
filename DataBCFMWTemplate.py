@@ -1008,8 +1008,8 @@ class Util(object):
     @staticmethod
     def calcEnhancedLoggingFileName(fmwName):
         # strip off the .fmw
-        fmwFileNameNoSuffix, suffix = os.path.splitext(fmwName)
-        const = TemplateConstants()
+        fmwFileNameNoSuffix = (os.path.splitext(fmwName))[0]
+        #const = TemplateConstants()
         enhancedLogKeyword = '_extra'
         logFileNameTmplt = '{0}{1}.{2}'
         logFileName = logFileNameTmplt.format(fmwFileNameNoSuffix, enhancedLogKeyword, 'log')
