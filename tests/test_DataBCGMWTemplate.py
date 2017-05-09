@@ -129,9 +129,25 @@ class Test_CalcParams(unittest.TestCase):
                                     'NotificationEmail': 'dataetl@gov.bc.ca',
                                     'SRC_FEATURE_1': 'I2K_PERMIT',
                                     'SRC_ORA_SERVICENAME': 'airprod1.nrs.bcgov',
-                                    'SRC_ORA_SCHEMA': 'inventory2000'}
+                                    'SRC_ORA_SCHEMA': 'inventory2000', 
+                                    'SRC_SS_PROXY_SCHEMA': 'PROXY_MINFILE_BCGW', 
+                                    'SRC_SS_SCHEMA': 'Minfile',
+                                    'SRC_SS_DBNAME': 'Minfile',
+                                    'SRC_HOST': 'apocalypse.idir.bcgov', 
+                                    'SRC_PORT': 443
+                                    }
         self.fmeMacroValues = self.fmeMacroValues_fileSrc
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
+        
+        self.logger = logging.getLogger()
+        self.logger.setLevel(logging.DEBUG)
+
+        ch = logging.StreamHandler()
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s')
+        ch.setFormatter(formatter)
+        self.logger.addHandler(ch)
+        self.logger = logging.getLogger()
+        self.logger.debug("this is the the first log message")
 
     def tearDown(self):
         pass
@@ -141,10 +157,46 @@ class Test_CalcParams(unittest.TestCase):
         print 'host', host
         
     def test_getDestinationPassword(self):
-        
         passw = self.calcParams.getDestinationPassword()
         print 'passw', passw
+                
+    def test_getSQLServerSchema(self):
+        self.fmeMacroValues = self.fmeMacroValues_DBSrc
+        self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
+        schema = self.calcParams.getSrcSQLServerSchema()
+        expectedSchema = 'Minfile'
+        #schema = self.calcParams.getSQLServerSchemaForPasswordRetrieval()
+        msg = 'schema expected: {0}, recieved {1}, position param is null'
+        assertMsg = msg.format(expectedSchema, schema)
+        self.assertEqual(schema, expectedSchema, msg)
+        print 'schema', schema
+        # should raise an error
+        self.assertRaises(KeyError, lambda: self.calcParams.getSrcSQLServerSchema(1))
+                
+    def test_getMacroValueUsingPosition(self):
+        self.fmeMacroValues = self.fmeMacroValues_DBSrc
+        self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
+        # list of macro value, position, expected values
         
+        testValues = [    
+                ['SRC_FEATURE_1', 1, 'SRC_FEATURE_1'],
+                ['SRC_FEATURE_3', 1, 'SRC_FEATURE_1'],
+                ['SRC_FEATURE_1', 4, 'SRC_FEATURE_4'],
+                ['SRC_FEATURE_', 4, 'SRC_FEATURE_4'],
+                ['SRC_FEATURE_', 1, 'SRC_FEATURE_1'],
+                ['SRC_FEATURE_', 3, 'SRC_FEATURE_3'],
+                ['SRC_ORA_SCHEMA', 3, 'SRC_ORA_SCHEMA_3'],
+                ['SRC_ORA_SCHEMA', 1, 'SRC_ORA_SCHEMA_1'],
+                ['SRC_ORA_SCHEMA_4', 1, 'SRC_ORA_SCHEMA_1'],
+                ['SRC_ORA_SCHEMA_4', 2, 'SRC_ORA_SCHEMA_2']
+                      ]
+        for testVals in testValues:
+            self.logger.info("current values: {0}".format(testVals))
+            retVal = self.calcParams.getMacroValueUsingPosition(testVals[0], testVals[1])
+            msg = 'sent {0}, position {1}, returned {2}, expected {3}'
+            msg = msg.format(testVals[0], testVals[1], retVal, testVals[2])
+            self.assertEqual(testVals[2], retVal, msg)
+            
     def test_getSourcePassword(self):
         
         msg = "unable to retrieve the password for schema {0} and " + \
@@ -232,8 +284,52 @@ class Test_CalcParams(unittest.TestCase):
               'was not created'
         msg = msg.format(failedFeatsDir)
         self.assertTrue(os.path.exists(failedFeatsDir), msg)
-
    
+    def test_getSrcSqlServerPassword(self):
+        self.logger.debug("starting the test: test_getSrcSqlServerPassword")
+        fmeMacroValues = self.fmeMacroValues_DBSrc
+        fmeMacroValues['DEST_DB_ENV_KEY'] = 'DLV'
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues)
+        calcParams.logger = self.logger
+        calcParams.plugin.logger = self.logger
+        sqlServrPasswd = calcParams.getSrcSqlServerPassword()
+        msg = 'Returned a null value for a password'
+        self.assertIsNotNone(sqlServrPasswd, msg)
+        
+        # now test that can retrieve without the domain
+        #'SRC_SS_PROXY_SCHEMA': 'PROXY_MINFILE_BCGW', 
+        #'SRC_SS_SCHEMA': 'Minfile',
+        #'SRC_SS_DBNAME': 'Minfile',
+        #'SRC_HOST': 'apocalypse.idir.bcgov', 
+        #'SRC_PORT': 443
+        fmeMacroValues['SRC_HOST'] = 'apocalypse'
+        fmeMacroValues['SRC_SS_DBNAME'] = 'Minfile.somesuffix'
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues)
+        calcParams.logger = self.logger
+        calcParams.plugin.logger = self.logger
+        sqlServrPasswd = calcParams.getSrcSqlServerPassword()
+        self.assertIsNotNone(sqlServrPasswd, msg)
+        
+        # finally need to test for a different position password
+        fmeMacroValues['SRC_HOST_6'] = 'apocalypse'
+        fmeMacroValues['SRC_SS_DBNAME_6'] = 'Minfile.somesuffix'
+        fmeMacroValues['SRC_SS_SCHEMA_6'] = 'PROXY_MINFILE_BCGW'
+        del fmeMacroValues['SRC_SS_PROXY_SCHEMA']
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues)
+        calcParams.logger = self.logger
+        calcParams.plugin.logger = self.logger
+        sqlServrPasswd = calcParams.getSrcSqlServerPassword(6)
+        self.assertIsNotNone(sqlServrPasswd, msg)
+        
+        # now try to proxy with a position also
+        fmeMacroValues['SRC_SS_PROXY_SCHEMA_6'] = 'PROXY_MINFILE_BCGW'
+        fmeMacroValues['SRC_SS_SCHEMA_6'] = 'Minfile'
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues)
+        calcParams.logger = self.logger
+        calcParams.plugin.logger = self.logger
+        sqlServrPasswd = calcParams.getSrcSqlServerPassword(6)
+        self.assertIsNotNone(sqlServrPasswd, msg)
+
 class Test_CalcParamsDevel(unittest.TestCase):
     def setUp(self):
         self.logger = logging.getLogger()
@@ -242,7 +338,6 @@ class Test_CalcParamsDevel(unittest.TestCase):
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         ch.setFormatter(formatter)
         self.logger.addHandler(ch)
-
         
         self.fmeMacroValues_DBSrc = {     
                                     'DEST_DB_ENV_KEY': 'DEV',
@@ -294,8 +389,12 @@ class Test_CalcParamsDevel(unittest.TestCase):
                                     'SRC_FEATURE_1': 'I2K_PERMIT',
                                     'SRC_ORA_INSTANCE': 'airprod1.nrs.bcgov',
                                     'SRC_ORA_SERVICENAME': 'airprod1.nrs.bcgov',
-                                    'SRC_ORA_SCHEMA': 'inventory2000'}
-        
+                                    'SRC_ORA_SCHEMA': 'inventory2000',
+                                    'SRC_SS_PROXY_SCHEMA': 'PROXY_MINFILE_BCGW', 
+                                    'SRC_SS_SCHEMA': 'minfile',
+                                    'SRC_SS_DBNAME':  'Minfile',
+                                    'SRC_HOST': 'apocalypse.idir.bcgov', 
+                                    'SRC_PORT': 443 }
         
         self.fmeMacroValues = self.fmeMacroValues_DBSrc
         # for these tests going to change the FME_MF_DIR value for testing
@@ -402,7 +501,79 @@ class Test_CalcParamsDevel(unittest.TestCase):
     def test_getDbCredsFile(self):
         self.calcParams.plugin.getDbCredsFile()
 
-    
+    def test_getSrcSqlServerPassword(self):
+        # should raise an error.
+        self.assertRaises(ValueError, lambda: self.calcParams.getSrcSqlServerPassword())
+        fmeMacroValues = self.fmeMacroValues
+        const = DataBCFMWTemplate.TemplateConstants()
+        # update the macros for this test
+        fmeMacroValues[const.FMWParams_SrcHost] = 'databaseHost'
+        fmeMacroValues[const.FMWParams_SrcSSDbName] = 'nameOfSqlServerDB'
+        fmeMacroValues[const.FMWParams_SrcSSSchema] = 'UsernameOrSchemaName'
+        fmeMacroValues[const.FMWParams_SrcProxySSSchema] = 'UsernameOrSchemaName'
+        del fmeMacroValues[const.FMWParams_SrcProxySSSchema]
+        # update the macros in the various test objects
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues, True)
+        calcParams.plugin.fmeMacroVals = fmeMacroValues
+        retrievedPassword = calcParams.getSrcSqlServerPassword()
+        expectedPassword = 'thisIsNotThePassword'
+        msg = 'Development password retrieval returned {0} but expected {1} '
+        self.assertEqual(retrievedPassword, expectedPassword, msg.format(retrievedPassword, expectedPassword))
+        
+        # now set things up for a proxy schema
+        fmeMacroValues[const.FMWParams_SrcSSSchema] = 'dontUsethis'
+        fmeMacroValues[const.FMWParams_SrcProxySSSchema] = 'UsernameOrSchemaName'
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues, True)
+        calcParams.plugin.fmeMacroVals = fmeMacroValues
+        retrievedPassword = calcParams.getSrcSqlServerPassword()
+        msg = 'Development password retrieval returned {0} but expected {1} '
+        self.assertEqual(retrievedPassword, expectedPassword, msg.format(retrievedPassword, expectedPassword))
+        
+        # test to trigger the heuristic
+        fmeMacroValues[const.FMWParams_SrcHost] = 'databaseHost.domain.suffix'
+        fmeMacroValues[const.FMWParams_SrcSSDbName] = 'nameOfSqlServerDB.domain.suffix'
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues, True)
+        calcParams.plugin.fmeMacroVals = fmeMacroValues
+        retrievedPassword = calcParams.getSrcSqlServerPassword()
+        self.assertEqual(retrievedPassword, expectedPassword, msg.format(retrievedPassword, expectedPassword))
+        
+        # test a numbered account
+        proxyKey = calcParams.getMacroValueUsingPosition(const.FMWParams_SrcProxySSSchema, 4)
+        schemaKey = calcParams.getMacroValueUsingPosition(const.FMWParams_SrcSSSchema, 4)
+        hostKey = calcParams.getMacroValueUsingPosition(const.FMWParams_SrcHost, 4)
+        dbNameKey = calcParams.getMacroValueUsingPosition(const.FMWParams_SrcSSDbName, 4)
+        fmeMacroValues[proxyKey] = 'username_4'
+        fmeMacroValues[schemaKey] = 'dontUsethis'
+        fmeMacroValues[hostKey] = 'hostEntry4'
+        fmeMacroValues[dbNameKey] = 'serverEntry4'
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues, True)
+        calcParams.plugin.fmeMacroVals = fmeMacroValues
+        retrievedPassword = calcParams.getSrcSqlServerPassword(4)
+
+    def test_getSrcSqlConnectStr(self):
+        fmeMacroValues = self.fmeMacroValues
+        const = DataBCFMWTemplate.TemplateConstants()
+        # update the macros for this test
+        fmeMacroValues[const.FMWParams_SrcHost] = 'databaseHost'
+        fmeMacroValues[const.FMWParams_SrcSSDbName] = 'nameOfSqlServerDB'
+        fmeMacroValues[const.FMWParams_SrcSSSchema] = 'UsernameOrSchemaName'
+        fmeMacroValues[const.FMWParams_SrcPort] = '6666'
+        fmeMacroValues[const.FMWParams_SrcProxySSSchema] = 'UsernameOrSchemaName'
+        #del fmeMacroValues[const.FMWParams_SrcProxySSSchema]
+        # update the macros in the various test objects
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues, True)
+        calcParams.plugin.fmeMacroVals = fmeMacroValues
+        retrievedPassword = calcParams.getSrcSQLServerConnectString()
+        expectedConnectStr =  'databaseHost,6666'
+        msg = 'expecting the values {0} but recieved {1}'
+        self.assertEqual(retrievedPassword, expectedConnectStr, msg.format(expectedConnectStr,retrievedPassword))
+        
+        
+        #expectedPassword = 'thisIsNotThePassword'
+        #3msg = 'Development password retrieval returned {0} but expected {1} '
+        #self.assertEqual(retrievedPassword, expectedPassword, msg.format(retrievedPassword, expectedPassword))
+        
+        
 class Test_TemplateConfigFileReader(unittest.TestCase):
     
     def setUp(self):
@@ -616,7 +787,10 @@ if __name__ == "__main__":
     #sys.argv = ['', 'Test_Shutdown.test_dbConn']
     #sys.argv = ['', 'Test_Shutdown.test_shutdown']
     #sys.argv = ['','Test_TemplateConfigFileReader.test_shutdown']
-    #sys.argv = ['','Test_CalcParamsDevel.test_getDbCredsFile']
+    #sys.argv = ['','Test_CalcParams.test_getSQLServerSchemaForPasswordRetrieval']
+    #sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlServerPassword']
+    #sys.argv = ['','Test_CalcParams.test_getSrcSqlServerPassword']
+    #sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlConnectStr']
 
     # 'Test_CalcParams.test_getFailedFeaturesFile',
     # 

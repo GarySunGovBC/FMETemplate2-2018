@@ -131,9 +131,9 @@ class FMEServerInteraction(T1T2ConversionConstants):
         ch.setFormatter(formatter)
         self.logger.addHandler(ch)
         self.logger.setLevel(logging.DEBUG)
-
         self.logger.debug("first message")
         
+        # setting fme variables
         self.fmwServCurRepo = fmwServCurRepo
         self.fmwDestRepo = fmwDestRepo
         
@@ -161,6 +161,7 @@ class FMEServerInteraction(T1T2ConversionConstants):
         contains the code that is going to be implemented on 
         each fmw.
         '''
+        # gets the list of fmw files to be processed.
         fmwFiles = self.getFMWs()
         
         self.logger.debug("")
@@ -176,6 +177,8 @@ class FMEServerInteraction(T1T2ConversionConstants):
             #  g) recreate the schedule
             msg = "current fmw is {0}".format(fmwFile)
             self.logger.debug(msg)
+            
+            # Doing a test run of the FMW
             #TODO: uncomment when rest is working...  (Coding is complete)
             self.testRun(fmwFile)
             # get the cron string, at same time its cached if it hasn't already 
@@ -472,6 +475,12 @@ class FMEServerInteraction(T1T2ConversionConstants):
         return self.FMESchedule
     
     def testRun(self, fmwFileFullPath, refresh=False):
+        '''
+        fmwFileFullPath - The path to an FMW file that is to be tested
+        refresh - If set to true will always do the test.  If set to False
+                  checks the test directory for a blank file to determine
+                  if the fmw has already been tested.
+        '''
         fmwFile = os.path.basename(fmwFileFullPath)
         repo = self.fmeServer.getRepository()
         descr = r'temporary repository used for testing template v2 scripts'
@@ -722,8 +731,12 @@ if __name__ == '__main__':
     #sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2017\3_fix'
     #sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2018\04_staging'
     sourceDir = 'Z:\Projects\FYE2018\DWACT-630_FMWConversions\Completed\grp6'
+    sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2018\04_staging'
     currentFMEServerRepo = 'BCGW_REP_SCHEDULED'
     destinationFMEServerRepo = 'BCGW_SCHEDULED'
+    # no action associated with the constructor below, just sets  up 
+    # params to be run.
     srvr = FMEServerInteraction(fmwDir=sourceDir, fmwServCurRepo=currentFMEServerRepo, fmwDestRepo=destinationFMEServerRepo)
+    # This is where everything happens.
     srvr.iterator()
     
