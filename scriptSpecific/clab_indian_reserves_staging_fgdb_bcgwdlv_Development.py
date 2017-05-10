@@ -18,8 +18,6 @@ will take precedence.
 import DataBCFMWTemplate
 import logging
 
-
-# 
 class Start(DataBCFMWTemplate.DefaultStart):
     
     def __init__(self, fme):
