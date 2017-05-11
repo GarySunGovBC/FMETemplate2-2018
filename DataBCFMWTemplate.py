@@ -2283,6 +2283,8 @@ class CalcParamsDataBC(object):
             msg = 'Cant find the password in PMP resource {0} for the account {1}'
             msg = msg.format(pmpRes, schema)
             self.logger.warning(msg)
+        self.logger.info("successfully retrieved password!")
+        
         return passwrd
         
     def getPmpDict(self, url=None):
