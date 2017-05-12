@@ -1426,7 +1426,6 @@ class CalcParamsBase( object ):
         method will return none.
         '''
         self.logger.debug(self.debugMethodMessage.format("getSrcServiceName"))
-        srcServName = None
         srcServNameMacroKey = self.const.FMWParams_SrcServiceName
         if position:
             if type(position) is not int:
