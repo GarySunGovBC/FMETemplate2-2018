@@ -8,39 +8,55 @@ b) if you want to only customize the startup then delete
    the Shutdown class, if you only want a custom shutdown 
    then delete the Start class
 c) put the customized steps for your startup in the
-   Start.startup method, cutomized shutdown in the 
+   Start.startup method, customized shutdown in the 
    Shutdown.shutdown() method.
  
 '''
-import inspect
+import DataBCFMWTemplate
 import sys
 import os
 import logging
-#import DataBCFMWTemplate
 
-class Start():
+class Start(DataBCFMWTemplate.DefaultStart):
     
     def __init__(self, fme):
+        # inheriting from the default startup
+        DataBCFMWTemplate.DefaultStart.__init__(self, fme)
+        
+        # constants available in self.const. then using to contruct the extended
+        # startup logger.  Name of the logger is important as the name is what 
+        # ties it to the log configuration in the log config file.
+        self.const= DataBCFMWTemplate.TemplateConstants()
+        self.logger = logging.getLogger(self.const.LoggingExtendedLoggerName)
+        
         self.fme = fme
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
-        self.logger = logging.getLogger(modDotClass)
 
-        # put any specific class instantiation here.
+        # put any custom class instantiation here
         pass
         
     def Start(self):
-        # This is the code that will get called by the startup 
-        # routine for this script, put any custom startup routines
-        # that apply to your specific script here
+        # start off by calling the default start up routine
+        self.logger.info("running the default startup routine")
+        super(Start, self).startup()
+        
+        # here is where you can put your extended startup routine
         pass
           
 class Shutdown():
     
     def __init__(self, fme):
+        DataBCFMWTemplate.DefaultShutdown.__init__(self, fme)
+        
+        # constants available in self.const. then using to contruct the extended
+        # startup logger.  Name of the logger is important as the name is what 
+        # ties it to the log configuration in the log config file.
+        self.const= DataBCFMWTemplate.TemplateConstants()
+        self.logger = logging.getLogger(self.const.LoggingExtendedLoggerName)
+        
         self.fme = fme
-        modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
-        self.logger = logging.getLogger(modDotClass)
+        
         # any custom shutdown initiation code goes here
+        pass
 
     def shutdown(self):
         # custom shutdown methods go here.
@@ -48,5 +64,9 @@ class Shutdown():
         # writer.  This could be easily enabled by inheriting from 
         # the default shutdown and then call the super classes
         # shutdown.  You can then append your functionality onto the end.
+        self.logger.info("running the default startup routine")
+        super(Shutdown, self).shutdown()
+        # custom code goes below here
+        self.logger.info("running custom shutdown routine")
         pass
     

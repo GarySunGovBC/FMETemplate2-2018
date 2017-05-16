@@ -73,6 +73,7 @@ class TemplateConstants(object):
     ConfFileSection_global = 'global'
     ConfFileSection_global_key_rootDir = 'rootscriptdir'
     ConfFileSection_global_key_outDir =  'outputsbasedir'
+    ConfFileSection_global_key_pidDir = 'pid_dir'
     ConfFileSection_global_key_govComputers = 'gov_computers'
     ConfFileSection_global_key_govFmeServer = 'gov_fmeservernodes'
     ConfFileSection_global_configDirName = 'configdirname'
@@ -86,6 +87,10 @@ class TemplateConstants(object):
     ConfFileSection_global_directConnectClientString = 'directconnect_clientstring'
 
     ConfFileSection_destKeywords = 'dest_param_keywords'
+    
+    ConfFileSection_putty = 'putty'
+    ConfFileSection_puttyDir = 'puttydir'
+    ConfFileSection_puttyFile = 'puttycommand'
     
     # properties from the config file.
     # server is deprecated, replaced by host
@@ -169,7 +174,14 @@ class TemplateConstants(object):
     FMWParams_SrcFeatPrefix = 'SRC_FEATURE_'
     
     FMWParams_FileChangeEnabledParam = 'FILE_CHANGE_DETECTION'
-        
+    
+    # ssh tunnelling parameters
+    FMWParams_SSHTunnel_LocalPort = 'SSH_LOCALPORT'
+    FMWParams_SSHTunnel_DestPort = 'SSH_DESTPORT'
+    FMWParams_SSHTunnel_DestHost = 'SSH_DESTHOST'
+    FMWParams_SSHTunnel_HostUsername = 'SSH_USERNAME'
+    FMWParams_SSHTunnel_KeyFile = 'SSH_KEYFILE'
+           
     # The fmw macrovalue used to retrieve the directory 
     # that the fmw is in.
     FMWMacroKey_FMWDirectory = 'FME_MF_DIR'
@@ -221,6 +233,10 @@ class TemplateConstants(object):
     # structures
     PMPKey_AccountId = 'ACCOUNT ID'
     PMPKey_AccountName = 'ACCOUNT NAME'
+    
+    PIDFileName = 'pid.txt'
+    
+    LoggingExtendedLoggerName = 'ExtendedStartup'
     
     # records in PMP will have this string as their 
     # sql server identifier format is account@SQLSERVER:<dbname>:<host>:<port>
@@ -305,8 +321,8 @@ class Start(object):
         # Extract the custom script directory from config file
         customScriptDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
         # Assemble the name of a the custom script
-        justScript, ext = os.path.splitext(self.fme.macroValues[self.const.FMWMacroKey_FMWName])
-        del ext
+        justScript = (os.path.splitext(self.fme.macroValues[self.const.FMWMacroKey_FMWName]))[0]
+
         customScriptFullPath = os.path.join(customScriptDir, justScript + '.py')
         customScriptLocal = os.path.join(self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory], justScript + '.py')
         
@@ -355,6 +371,7 @@ class DefaultStart(object):
     def startup(self):
         # currently there is no default startup code.
         # if there was it would go here
+        
         pass
         
 class Shutdown(object):
@@ -458,21 +475,66 @@ class TemplateConfigFileReader(object):
         msg = msg.format(self.key, key)
         self.logger.debug(msg)
         
-    def readConfigFile(self):
-        if not self.confFile:
-            self.confFile = os.path.dirname(__file__)
-            self.confFile = os.path.join(self.confFile, 
-                                         self.const.AppConfigConfigDir,
-                                         self.const.AppConfigFileName)
-            if not os.path.exists(self.confFile):
-                msg = 'Can\'t find the application config file: {0} '
-                msg = msg.format(self.confFile)
-                raise ValueError, msg
-            self.logger.debug("config file path that has been calculated is {0}".format(self.confFile))
-        if not self.parser:
-            self.parser = ConfigParser.ConfigParser()
-            self.parser.read(self.confFile)
-            self.logger.debug("sections in the config file are: {0}".format(self.parser.sections()))
+    def calcEnhancedLoggingFileOutputDirectory(self, fmwDir, fmwName):
+        '''
+        If running on fme server, then will output a path 
+        relative to the template directory, 
+        
+        If run on a non fme server node then will output a path
+        relative to the actual fmw being run.
+        
+        '''
+        justFmwName, fmwSuffix  = os.path.splitext(fmwName)
+        #if not self.isFMEServerNode():
+        if not self.isDataBCNode():
+            outputsDir = self.getOutputsDirectory()
+            logDir = self.const.AppConfigLogDir
+            fullPath = os.path.join(fmwDir, outputsDir, logDir, justFmwName)
+        else:
+            templateDir = self.getTemplateRootDirectory()
+            outputsDir = self.getOutputsDirectory()
+            fullPath = os.path.join(templateDir,outputsDir,'log', justFmwName )
+        fullPath = os.path.normpath(fullPath)
+        if not os.path.exists(fullPath):
+            os.makedirs(fullPath)
+        fullPath = fullPath.replace('\\', '/')
+        return fullPath
+    
+    def calcPIDCacheDirectory(self, fmwDir, fmwName):
+        justFmwName, fmwSuffix  = os.path.splitext(fmwName)
+        
+        pidDirName = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_pidDir)
+        outputsDir = self.getOutputsDirectory()
+        
+        if not self.isDataBCNode():
+            logDir = self.const.AppConfigLogDir
+            fullPath = os.path.join(fmwDir, outputsDir, pidDirName, justFmwName)
+        else:
+            templateDir = self.getTemplateRootDirectory()
+            outputsDir = self.getOutputsDirectory()
+            fullPath = os.path.join(templateDir, outputsDir, pidDirName, justFmwName )
+            
+        fullPath = os.path.normpath(fullPath)
+        if not os.path.exists(fullPath):
+            os.makedirs(fullPath)
+        fullPath = fullPath.replace('\\', '/')
+        return fullPath
+    
+    def calcPuttyExecPath(self):
+        puttyDir = self.parser.get(self.const.ConfFileSection_putty, self.const.ConfFileSection_puttyDir)
+        puttyFile = self.parser.get(self.const.ConfFileSection_putty, self.const.ConfFileSection_puttyFile)
+        
+        outputDir = self.getTemplateRootDirectory()
+        fullPath = os.path.join(outputDir, puttyDir, puttyFile)
+        fullPath = os.path.normpath(fullPath)
+        if not os.path.exists(fullPath):
+            os.makedirs(fullPath)
+        fullPath = fullPath.replace('\\', '/')
+        return fullPath
+
+    def getApplicationLogFileName(self):
+        logConfFileName = self.parser.get(self.const.ConfFileSection_global, self.const.AppConfigAppLogFileName)
+        return logConfFileName
     
     def getChangeLogsDirFullPath(self):
         #if self.isDataBCNode():
@@ -487,184 +549,15 @@ class TemplateConfigFileReader(object):
         changeLogFile = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_changeLogFileName)
         return changeLogFile
     
-    def getApplicationLogFileName(self):
-        logConfFileName = self.parser.get(self.const.ConfFileSection_global, self.const.AppConfigAppLogFileName)
-        return logConfFileName
-        
-    def validateKey(self, key):
-        key = self.getDestinationDatabaseKey(key)
-        if not key:
-            msg = 'You specified a destination key of {0}. The ' + \
-                  'config file does not have any destination database ' + \
-                  'parameters configured for that key.  Acceptable keys ' + \
-                  'are: {1}'
-            validKeys = self.getValidKeys()
-            msg = msg.format(key, validKeys)
-            raise ValueError, msg
-        
-    def setDestinationDatabaseEnvKey(self, key):
-        self.validateKey(key)
-        self.key = self.getDestinationDatabaseKey(key)
-        
-    def getValidKeys(self):
-        '''returns a list of accepted values for keys'''
-        items = self.parser.items(self.const.ConfFileSection_destKeywords)
-        retVal = []
-        for itemTuple in items:
-            keyList = itemTuple[1].split(',')
-            for indexPos in range(0, len(keyList)):
-                keyList[indexPos] = keyList[indexPos].strip()
-            retVal.extend(keyList)
-        return retVal
-            
-# SHOULD BE USING HOST.  HOST IS more consistent
-#    def getDestinationServer(self):
-#        server = self.parser.get(self.key, self.const.ConfFileSection_serverKey)
-#        return server
-    
-    def getDestinationHost(self):
-        self.logger.debug("key: {0}".format(self.key))
-        self.logger.debug("host key: {0}".format(self.const.ConfFileSection_hostKey))
-        host = self.parser.get(self.key, self.const.ConfFileSection_hostKey)
-        return host
-    
-    def getFMEServerHost(self):
-        host =  self.parser.get(self.const.FMEServerSection, self.const.FMEServerSection_Host)
-        return host
-    
-    def getFMEServerRootDir(self):
-        rootdir =  self.parser.get(self.const.FMEServerSection, self.const.FMEServerSection_RootDir)
-        return rootdir
-    
-    def getFMEServerToken(self):
-        token = self.parser.get(self.const.FMEServerSection, self.const.FMEServerSection_Token)
-        return token
-        
-    def getSourcePmpResources(self):
-        srcPmpResources = self.parser.get(self.const.ConfFileSection_pmpSrc, self.const.ConfFileSection_pmpSrc_resources)
-        srcPmpResourcesList = srcPmpResources.split(',')
-        # getting rid of leading/trailing spaces on each element in the list
-        for cnter in range(0, len(srcPmpResourcesList)):
-            srcPmpResourcesList[cnter] = srcPmpResourcesList[cnter].strip()
-        return srcPmpResourcesList
-    
-    def getDefaultOraclePort(self):
-        srcDefaultOraPort = self.parser.get(self.const.ConfFileSection_pmpSrc, self.const.ConfFileSection_pmpSrc_defaultOraPort)
-        return srcDefaultOraPort
-        
-    def getDestinationPmpResource(self, dbEnvKey=None):
-        self.logger.debug("raw input dbEnv Key is {0}".format(dbEnvKey))
-        if not dbEnvKey:
-            dbEnvKey = self.key
-        else:
-            dbEnvKey = self.getDestinationDatabaseKey(dbEnvKey)
-        pmpRes = self.parser.get(dbEnvKey, self.const.ConfFileSection_pmpResKey)
-        return pmpRes
-    
-    def getDestinationOraclePort(self):
-        oraPort = self.parser.get(self.key, self.const.ConfFileSection_oraPortKey)
-        return oraPort
-
-    def getDestinationSDEPort(self):
-        sdePort = self.parser.get(self.key, self.const.ConfFileSection_sdePortKey)
-        return sdePort
-    
-    def getDestinationServiceName(self):
-        inst = self.parser.get(self.key, self.const.ConfFileSection_serviceNameKey)
-        return inst
-        
-    def getJenkinsCreateSDEConnectionFileURL(self):
-        url = self.parser.get(self.const.jenkinsSection, self.const.jenkinsSection_createSDEconnFile_url)
-        return url
-    
-    def getJenkinsCreateSDEConnectionFileToken(self):
-        token = self.parser.get(self.const.jenkinsSection, self.const.jenkinsSection_createSDEconnFile_token)
-        return token
-
-    def getPmpToken(self, computerName):
-        try:
-            token = self.parser.get(self.const.ConfFileSection_pmpTokens, computerName)
-        except ConfigParser.NoOptionError:
-            msg = 'Trying to get a PMP token for the computer {0} but ' + \
-                  'there are no pmp tokens defined for that machine in ' + \
-                  'the app. config file: {1}.'
-            msg = msg.format(computerName, self.confFile)
-            self.logger.error(msg)
-            raise ValueError, msg
-        return token
-    
-    def getPmpBaseUrl(self):
-        pmpBaseUrl = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_baseurl)
-        return pmpBaseUrl
-    
-    def getPmpAltUrl(self):
-        pmpAltUrl = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_alturl)
-        return pmpAltUrl
-    
-    def getPmpRestDir(self):
-        restDir = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_restdir)
-        return restDir
-    
     def getConfigDirName(self):
         confDirName = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_configDirName)
         return confDirName
-    
-    def getTemplateRootDirectory(self):
-        rootDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_rootDir)
-        return rootDir
-    
-    def getFailedFeaturesDir(self):
-        failedFeatsDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_failedFeaturesDir)
-        return failedFeatsDir
-    
-    def getFailedFeaturesFile(self):
-        failedFeatsFile = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_failedFeaturesFile)
-        return failedFeatsFile
-    
-    def getOutputsDirectory(self):
-        ouptutsDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_outDir)
-        return ouptutsDir
-    
-    def getDestinationDatabaseKey(self, inkey):
-        '''
-        receives a value that indicates the destination database and
-        returns the authoritative key for that destination.  The 
-        authoritative key is necessary to retrieve the associated
-        parameters / values.
-        '''
-        retVal = None
-        items = self.parser.items(self.const.ConfFileSection_destKeywords)
-        for itemTuple in items:
-            authoritativeKey = itemTuple[0]
-            if authoritativeKey.lower() == inkey.lower():
-                retVal = authoritativeKey
-                break
-            else:
-                otherKeys = itemTuple[1].split(',')
-                for otherKey in otherKeys:
-                    otherKey = otherKey.strip()
-                    if otherKey.lower() == inkey.lower():
-                        retVal = authoritativeKey
-                        break
-        return retVal
-    
-    def getDevelopmentModeCredentialsFileName(self):
-        '''        
-        Returns the file name string of the .json credential file
-        that the script uses to retrieve database credentials from 
-        when its in development mode. 
-        
-        :returns: name of the json file that is used to store database
-                  credentials when the script is being developed.
-        :rtype: string
-        '''
-        credsFileName = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_devCredsFile)
-        return credsFileName
-    
-    def getOracleDirectConnectClientString(self):
-        clientStr = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_directConnectClientString)
-        return clientStr
-   
+
+    def getDataBCFmeServerNodes(self):
+        nodeString = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_govFmeServer)
+        nodeList = nodeString.split(',')
+        return nodeList
+
     def getDataBCNodes(self):
         '''
         Gets a list of the computer / node names that the 
@@ -682,36 +575,151 @@ class TemplateConfigFileReader(object):
         nodeString = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_govComputers)
         nodeList = nodeString.split(',')
         return nodeList
+
+    def getDefaultOraclePort(self):
+        srcDefaultOraPort = self.parser.get(self.const.ConfFileSection_pmpSrc, self.const.ConfFileSection_pmpSrc_defaultOraPort)
+        return srcDefaultOraPort
     
-    def getDataBCFmeServerNodes(self):
-        nodeString = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_govFmeServer)
-        nodeList = nodeString.split(',')
-        return nodeList
+    def getDestinationDatabaseKey(self, inkey):
+        '''
+        receives a value that indicates the destination database and
+        returns the authoritative key for that destination.  The 
+        authoritative key is necessary to retrieve the associated
+        parameters / values.
+        '''
+        self.logger.debug("getDestinationDatabaseKey")
+        retVal = None
+        items = self.parser.items(self.const.ConfFileSection_destKeywords)
+        for itemTuple in items:
+            authoritativeKey = itemTuple[0]
+            if authoritativeKey.lower() == inkey.lower():
+                retVal = authoritativeKey
+                break
+            else:
+                otherKeys = itemTuple[1].split(',')
+                for otherKey in otherKeys:
+                    otherKey = otherKey.strip()
+                    if otherKey.lower() == inkey.lower():
+                        retVal = authoritativeKey
+                        break
+        return retVal
+    
+    def getDestinationHost(self):
+        self.logger.debug("key: {0}".format(self.key))
+        self.logger.debug("host key: {0}".format(self.const.ConfFileSection_hostKey))
+        host = self.parser.get(self.key, self.const.ConfFileSection_hostKey)
+        return host
+        
+    def getDestinationOraclePort(self):
+        oraPort = self.parser.get(self.key, self.const.ConfFileSection_oraPortKey)
+        return oraPort
+        
+    def getDestinationPmpResource(self, dbEnvKey=None):
+        self.logger.debug("raw input dbEnv Key is {0}".format(dbEnvKey))
+        if not dbEnvKey:
+            dbEnvKey = self.key
+        else:
+            dbEnvKey = self.getDestinationDatabaseKey(dbEnvKey)
+        pmpRes = self.parser.get(dbEnvKey, self.const.ConfFileSection_pmpResKey)
+        return pmpRes
+
+    def getDestinationSDEPort(self):
+        sdePort = self.parser.get(self.key, self.const.ConfFileSection_sdePortKey)
+        return sdePort
+
+    def getDestinationServiceName(self):
+        inst = self.parser.get(self.key, self.const.ConfFileSection_serviceNameKey)
+        return inst
+
+    def getDevelopmentModeCredentialsFileName(self):
+        '''        
+        Returns the file name string of the .json credential file
+        that the script uses to retrieve database credentials from 
+        when its in development mode. 
+        
+        :returns: name of the json file that is used to store database
+                  credentials when the script is being developed.
+        :rtype: string
+        '''
+        credsFileName = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_devCredsFile)
+        return credsFileName
+
+    def getDWMDbPort(self):
+        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbport)
+
+    def getDWMDbInstance(self):
+        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbinstance)
+
+    def getDWMDbServer(self):
+        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbserver)
+
+    def getDWMDbUser(self):
+        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbuser)
 
     def getDWMTable(self):
         dwmTab = self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_table )
         return dwmTab
-    
-    def getDWMDbUser(self):
-        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbuser)
-    
-    def getDWMDbInstance(self):
-        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbinstance)
-    
-    def getDWMDbServer(self):
-        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbserver)
-    
-    def getDWMDbPort(self):
-        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbport)
 
-    def getSqlServerDefaultPort(self):
-        return self.parser.get(self.const.sqlserverSection, self.const.sqlserver_param_port)
+    def getFailedFeaturesDir(self):
+        failedFeatsDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_failedFeaturesDir)
+        return failedFeatsDir
+    
+    def getFailedFeaturesFile(self):
+        failedFeatsFile = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_failedFeaturesFile)
+        return failedFeatsFile
 
-    def getSqlServerPMPIdentifier(self):
-        # retrieves the string used to identify sql server databases in
-        # pmp
-        return self.parser.get(self.const.sqlserverSection, self.const.sqlserver_param_pmpidentifier)
-
+    def getFMEServerHost(self):
+        host =  self.parser.get(self.const.FMEServerSection, self.const.FMEServerSection_Host)
+        return host
+    
+    def getFMEServerRootDir(self):
+        rootdir =  self.parser.get(self.const.FMEServerSection, self.const.FMEServerSection_RootDir)
+        return rootdir
+    
+    def getFMEServerToken(self):
+        token = self.parser.get(self.const.FMEServerSection, self.const.FMEServerSection_Token)
+        return token
+        
+    def getJenkinsCreateSDEConnectionFileURL(self):
+        url = self.parser.get(self.const.jenkinsSection, self.const.jenkinsSection_createSDEconnFile_url)
+        return url
+    
+    def getJenkinsCreateSDEConnectionFileToken(self):
+        token = self.parser.get(self.const.jenkinsSection, self.const.jenkinsSection_createSDEconnFile_token)
+        return token
+            
+    def getOracleDirectConnectClientString(self):
+        clientStr = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_directConnectClientString)
+        return clientStr
+            
+    def getOutputsDirectory(self):
+        ouptutsDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_outDir)
+        return ouptutsDir
+                        
+    def getPmpAltUrl(self):
+        pmpAltUrl = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_alturl)
+        return pmpAltUrl
+            
+    def getPmpBaseUrl(self):
+        pmpBaseUrl = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_baseurl)
+        return pmpBaseUrl
+    
+    def getPmpRestDir(self):
+        restDir = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_restdir)
+        return restDir
+            
+    def getPmpToken(self, computerName):
+        try:
+            token = self.parser.get(self.const.ConfFileSection_pmpTokens, computerName)
+        except ConfigParser.NoOptionError:
+            msg = 'Trying to get a PMP token for the computer {0} but ' + \
+                  'there are no pmp tokens defined for that machine in ' + \
+                  'the app. config file: {1}.'
+            msg = msg.format(computerName, self.confFile)
+            self.logger.error(msg)
+            raise ValueError, msg
+        return token
+            
     def getSdeConnFileDirectory(self):
         '''
         This is going to just return the contents of the sde directory 
@@ -757,7 +765,38 @@ class TemplateConfigFileReader(object):
         '''
         sdeConnectionFileDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_sdeConnFileDir)
         return sdeConnectionFileDir
-
+            
+    def getSourcePmpResources(self):
+        srcPmpResources = self.parser.get(self.const.ConfFileSection_pmpSrc, self.const.ConfFileSection_pmpSrc_resources)
+        srcPmpResourcesList = srcPmpResources.split(',')
+        # getting rid of leading/trailing spaces on each element in the list
+        for cnter in range(0, len(srcPmpResourcesList)):
+            srcPmpResourcesList[cnter] = srcPmpResourcesList[cnter].strip()
+        return srcPmpResourcesList
+    
+    def getSqlServerDefaultPort(self):
+        return self.parser.get(self.const.sqlserverSection, self.const.sqlserver_param_port)
+    
+    def getSqlServerPMPIdentifier(self):
+        # retrieves the string used to identify sql server databases in
+        # pmp
+        return self.parser.get(self.const.sqlserverSection, self.const.sqlserver_param_pmpidentifier)
+    
+    def getTemplateRootDirectory(self):
+        rootDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_rootDir)
+        return rootDir
+    
+    def getValidKeys(self):
+        '''returns a list of accepted values for keys'''
+        items = self.parser.items(self.const.ConfFileSection_destKeywords)
+        retVal = []
+        for itemTuple in items:
+            keyList = itemTuple[1].split(',')
+            for indexPos in range(0, len(keyList)):
+                keyList[indexPos] = keyList[indexPos].strip()
+            retVal.extend(keyList)
+        return retVal
+                
     def isDestProd(self):
         '''
         checks the currently set destination keyword, and 
@@ -809,31 +848,41 @@ class TemplateConfigFileReader(object):
         self.logger.debug("isFMEServerNode return val: {0}".format(retVal))
         return retVal
     
-    def calcEnhancedLoggingFileOutputDirectory(self, fmwDir, fmwName):
-        '''
-        If running on fme server, then will output a path 
-        relative to the template directory, 
+    def readConfigFile(self):
+        self.logger.debug("readConfigFile")
+        if not self.confFile:
+            self.confFile = os.path.dirname(__file__)
+            self.confFile = os.path.join(self.confFile, 
+                                         self.const.AppConfigConfigDir,
+                                         self.const.AppConfigFileName)
+            if not os.path.exists(self.confFile):
+                msg = 'Can\'t find the application config file: {0} '
+                msg = msg.format(self.confFile)
+                self.logger.error(msg)
+                raise ValueError, msg
+            self.logger.debug("config file path that has been calculated is {0}".format(self.confFile))
+        if not self.parser:
+            self.parser = ConfigParser.ConfigParser()
+            self.parser.read(self.confFile)
+            self.logger.debug("sections in the config file are: {0}".format(self.parser.sections()))
         
-        If run on a non fme server node then will output a path
-        relative to the actual fmw being run.
+    def setDestinationDatabaseEnvKey(self, key):
+        self.logger.info("dest db env key: {0}".format(key))
+        self.validateKey(key)
+        self.key = self.getDestinationDatabaseKey(key)
         
-        '''
-        justFmwName, fmwSuffix  = os.path.splitext(fmwName)
-        #if not self.isFMEServerNode():
-        if not self.isDataBCNode():
-            outputsDir = self.getOutputsDirectory()
-            logDir = self.const.AppConfigLogDir
-            fullPath = os.path.join(fmwDir, outputsDir, logDir, justFmwName)
-        else:
-            templateDir = self.getTemplateRootDirectory()
-            outputsDir = self.getOutputsDirectory()
-            fullPath = os.path.join(templateDir,outputsDir,'log', justFmwName )
-        fullPath = os.path.normpath(fullPath)
-        if not os.path.exists(fullPath):
-            os.makedirs(fullPath)
-        fullPath = fullPath.replace('\\', '/')
-        return fullPath
-    
+    def validateKey(self, key):
+        key = self.getDestinationDatabaseKey(key)
+        if not key:
+            msg = 'You specified a destination key of {0}. The ' + \
+                  'config file does not have any destination database ' + \
+                  'parameters configured for that key.  Acceptable keys ' + \
+                  'are: {1}'
+            validKeys = self.getValidKeys()
+            msg = msg.format(key, validKeys)
+            self.logger.error(msg)
+            raise ValueError, msg
+
 class PMPSourceAccountParser(object):
     
     def __init__(self, accntName, sqlServerIdentifier):
@@ -1048,8 +1097,111 @@ class Util(object):
             print 'Value extracted from linked parameter {0}'.format(paramValue)
             logger.debug('Value extracted from linked parameter {0}'.format(paramValue))
         return paramValue
+   
+class GetPublishedParams(object):
+    '''
+    originally all this logic was in the CalcParamsBase class.
+    Moving simple parameter retrieval to this class
+    '''
+    
+    def __init__(self, fmeMacroVals):
+        self.fmeMacroVals = fmeMacroVals
+        self.const = TemplateConstants()
         
-class CalcParamsBase( object ):
+        modDotClass = '{0}'.format(__name__)
+        self.logger = logging.getLogger(modDotClass)
+
+    def getMacroValueUsingPosition(self, macroKey, position=None):
+        '''
+        Some parameters defined by the DataBC FME framework can have multiple instances.
+        For example if there are multiple source data sets used in a replication these
+        can be defined by the parameters:
+        SRC_FEATURE_1, SRC_FEATURE_2, SRC_FEATURE_3.
+        
+        Other values like SRC_ORA_SCHEMA do not have numeric values associated with 
+        them when there is only a single value, but do when there are multiple values.
+        
+        For example:
+        SRC_ORA_SCHEMA - is the parameter when there is only one.
+        
+        When there are multple values you would define:
+        SRC_ORA_SCHEMA_1 SRC_ORA_SCHEMA_2 SRC_ORA_SCHEMA3... etc.
+        
+        This method exists to facilitate the process of retrieving these values. 
+        The method uses the variable "position" to retrieve the parameter for 
+        a  macroKey.
+        
+        macroKey - Either a macro key without any increment number, example 
+                   SRC_ORA_SCHEMA, or for variables that have incrementers
+                   like SRC_FEATURE_1 use the first value always
+                   
+        position - Identifies what numeric position to retrieve.  For example 
+                   if you specify a macroKey of SRC_FEATURE_1 and position of 5
+                   this method will return the value for the property SRC_FEATURE_5
+                   
+                   if you want the 3rd value for SRC_ORA_SCHEMA, send SRC_ORA_SCHEMA
+                   and the position 3
+        '''
+        if not position:
+            retVal = macroKey
+        else:
+            if type(position) is not int:
+                msg = 'the arg passwordPosition you provided is {0} which has a type of {1}.  This ' + \
+                      'arg must have a type of int.'
+                raise ValueError, msg
+            
+            # strip off any whitespace
+            macroKey = macroKey.strip()
+            # now split on the _ characters
+            attributePieces = macroKey.split('_')
+            numericPositionString = u'{0}'.format(position)
+            # only interested in the last piece
+            if attributePieces[-1].isdigit():
+                # then we replace this number with the position and rebuild
+                attributePieces[-1] = numericPositionString
+            else:
+                if attributePieces[-1] == '':
+                    attributePieces[-1] = numericPositionString
+                else:
+                    attributePieces.append(numericPositionString)
+            macroKey = '_'.join(attributePieces)
+            retVal = macroKey
+        return retVal
+                 
+    def getParamValue(paramNameRaw, fmwMacros):
+        '''
+        When you link parameters together, the parameter ends up being equal 
+        to the name of the parameter it is linked to.  Example:
+        
+        PARAM1 is linked to PARAM2, then when you retrieve PARAM1 it will 
+        be equal to $(PARAM2).  This method will retrieve the actual 
+        value.
+        '''
+        logger = logging.getLogger(__name__)
+        paramName = paramNameRaw.strip()
+
+        # start by getting the parameter value
+        if not paramName in fmwMacros:
+            msg = 'Trying to retrieve the published parameter {0} however it is ' + \
+                  'undefined in the FMW.  Current values include: {1}'
+            raise KeyError, msg.format(paramName, fmwMacros.keys())
+        
+        paramValue = fmwMacros[paramName]
+        if not isinstance(paramValue, basestring):
+            msg = 'The macro value for the key {0} is not a string type.  Its a {1}'
+            raise ValueError, msg.format(paramName, type(paramValue))
+        
+        logger.debug('input param value/name: -{0}/{1}-'.format(paramName, paramValue))
+        isParamNameRegex = re.compile('^\$\((.*?)\)$')
+        if isParamNameRegex.match(paramValue):
+            justParamName = (isParamNameRegex.search(paramValue)).group(1)
+            logger.debug('detected parameter {0}'.format(paramValue))
+            paramValue = Util.getParamValue(justParamName, fmwMacros)
+            print 'Value extracted from linked parameter {0}'.format(paramValue)
+            logger.debug('Value extracted from linked parameter {0}'.format(paramValue))
+        return paramValue
+    
+class CalcParamsBase( GetPublishedParams ):
     '''
     This method contains the base functionality which 
     consists of retrieval of parameters that come from L
@@ -1064,8 +1216,10 @@ class CalcParamsBase( object ):
           will be retrieved from a hardcoded json file 
     '''
     def __init__(self, fmeMacroVals):
-        self.fmeMacroVals = fmeMacroVals
-        self.const = TemplateConstants()
+        GetPublishedParams.__init__(self, fmeMacroVals)
+        # don't need these lines as they are populated by the parent class
+        #self.fmeMacroVals = fmeMacroVals
+        #self.const = TemplateConstants()
 
         fmwDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
         fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
@@ -1180,63 +1334,7 @@ class CalcParamsBase( object ):
         self.logger.info('log file path: {0}'.format(logFileFullPath))
         return logFileFullPath
          
-    def getMacroValueUsingPosition(self, macroKey, position=None):
-        '''
-        Some parameters defined by the DataBC FME framework can have multiple instances.
-        For example if there are multiple source data sets used in a replication these
-        can be defined by the parameters:
-        SRC_FEATURE_1, SRC_FEATURE_2, SRC_FEATURE_3.
-        
-        Other values like SRC_ORA_SCHEMA do not have numeric values associated with 
-        them when there is only a single value, but do when there are multiple values.
-        
-        For example:
-        SRC_ORA_SCHEMA - is the parameter when there is only one.
-        
-        When there are multple values you would define:
-        SRC_ORA_SCHEMA_1 SRC_ORA_SCHEMA_2 SRC_ORA_SCHEMA3... etc.
-        
-        This method exists to facilitate the process of retrieving these values. 
-        The method uses the variable "position" to retrieve the parameter for 
-        a  macroKey.
-        
-        macroKey - Either a macro key without any increment number, example 
-                   SRC_ORA_SCHEMA, or for variables that have incrementers
-                   like SRC_FEATURE_1 use the first value always
-                   
-        position - Identifies what numeric position to retrieve.  For example 
-                   if you specify a macroKey of SRC_FEATURE_1 and position of 5
-                   this method will return the value for the property SRC_FEATURE_5
-                   
-                   if you want the 3rd value for SRC_ORA_SCHEMA, send SRC_ORA_SCHEMA
-                   and the position 3
-        '''
-        if not position:
-            retVal = macroKey
-        else:
-            if type(position) is not int:
-                msg = 'the arg passwordPosition you provided is {0} which has a type of {1}.  This ' + \
-                      'arg must have a type of int.'
-                raise ValueError, msg
-            
-            # strip off any whitespace
-            macroKey = macroKey.strip()
-            # now split on the _ characters
-            attributePieces = macroKey.split('_')
-            numericPositionString = u'{0}'.format(position)
-            # only interested in the last piece
-            if attributePieces[-1].isdigit():
-                # then we replace this number with the position and rebuild
-                attributePieces[-1] = numericPositionString
-            else:
-                if attributePieces[-1] == '':
-                    attributePieces[-1] = numericPositionString
-                else:
-                    attributePieces.append(numericPositionString)
-            macroKey = '_'.join(attributePieces)
-            retVal = macroKey
-        return retVal
-         
+
     def getSchemaAndServiceNameForPasswordRetrieval(self, passwordPosition=None):
         # going to just get the instance to re-use that code then 
         # replace the instance with the service name

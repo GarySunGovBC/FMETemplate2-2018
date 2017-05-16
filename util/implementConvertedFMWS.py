@@ -70,10 +70,8 @@ import DataBCFMWTemplate
 import os.path
 import FMEUtil.PyFMEServerV2  # @UnresolvedImport
 import logging
-import pprint
 import pickle
 import datetime
-import sys
 
 class Params(object):
     
@@ -165,7 +163,7 @@ class FMEServerInteraction(T1T2ConversionConstants):
         fmwFiles = self.getFMWs()
         
         self.logger.debug("")
-        scheds = Schedules(self.fmeServer)
+        #scheds = Schedules(self.fmeServer)
         for fmwFile in fmwFiles:
             # for each fmw file,
             #  a) verify that their is a cron
@@ -179,7 +177,6 @@ class FMEServerInteraction(T1T2ConversionConstants):
             self.logger.debug(msg)
             
             # Doing a test run of the FMW
-            #TODO: uncomment when rest is working...  (Coding is complete)
             self.testRun(fmwFile)
             # get the cron string, at same time its cached if it hasn't already 
             # been done
@@ -229,7 +226,7 @@ class FMEServerInteraction(T1T2ConversionConstants):
         
         # status file, used to indicate whether this work has been completed yet
         statusDir = os.path.join(os.path.dirname(fmwFileFullPath), self.statusFMWUpdtDir)
-        nosuffix, suffix = os.path.splitext(fmwFile)
+        nosuffix = (os.path.splitext(fmwFile))[0]
         statusFile = "{0}.{1}".format(nosuffix, self.statusFMWUpdtSchedSuffix)
         statusFileFullPath = os.path.join(statusDir, statusFile)
         self.logger.debug("status file {0} used to indicate if fmw schedule has been updated".format(statusFileFullPath))
@@ -249,8 +246,8 @@ class FMEServerInteraction(T1T2ConversionConstants):
                 if param['name'].upper() == 'DEST_DB_ENV_KEY':
                     self.logger.debug("DEST_DB_ENV_KEY parameter is described: {0}".format(param))
                     if param['model'].lower() == 'string':
-                         tmpParam['name'] = param['name']
-                         tmpParam['value'] = 'PRD'
+                        tmpParam['name'] = param['name']
+                        tmpParam['value'] = 'PRD'
                     else:
                         tmpParam['name'] = param['name']
                         tmpParam['value'] = ['PRD']
@@ -319,7 +316,7 @@ class FMEServerInteraction(T1T2ConversionConstants):
         wrkSpcsNew = repo.getWorkspaces(FMEServRepoName_dest)
         
         statusDir = os.path.join(os.path.dirname(fmwFileFullPath), self.statusFMWUpdtDir)
-        nosuffix, suffix = os.path.splitext(fmwFile)
+        nosuffix = (os.path.splitext(fmwFile))[0]
         statusFile = "{0}.{1}".format(nosuffix, self.statusFMWUpdtRepoSuffix)
         statusFileFullPath = os.path.join(statusDir, statusFile)
         self.logger.debug("status file {0} used to indicate if fmw has been updated".format(statusFileFullPath))
@@ -419,7 +416,7 @@ class FMEServerInteraction(T1T2ConversionConstants):
         self.logger.debug("cache for cron and other info directory {0}".format(cronDir))
         if not os.path.exists(cronDir):
             os.mkdir(cronDir)
-        justFMWNoExt, ext = os.path.splitext(os.path.basename(fmwFileFullPath))
+        justFMWNoExt = (os.path.splitext(os.path.basename(fmwFileFullPath)))[0]
         justFMWNoExt = '{0}.{1}'.format(justFMWNoExt, self.cronCacheSuffix)
         cronCacheFile = os.path.join(cronDir, justFMWNoExt)
         
@@ -488,7 +485,7 @@ class FMEServerInteraction(T1T2ConversionConstants):
         # using this file as a placeholder to keep track of whether the tests
         # have been run on a particular fmw.
         testRunDir = os.path.join(os.path.dirname(fmwFileFullPath), self.statusTestDir)
-        noSuffix, suffix = os.path.splitext(fmwFile)
+        noSuffix = (os.path.splitext(fmwFile))[0]
         testFile = '{0}.{1}'.format(noSuffix, self.statusTestSuffix)
         testFileFullPath = os.path.join(testRunDir, testFile)
         self.logger.debug("testFileFullPath: {0}".format(testFileFullPath))
@@ -565,7 +562,7 @@ class FMEServerInteraction(T1T2ConversionConstants):
         print allFiles
  
         for curFile in allFiles:
-            junk, ext = os.path.splitext(curFile)
+            ext = (os.path.splitext(curFile))[1]
             if ext.lower() == '.fmw':
                 fmwFiles.append(os.path.join(self.params.srcTemplate2FMWDirectory, curFile))
         
@@ -613,7 +610,7 @@ class Schedules(T1T2ConversionConstants):
     :ivar refresh: Describe the variable here!
     :ivar scheds: Describe the variable here!
     '''
-    # TODO: once This script is complete it should be getting the schedule
+    # FYI: once This script is complete it should be getting the schedule
     #       from fme server and not using the cached version.  Cache is there
     #       because the schedule retrieval takes so long
     def __init__(self, fmeServer, pickleDir=None, refresh=False):
@@ -730,8 +727,8 @@ if __name__ == '__main__':
     #sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2017\2_working\abms_counties_sp_staging_gdb_bcgw'
     #sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2017\3_fix'
     #sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2018\04_staging'
-    sourceDir = 'Z:\Projects\FYE2018\DWACT-630_FMWConversions\Completed\grp6'
-    sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2018\04_staging'
+    #sourceDir = 'Z:\Projects\FYE2018\DWACT-630_FMWConversions\Completed\grp6'
+    #sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2018\04_staging'
     sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateTransition\04_staging'
     currentFMEServerRepo = 'BCGW_REP_SCHEDULED'
     destinationFMEServerRepo = 'BCGW_SCHEDULED'
