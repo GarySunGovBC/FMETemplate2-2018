@@ -192,7 +192,7 @@ class Test_CalcParams(unittest.TestCase):
                       ]
         for testVals in testValues:
             self.logger.info("current values: {0}".format(testVals))
-            retVal = self.calcParams.getMacroValueUsingPosition(testVals[0], testVals[1])
+            retVal = self.calcParams.getMacroKeyForPosition(testVals[0], testVals[1])
             msg = 'sent {0}, position {1}, returned {2}, expected {3}'
             msg = msg.format(testVals[0], testVals[1], retVal, testVals[2])
             self.assertEqual(testVals[2], retVal, msg)
@@ -538,10 +538,11 @@ class Test_CalcParamsDevel(unittest.TestCase):
         self.assertEqual(retrievedPassword, expectedPassword, msg.format(retrievedPassword, expectedPassword))
         
         # test a numbered account
-        proxyKey = calcParams.getMacroValueUsingPosition(const.FMWParams_SrcProxySSSchema, 4)
-        schemaKey = calcParams.getMacroValueUsingPosition(const.FMWParams_SrcSSSchema, 4)
-        hostKey = calcParams.getMacroValueUsingPosition(const.FMWParams_SrcHost, 4)
-        dbNameKey = calcParams.getMacroValueUsingPosition(const.FMWParams_SrcSSDbName, 4)
+        proxyKey = calcParams.getMacroKeyForPosition(const.FMWParams_SrcProxySSSchema, 4)
+        schemaKey = calcParams.getMacroKeyForPosition(const.FMWParams_SrcSSSchema, 4)
+        hostKey = calcParams.getMacroKeyForPosition(const.FMWParams_SrcHost, 4)
+        dbNameKey = calcParams.getMacroKeyForPosition(const.FMWParams_SrcSSDbName, 4)        
+        
         fmeMacroValues[proxyKey] = 'username_4'
         fmeMacroValues[schemaKey] = 'dontUsethis'
         fmeMacroValues[hostKey] = 'hostEntry4'
@@ -789,7 +790,7 @@ if __name__ == "__main__":
     #sys.argv = ['','Test_TemplateConfigFileReader.test_shutdown']
     #sys.argv = ['','Test_CalcParams.test_getSQLServerSchemaForPasswordRetrieval']
     #sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlServerPassword']
-    #sys.argv = ['','Test_CalcParams.test_getSrcSqlServerPassword']
+    sys.argv = ['','Test_CalcParams.test_getSrcSqlServerPassword']
     #sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlConnectStr']
 
     # 'Test_CalcParams.test_getFailedFeaturesFile',

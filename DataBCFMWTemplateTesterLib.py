@@ -305,6 +305,18 @@ class ParameterTester(object):
               'instance {1}'
         # make a copy of the original macros
         self.resetFMEMacroValues()
+        
+        self.fmeMacros = self.origMacros.copy()
+        # remove the SRC_ORA_SERVICENAME parameter for 
+        # this test
+        snKey = self.params.const.FMWParams_SrcServiceName
+        if snKey in self.fmeMacros:
+            del self.fmeMacros[snKey]
+        
+        self.params.fmeMacroVals = self.fmeMacros
+        self.params.plugin.fmeMacroVals = self.fmeMacros
+
+        
         #self.params.fmeMacroVals = self.origMacros.copy()
         
         # by default there is no SRC_ORA_SERVICENAME so should raise an error
@@ -315,7 +327,7 @@ class ParameterTester(object):
             msg = 'should have raised a ValueError as there is no SRC_ORA_SERVICENAME defined ' + \
                   'in the FMW'
             raise NameError, msg
-        except ValueError:
+        except KeyError:
             self.logger.debug("caught the error that was expected, moving on to next test")
             pass
         except:
@@ -481,7 +493,10 @@ class ParameterTester(object):
         except:
             # should fail, if it hasn't then 
             pass
-        self.params.fmeMacroVals[self.params.const.FMWParams_SrcServiceName] = self.params.fmeMacroVals[self.params.const.FMWParams_SrcInstance]
+        if not self.params.existsSourceOracleServiceName(None):
+            msg = 'The parameter {0} does not exist in the fmw'
+            raise KeyError, msg.format(self.params.const.FMWParams_SrcServiceName)
+        #self.params.fmeMacroVals[self.params.const.FMWParams_SrcServiceName] = self.params.fmeMacroVals[self.params.const.FMWParams_SrcInstance]
         easyConnectString = self.params.getSrcEasyConnectString()
         
         msg = 'easy connect string retrieved is {0}'

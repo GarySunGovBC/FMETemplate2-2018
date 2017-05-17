@@ -918,14 +918,7 @@ class PMPSourceAccountParser(object):
         snList = sn.split(':')
         return snList[0]
     
-    def getInstanceNoDomain(self):
-        '''
-        returns just the instance which is actually the 
-        servicename for this account object
-        
-        changed recently as we have transitioned from using the 
-        ETL-OPERATIONAL-DBLINKS resource to EXTERNAL-DB
-        '''
+    def getServiceNameNoDomain(self):
         #noDomain = Util.removeDomain(self.accntList[1])
         # return noDomain
         #accntList = self.accntList[1].strip().split('.')
@@ -937,6 +930,21 @@ class PMPSourceAccountParser(object):
         serviceNameList = serviceName.split('.')
         serviceNameNoDomain = serviceNameList[0]
         return serviceNameNoDomain
+    
+    def getInstanceNoDomain(self):
+        '''
+        returns just the instance which is actually the 
+        servicename for this account object
+        
+        changed recently as we have transitioned from using the 
+        ETL-OPERATIONAL-DBLINKS resource to EXTERNAL-DB
+        '''
+        # use of instance is deprecated, passing call to 
+        # other method
+        msg = 'Using a deprecated method: getInstanceNoDomain.  Switch to: ' + \
+              'getServiceNameNoDomain'
+        self.logger.warning(msg)
+        return self.getServiceNameNoDomain()
         
     def isSqlServerRecord(self):
         retVal = False
@@ -1101,7 +1109,12 @@ class Util(object):
 class GetPublishedParams(object):
     '''
     originally all this logic was in the CalcParamsBase class.
-    Moving simple parameter retrieval to this class
+    Moving simple parameter retrieval to this class, 
+    
+    contains methods that will retrieve published parameters
+    from the FMEMACRO dictionary.  
+    
+    Includes checks that make sure required parameters exist.
     '''
     
     def __init__(self, fmeMacroVals):
@@ -1110,8 +1123,207 @@ class GetPublishedParams(object):
         
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
+        
+    def existsMacroKey(self, macroKey):
+        '''
+        Used to determine if a macro key exists
+        or not
+        '''
+        
+        retVal = False
+        if macroKey in self.fmeMacroVals:
+            retVal = True
+        return retVal
+        
+    def existsSrcPort(self, position):
+        retVal = True
+        macroKey = self.const.FMWParams_SrcSSSchema
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcPort = None
+        if not self.existsMacroKey(macroKey):
+            retVal = False
+        return retVal
+    
+    def existsSrcSDEDirectConnectClientString(self, position):
+        retVal = True
+        macroKey = self.const.FMWParams_SrcSDEDirectConnectClientStr
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        if not self.existsMacroKey(macroKey):
+            retVal = False
+        return retVal
+    
+    def existsDestinationSchema(self, position):
+        retVal = True        
+        destSchemaKey = self.const.FMWParams_DestSchema
+        destSchemaKey = self.getMacroKeyForPosition(destSchemaKey, position )
+        if not self.existsMacroKey(destSchemaKey):
+            retVal = False
+        return retVal        
+    
+    def existsSourceOracleSchema(self, position):
+        retVal = True        
+        dataSchema = self.const.FMWParams_SrcSchema
+        proxySchema = self.const.FMWParams_SrcProxySchema
+        
+        dataSchema = self.getMacroKeyForPosition(dataSchema, position )
+        proxySchema = self.getMacroKeyForPosition(proxySchema, position )
+        
+        if not self.existsMacroKey(dataSchema) and \
+           not self.existsMacroKey(proxySchema):
+            retVal = False
+        return retVal
+    
+    def existsSourceOracleProxySchema(self, position):
+        retVal = True
+        proxySchema = self.const.FMWParams_SrcProxySchema
+        proxySchema = self.getMacroKeyForPosition(proxySchema, position )
+        if not self.existsMacroKey(proxySchema):
+            retVal = False
+        return retVal
 
-    def getMacroValueUsingPosition(self, macroKey, position=None):
+    def existsSourceOracleServiceName(self, position):
+        retVal = True        
+        macroKey = self.const.FMWParams_SrcServiceName
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        if not self.existsMacroKey(macroKey):
+            retVal = False
+        return retVal
+    
+    def getSrcSDEDirectConnectClientString(self, position):
+        macroKey = self.const.FMWParams_SrcSDEDirectConnectClientStr
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcDCConnStr = self.getFMEMacroValue(macroKey)
+        return srcDCConnStr
+    
+    def getSourceOracleSchema(self, position=None):
+        macroKey = self.const.FMWParams_SrcSchema
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcOraSchema = self.getFMEMacroValue(macroKey)
+        return srcOraSchema
+    
+    def getSourceOracleProxySchema(self, position=None):
+        macroKey = self.const.FMWParams_SrcProxySchema
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        #srcOraProxySchema = ''
+        #if self.existsMacroKey(macroKey):
+        srcOraProxySchema = self.getFMEMacroValue(macroKey)
+        return srcOraProxySchema
+               
+    def getSourceOracleServiceName(self, position=None):
+        macroKey = self.const.FMWParams_SrcServiceName
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcOraServName = self.getFMEMacroValue(macroKey)
+        return srcOraServName
+                
+    def getDestDatabaseEnvKey(self):
+        macroKey = self.const.FMWParams_DestKey
+        destDbEnvKey = self.getFMEMacroValue(macroKey)
+        return destDbEnvKey
+             
+    def getDestinationSchema(self, position=None):       
+        destSchemaKey = self.const.FMWParams_DestSchema
+        destSchemaKey = self.getMacroKeyForPosition(destSchemaKey, position )
+        destSchema = self.getFMEMacroValue(destSchemaKey)
+        return destSchema
+                
+    def getFMWDirectory(self):
+        macroKey = self.const.FMWMacroKey_FMWDirectory
+        fmwDir = self.getFMEMacroValue(macroKey)
+        return fmwDir
+    
+    def getFMWFile(self):
+        macroKey = self.const.FMWMacroKey_FMWName
+        fmwFile = self.getFMEMacroValue(macroKey)
+        return fmwFile
+    
+    def getSourceSqlServerConnectionSchema(self, position=None):
+        '''
+        If a proxy schema is defined then it will return that 
+        schema, otherwise it will return the same schema 
+        the data resides within
+        '''
+        macroKeyProxy = self.getMacroKeyForPosition(self.const.FMWParams_SrcProxySSSchema, position )
+        macroKeyData = self.getMacroKeyForPosition(self.const.FMWParams_SrcSSSchema, position )
+        
+        if self.existsMacroKey(macroKeyProxy):
+            macroKey = macroKeyProxy
+        else:
+            macroKey = macroKeyData
+        #macroKey = self.getMacroKeyForPosition(macroKey, position )
+        
+        msg = "retrieving data from the parameter {0}"
+        self.logger.debug(msg.format(macroKey))
+
+        srcSqlServerProxySchema = self.getFMEMacroValue(macroKey)
+        return srcSqlServerProxySchema
+    
+    def getSrcSqlServerDatabaseName(self, position=None, noDomain=False):
+        self.logger.debug(self.debugMethodMessage.format("getSQLServerSchema"))
+        # these are the keys that are used to recover values from the
+        # fmwmacro dictionary
+        # TODO: THIS IS WHERE I AM
+        macroKey = self.const.FMWParams_SrcSSDbName
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        
+        self.logger.debug('schemaMacroKey: {0}'.format(macroKey))
+        srcSqlServerDbName = self.getFMEMacroValue(macroKey)
+        if noDomain:
+            srcSqlServerDbName = Util.removeDomain(srcSqlServerDbName)
+        return srcSqlServerDbName
+    
+    def getSrcSQLServerSchema(self, position=None):
+        macroKey = self.const.FMWParams_SrcSSSchema
+        macroKey = self.getMacroKeyForPosition(macroKey, position)
+        srcSchema = self.getFMEMacroValue(macroKey)
+        return srcSchema
+    
+    def getSrcSqlServerProxySchema(self, position=None):
+        macroKey = self.const.FMWParams_SrcProxySSSchema
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        proxySchema = self.getFMEMacroValue(macroKey)
+        return proxySchema
+
+    def getSrcOraServiceName(self, position=None):
+        '''
+        if the fmw has the source service name defined as a published parameter
+        this method will return it.  If it does not exist then this 
+        method will return none.
+        '''
+        macroKey = self.const.FMWParams_SrcServiceName
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcServName = self.getFMEMacroValue(macroKey)
+        return srcServName
+
+    def getSrcHost(self, position=None, noDomain=False):
+        '''
+        if the fmw has the source host defined as a published parameter
+        this method will return it.  If it does not exist then this 
+        method will return none
+        '''
+        macroKey = self.const.FMWParams_SrcHost
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcHost = self.getFMEMacroValue(macroKey)
+        if noDomain:
+            srcHost = Util.removeDomain(srcHost)
+        return srcHost        
+        
+    def getSrcPort(self, position=None):
+        '''
+        if the fmw has the source host defined as a published parameter
+        this method will return it.  If it does not exist then this 
+        method will return none
+        '''
+        macroKey = self.const.FMWParams_SrcPort
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcPort = None
+        if not self.existsMacroKey(macroKey):
+            msg = "There is no: {0} macro key defined"
+            self.logger.warning(msg.format(macroKey))
+        else:
+            srcPort = self.getFMEMacroValue(macroKey)
+        return srcPort
+        
+    def getMacroKeyForPosition(self, macroKey, position=None):
         '''
         Some parameters defined by the DataBC FME framework can have multiple instances.
         For example if there are multiple source data sets used in a replication these
@@ -1167,8 +1379,8 @@ class GetPublishedParams(object):
             macroKey = '_'.join(attributePieces)
             retVal = macroKey
         return retVal
-                 
-    def getParamValue(paramNameRaw, fmwMacros):
+            
+    def getFMEMacroValue(self, paramNameRaw):
         '''
         When you link parameters together, the parameter ends up being equal 
         to the name of the parameter it is linked to.  Example:
@@ -1176,17 +1388,19 @@ class GetPublishedParams(object):
         PARAM1 is linked to PARAM2, then when you retrieve PARAM1 it will 
         be equal to $(PARAM2).  This method will retrieve the actual 
         value.
+        
+        Use this method to retrieve all macro values.
         '''
         logger = logging.getLogger(__name__)
         paramName = paramNameRaw.strip()
 
         # start by getting the parameter value
-        if not paramName in fmwMacros:
+        if not paramName in self.fmeMacroVals:
             msg = 'Trying to retrieve the published parameter {0} however it is ' + \
                   'undefined in the FMW.  Current values include: {1}'
-            raise KeyError, msg.format(paramName, fmwMacros.keys())
+            raise KeyError, msg.format(paramName, self.fmeMacroVals.keys())
         
-        paramValue = fmwMacros[paramName]
+        paramValue = self.fmeMacroVals[paramName]
         if not isinstance(paramValue, basestring):
             msg = 'The macro value for the key {0} is not a string type.  Its a {1}'
             raise ValueError, msg.format(paramName, type(paramValue))
@@ -1196,7 +1410,7 @@ class GetPublishedParams(object):
         if isParamNameRegex.match(paramValue):
             justParamName = (isParamNameRegex.search(paramValue)).group(1)
             logger.debug('detected parameter {0}'.format(paramValue))
-            paramValue = Util.getParamValue(justParamName, fmwMacros)
+            paramValue = Util.getParamValue(justParamName, self.fmeMacroVals)
             print 'Value extracted from linked parameter {0}'.format(paramValue)
             logger.debug('Value extracted from linked parameter {0}'.format(paramValue))
         return paramValue
@@ -1221,11 +1435,14 @@ class CalcParamsBase( GetPublishedParams ):
         #self.fmeMacroVals = fmeMacroVals
         #self.const = TemplateConstants()
 
-        fmwDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
-        fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
-        destKey = self.fmeMacroVals[self.const.FMWParams_DestKey]
+        #fmwDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        #fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
+        #destKey = self.fmeMacroVals[self.const.FMWParams_DestKey]
+        fmwDir = self.getFMWDirectory()
+        fmwName = self.getFMWFile()
+        self.destKey = self.getDestDatabaseEnvKey()
 
-        ModuleLogConfig(fmwDir, fmwName, destKey)
+        ModuleLogConfig(fmwDir, fmwName, self.destKey)
 
         #ModuleLogConfig()
         #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
@@ -1233,7 +1450,7 @@ class CalcParamsBase( GetPublishedParams ):
         self.logger = logging.getLogger(modDotClass)
         self.logger.debug("CalcParamsBase logger name {0}".format(modDotClass))
 
-        self.paramObj = TemplateConfigFileReader(self.fmeMacroVals[self.const.FMWParams_DestKey])
+        self.paramObj = TemplateConfigFileReader(self.destKey)
                 
         #self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
         self.debugMethodMessage = "method: {0}"
@@ -1300,10 +1517,18 @@ class CalcParamsBase( GetPublishedParams ):
         self.logger.info("destination direct connect string: {0}".format(srcSDEDirectConnectString))
         return srcSDEDirectConnectString
         
-    def getDestinationPassword(self):
+    def getDestinationPassword(self, position=None):
         self.logger.debug(self.debugMethodMessage.format("getDestinationPassword"))
-        pswd = self.plugin.getDestinationPassword()
-        return pswd
+        if not self.existsDestinationSchema(position):
+            msg = 'The destination schema parameter {0} ' + \
+                  'is not defined.  Cannot retrieve the destination ' + \
+                  'password until this parameter is defined'
+            destSchemaKey = self.getMacroKeyForPosition(self.const.FMWParams_DestSchema, position )
+            msg = msg.format(destSchemaKey )
+            self.logger.error(msg)
+            raise KeyError, msg
+        pswd = self.plugin.getDestinationPassword(position=position)
+        return pswd    
         
     def getDestinationSDEPort(self):
         self.logger.debug(self.debugMethodMessage.format("getDestinationSDEPort"))
@@ -1322,8 +1547,10 @@ class CalcParamsBase( GetPublishedParams ):
         return failedFeatures
         
     def getFMWLogFileRelativePath(self, create=True):
-        logFileFullPath = Util.calcLogFilePath(self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory], 
-                             self.fmeMacroVals[self.const.FMWMacroKey_FMWName])
+        # TODO: get the fmw name and directory using methods from parent class then pass them onto the util method
+        fmwDir = self.getFMWDirectory()
+        fmwFile = self.getFMWFile()
+        logFileFullPath = Util.calcLogFilePath(fmwDir, fmwFile)
         # retVal = [relativePath,absFullPath, logDirFullPath, outDirFullPath]
         logFileDir = os.path.dirname(logFileFullPath)
         #outDir = pathList.pop()
@@ -1332,41 +1559,7 @@ class CalcParamsBase( GetPublishedParams ):
             os.makedirs(logFileDir)
         #self.logger.debug("FME LOG FILE TEST STATEMNET")
         self.logger.info('log file path: {0}'.format(logFileFullPath))
-        return logFileFullPath
-         
-
-    def getSchemaAndServiceNameForPasswordRetrieval(self, passwordPosition=None):
-        # going to just get the instance to re-use that code then 
-        # replace the instance with the service name
-        self.logger.debug(self.debugMethodMessage.format("getSchemaAndServiceNameForPasswordRetrieval"))
-        srcSchema = (self.getSchemaForPasswordRetrieval(passwordPosition))[0]
-        serviceNameMacroKey = self.const.FMWParams_SrcServiceName
-        if passwordPosition:
-            if type(passwordPosition) is not int:
-                msg = 'the arg passwordPosition you provided is {0} which has a type of {1}.  This ' + \
-                      'arg must have a type of int.'
-                raise ValueError, msg
-            serviceNameMacroKey = self.const.getSrcServiceNameParam(passwordPosition)
-        return srcSchema, serviceNameMacroKey
-            
-    def getSchemaForPasswordRetrieval(self, passwordPosition=None):
-        self.logger.debug(self.debugMethodMessage.format("getSchemaForPasswordRetrieval"))
-        schemaMacroKey = self.const.FMWParams_SrcSchema
-        instanceMacroKey = self.const.FMWParams_SrcInstance
-        proxySchemaMacroKey = self.const.FMWParams_SrcProxySchema
-        if passwordPosition:
-            if type(passwordPosition) is not int:
-                msg = 'the arg passwordPosition you provided is {0} which has a type of {1}.  This ' + \
-                      'arg must have a type of int.'
-                raise ValueError, msg
-            instanceMacroKey = self.const.getSrcInstanceParam(passwordPosition)
-            schemaMacroKey = self.const.getSrcSchemaParam(passwordPosition)
-            proxySchemaMacroKey = self.const.getSrcSchemaProxyParam(passwordPosition)
-        if self.fmeMacroVals.has_key(proxySchemaMacroKey):
-            # if proxy key has a value then retrieve the password for the proxy.
-            # if it does not then then retrieve the value for the schema
-            schemaMacroKey = proxySchemaMacroKey
-        return schemaMacroKey, instanceMacroKey
+        return logFileFullPath        
            
     def getSourcePassword(self, passwordPosition=None):
         '''
@@ -1402,27 +1595,38 @@ class CalcParamsBase( GetPublishedParams ):
         :rtype: str
         '''
         self.logger.debug(self.debugMethodMessage.format("getSourcePassword"))
-        #schemaMacroKey, instanceMacroKey = self.getSchemaForPasswordRetrieval(passwordPosition)
-        schemaMacroKey, serviceName = self.getSchemaAndServiceNameForPasswordRetrieval(passwordPosition)
-        msg = 'source password retrieval uses the service name and schema to retrieve ' + \
-              'the source password from PMP.  There is no {0} published parameter defined ' + \
-              'in the FMW, and you are attempting to retrieve a source password.'
         
-        if not serviceName in self.fmeMacroVals:
-            raise ValueError, msg.format(serviceName)
-        if not schemaMacroKey in self.fmeMacroVals:
-            raise ValueError, msg.format(schemaMacroKey)
+        if not self.existsSourceOracleSchema(passwordPosition):
+            dataSchema = self.const.FMWParams_SrcSchema
+            proxySchema = self.const.FMWParams_SrcProxySchema
             
-        #inst = self.fmeMacroVals[serviceName]
-        #schema = self.fmeMacroVals[schemaMacroKey]
-        inst = Util.getParamValue(serviceName, self.fmeMacroVals)
-        schema = Util.getParamValue(schemaMacroKey, self.fmeMacroVals)
-
+            dataSchemaPubParam = self.getMacroKeyForPosition(dataSchema, passwordPosition )
+            proxySchemaPubParam = self.getMacroKeyForPosition(proxySchema, passwordPosition )
+            
+            msg = 'In order to retrieve the source password you must ' + \
+                  'define the published parameters for either source data ' + \
+                  'schema: {0}, or a proxy schema parameter: {1}'
+            msg = msg.format(dataSchemaPubParam, proxySchemaPubParam)
+            self.logger.error(msg)
+            raise KeyError, msg
+        
+        if not self.existsSourceOracleServiceName(passwordPosition):
+            serviceNamePubParam = self.const.FMWParams_SrcServiceName
+            serviceNamePubParam = self.getMacroKeyForPosition(serviceNamePubParam, passwordPosition )
+            msg = 'in order to retrieve the source password you must ' + \
+                  'define the published parameter for source oracle ' + \
+                  'service name ({0})'
+            msg = msg.format(serviceNamePubParam)
+            self.logger.error(msg)
+            raise KeyError, msg
+        
+        # RETRIEVING THE SOURCE SCHEMA AND SERIVE NAME.  ERROR WILL BE RAISE
+        # IF THESE PARAMETER DO NOT EXIST
+        srcOraSchema = self.getSourceOracleSchema(passwordPosition)
+        srcOraServName = self.getSourceOracleServiceName(passwordPosition)
+        msg = 'retrieving an oracle password for the schema: {0} and servicename {1}'
+        self.logger.info(msg.format(srcOraSchema, srcOraServName))
         pswd = self.plugin.getSourcePassword(passwordPosition)
-        msg = "retriving password for the service name {0} schema {1} which are the values in " + \
-              "the published parameters {2} and {3}"
-        msg = msg.format(inst, schema, serviceName, schemaMacroKey)
-        self.logger.info(msg)
         return pswd
             
     def getSourcePasswordHeuristic(self, position=None):
@@ -1450,91 +1654,17 @@ class CalcParamsBase( GetPublishedParams ):
     def getSrcEasyConnectString(self, position=None):
         self.logger.debug(self.debugMethodMessage.format("getSrcEasyConnectString"))
         srcEasyConnectString = None
-        # retrieveing the correct macro keys.  If position is defined it 
-        # denotes which set of host / port / service name parameter combinations 
-        # to use.  Example src_host_1, src_port_1, src_ora_servicename_1, or if 
-        # posion was defined as 2, then would retrieve from src_host_2, src_port_2,
-        # src_ora_servicename_2.  If no position is defined then will just stick
-        # with src_ora_servicename, src_host, src_port
-        srcHostMacroKey = self.const.FMWParams_SrcHost
-        srcServiceNameMacroKey = self.const.FMWParams_SrcServiceName
-        srcPortMacroKey = self.const.FMWParams_SrcPort
-        if position:
-            if type(position) is not int:
-                msg = 'the arg passwordPosition you provided is {0} which has a type of {1}.  This ' + \
-                      'arg must have a type of int.'
-                raise ValueError, msg
-            srcHostMacroKey = self.const.getSrcHost(position)
-            srcServiceNameMacroKey = self.const.getSrcServiceNameParam(position)
-            srcPortMacroKey = self.const.getSrcPort(position)
         
-        msg = 'To assemble an easy connect string you must have defined the following ' + \
-              'published parameters: {0}, {1} and {2}. One or more of these parameters is ' +\
-              'not currently defined in your source FMW.  Please make sure they all ' + \
-              'are defined as published parameters.'
-        if not srcHostMacroKey in self.fmeMacroVals or \
-           not srcServiceNameMacroKey in self.fmeMacroVals:
-            raise ValueError, msg.format(srcServiceNameMacroKey, \
-                                         srcHostMacroKey, \
-                                         srcPortMacroKey)
+        srcHost = self.getSrcHost(position)
+        srcServiceName = self.getSrcOraServiceName(position)
+        srcPort = self.getSrcPort(position)
         
-        # if the port is not defined in a published parameter 
-        # then use the default port described in the config file
-        # (this is the default oracle port number)
-        if not srcPortMacroKey in self.fmeMacroVals:
+        if not srcPort:
             srcPort = self.paramObj.getDefaultOraclePort()
-        else:
-            #srcPort = self.fmeMacroVals[srcPortMacroKey]
-            srcPort = Util.getParamValue(srcPortMacroKey, self.fmeMacroVals)
-        
-        # now retrieve the values:
-        srcServiceName = Util.getParamValue(srcServiceNameMacroKey, self.fmeMacroVals)
-        srcHost = Util.getParamValue(srcHostMacroKey, self.fmeMacroVals)
-        #srcServiceName = self.fmeMacroVals[srcServiceNameMacroKey]
-        #srcHost = self.fmeMacroVals[srcHostMacroKey]
-        
+                
         # fme easy connect sting reason.bcgov:1521/EWRWPRD1.ENV.GOV.BC.CA
         easyConnectString = '{0}:{1}/{2}'.format(srcHost, srcPort, srcServiceName)
         return easyConnectString
-    
-    def getSrcHost(self, position=None, noDomain=False):
-        '''
-        if the fmw has the source host defined as a published parameter
-        this method will return it.  If it does not exist then this 
-        method will return none
-        '''
-        self.logger.debug(self.debugMethodMessage.format("getSrcHost"))
-        #srcHost = None
-        srcHostMacroKey = self.const.FMWParams_SrcHost
-        if position:
-            if type(position) is not int:
-                msg = 'the arg position you provided is {0} which has a type of {1}.  This ' + \
-                      'arg must have a type of int.'
-                raise ValueError, msg
-            srcHostMacroKey = self.const.getSrcHost(position)
-        srcHost = Util.getParamValue(srcHostMacroKey, self.fmeMacroVals)
-        if noDomain:
-            srcHost = Util.removeDomain(srcHost)
-        return srcHost
-    
-    def getSrcServiceName(self, position=None):
-        '''
-        if the fmw has the source service name defined as a published parameter
-        this method will return it.  If it does not exist then this 
-        method will return none.
-        '''
-        self.logger.debug(self.debugMethodMessage.format("getSrcServiceName"))
-        srcServNameMacroKey = self.const.FMWParams_SrcServiceName
-        if position:
-            if type(position) is not int:
-                msg = 'the arg position you provided is {0} which has a type of {1}.  This ' + \
-                      'arg must have a type of int.'
-                raise ValueError, msg
-            srcServNameMacroKey = self.const.getSrcServiceNameParam(position)
-        srcServName = Util.getParamValue(srcServNameMacroKey, self.fmeMacroVals)
-        #if srcHostMacroKey in self.fmeMacroVals:
-        #    srcHost = self.fmeMacroVals[srcHostMacroKey]
-        return srcServName
                 
     def getSrcSDEDirectConnectString(self, position=None):
         '''
@@ -1564,44 +1694,12 @@ class CalcParamsBase( GetPublishedParams ):
         find a direct connect database that requires us to use the port.
         '''
         self.logger.debug(self.debugMethodMessage.format("getSrcSDEDirectConnectString"))
-        srcSDEDirectConnectString = None
-        srcHostMacroKey = self.const.FMWParams_SrcHost
-        srcServiceNameMacroKey = self.const.FMWParams_SrcServiceName
-        srcOraClientStringMacroKey = self.const.FMWParams_SrcSDEDirectConnectClientStr
-        # not actually used, but retrieving port in case we need it donw 
-        # the road.
-        #srcPortMacroKey = self.const.FMWParams_SrcPort
-        if position:
-            if type(position) is not int:
-                msg = 'the arg passwordPosition you provided is {0} which has a type of {1}.  This ' + \
-                      'arg must have a type of int.'
-                raise ValueError, msg
-            srcHostMacroKey = self.const.getSrcHost(position)
-            srcServiceNameMacroKey = self.const.getSrcServiceNameParam(position)
-            srcPortMacroKey = self.const.getSrcPort(position)
-            srcOraClientStringMacroKey = self.const.getOraClientString(position)
-            
-        # have the macrokeys now to retrieve the values
-        msg = 'In order to assemble an ESRI SDE Direct Connect string ' + \
-              'the following parameters need to be defined: {0}, {1}.  One or ' +\
-              'all of these parameters is not defined in your FMW.  Define ' + \
-              'and populate these parameters in your fmw and re-run.'
-        if srcHostMacroKey not in self.fmeMacroVals or \
-           srcServiceNameMacroKey not in self.fmeMacroVals:
-            raise ValueError, msg.format(srcHostMacroKey, srcServiceNameMacroKey)
         
-        # now get the actual values for host and service name
-        srcServiceName = Util.getParamValue(srcServiceNameMacroKey, self.fmeMacroVals)
-        srcHost = Util.getParamValue(srcHostMacroKey, self.fmeMacroVals)
-        #srcServiceName = self.fmeMacroVals[srcServiceNameMacroKey]
-        #srcHost = self.fmeMacroVals[srcHostMacroKey]
-        
-        # now get the client string
-        if srcOraClientStringMacroKey in self.fmeMacroVals:
-            #oraClientString = self.fmeMacroVals[srcOraClientStringMacroKey]
-            oraClientString = Util.getParamValue(srcOraClientStringMacroKey, self.fmeMacroVals)
+        srcHost = self.getSrcHost(position)
+        srcServiceName = self.getSrcOraServiceName(position)
+        if self.existsSrcSDEDirectConnectClientString(position):
+            oraClientString = self.getSrcSDEDirectConnectClientString()
         else:
-            # use the default, get from the config properties
             oraClientString = self.paramObj.getOracleDirectConnectClientString()
         
         # now construct the direct connect string
@@ -1610,87 +1708,29 @@ class CalcParamsBase( GetPublishedParams ):
         srcSDEDirectConnectString = dirConnectTemplate.format(oraClientString, srcHost, srcServiceName)
         self.logger.info("source direct connect string: {0}".format(srcSDEDirectConnectString))
         return srcSDEDirectConnectString
-            
-    def getSrcPort(self, position=None):
-        '''
-        if the fmw has the source host defined as a published parameter
-        this method will return it.  If it does not exist then this 
-        method will return none
-        '''
-        self.logger.debug(self.debugMethodMessage.format("getSrcPort"))
-        srcPort = None
-        srcPortMacroKey = self.const.FMWParams_SrcPort
-        if position:
-            if type(position) is not int:
-                msg = 'the arg passwordPosition you provided is {0} which has a type of {1}.  This ' + \
-                      'arg must have a type of int.'
-                raise ValueError, msg
-            srcPortMacroKey = self.const.getSrcPort(position)
-        if srcPortMacroKey in self.fmeMacroVals:
-            #srcPort = self.fmeMacroVals[srcPortMacroKey]
-            srcPort = Util.getParamValue(srcPortMacroKey, self.fmeMacroVals)
-        else:
-            msg = 'Trying to retrieve the parameter {0} however it is undefined'
-            self.logger.warning(msg.format(srcPortMacroKey))
-        return srcPort
-        
-    def getSrcSqlServerDatabaseName(self, position=None, noDomain=False):
-        self.logger.debug(self.debugMethodMessage.format("getSQLServerSchema"))
-        # these are the keys that are used to recover values from the
-        # fmwmacro dictionary
-        # TODO: THIS IS WHERE I AM
-        macroKey = self.const.FMWParams_SrcSSDbName
-        if position:
-            schemaMacroKey = self.getMacroValueUsingPosition(macroKey, position)
-        else:
-            schemaMacroKey = macroKey
-        self.logger.debug('schemaMacroKey: {0}'.format(schemaMacroKey))
-        srcServiceName = Util.getParamValue(schemaMacroKey, self.fmeMacroVals)
-        if noDomain:
-            srcServiceName = Util.removeDomain(srcServiceName)
-        return srcServiceName
-        
-    def getSrcSqlServerProxySchema(self, position=None):
-        self.logger.debug(self.debugMethodMessage.format("getSrcSqlServerProxySchema"))
-        if position:
-            proxySchemaMacroKey = self.getMacroValueUsingPosition(self.const.FMWParams_SrcProxySSSchema, position)
-        else:
-            proxySchemaMacroKey = self.const.FMWParams_SrcProxySSSchema
-        proxySchema = Util.getParamValue(proxySchemaMacroKey, self.fmeMacroVals)
-        return proxySchema
     
     def getSrcSqlServerPassword(self, position=None):
         self.logger.debug(self.debugMethodMessage.format("getSourceSqlServerPassword"))
-        
+                
         # test to see if a proxy schema exists.  If it does then use the 
         # proxy schema to retrieve the password
-        sqlServerProxySchema = self.getMacroValueUsingPosition(self.const.FMWParams_SrcProxySSSchema, position)
-        if sqlServerProxySchema in self.fmeMacroVals:
-            schema = self.getSrcSqlServerProxySchema(position)
-        else:
-            schema = self.getSrcSQLServerSchema(position)
+        schema = self.getSourceSqlServerConnectionSchema(position)
+        self.logger.info("schema being used to retrieve sql server password: {0}".format(schema))
+        
+        #sqlServerProxySchema = self.getMacroKeyForPosition(self.const.FMWParams_SrcProxySSSchema, position)
+        #if sqlServerProxySchema in self.fmeMacroVals:
+        #    schema = self.getSrcSqlServerProxySchema(position)
+        #else:
+        #    schema = self.getSrcSQLServerSchema(position)
+        msg = 'retrieving the sql server password for the schema: {0}, ' + \
+              'dbname: {1}, host: {2}'
         ssDbName = self.getSrcSqlServerDatabaseName(position)
         ssHost = self.getSrcHost(position)
-        
+        self.logger.info(msg.format(schema,ssDbName,ssHost ))
         #pswd = self.plugin.getSourcePassword(position)
         pswd = self.plugin.getSourceSqlServerPassword(position)
         return pswd
     
-    def getSrcSQLServerSchema(self, position=None):
-        #TODO: This is how all methods in this class should retrieve
-        #      values.  Methods that do not use this methodology should
-        #      be converted to use it.
-        self.logger.debug(self.debugMethodMessage.format("getSQLServerSchema"))
-        # these are the keys that are used to recover values from the
-        # fmwmacro dictionary
-        # TODO: THIS IS WHERE I AM
-        if position:
-            schemaMacroKey = self.getMacroValueUsingPosition(self.const.FMWParams_SrcSSSchema, position)
-        else:
-            schemaMacroKey = self.const.FMWParams_SrcSSSchema
-        srcSchema = Util.getParamValue(schemaMacroKey, self.fmeMacroVals)
-        return srcSchema
-        
     def getSrcSQLServerConnectString(self, position=None):
         '''
         Gets the:
@@ -1730,45 +1770,27 @@ class CalcParamsBase( GetPublishedParams ):
         :rtype: What is the return type
         '''
         self.logger.debug(self.debugMethodMessage.format("isSourceBCGW"))
-        # make sure it has the parameter for SRC_ORA_INSTANCE
-        # indicating that it is a source oracle instance
-        retVal = None
-        srcServiceNameParamName = self.const.FMWParams_SrcServiceName
-        if position:
-            srcServiceNameParamName = self.const.getSrcServiceNameParam(position)
         
-        # if the param is linked then it will be equal to the name of the parameter it is 
-        # linked to.  This method will detect that, and retrieve the actual value if necessary.
-        
-        
-        if srcServiceNameParamName in self.fmeMacroVals:
-            # now get the contents of that parameter
-            sourceOraServName = Util.getParamValue(srcServiceNameParamName, self.fmeMacroVals)
-            self.logger.debug("Oracle source service name parameter / value: {0}/{1}".format(srcServiceNameParamName, sourceOraServName))
-            #sourceOraServName = self.fmeMacroVals[srcServiceNameParamName]
-            destKeys = self.paramObj.parser.items(self.const.ConfFileSection_destKeywords)
-            for destKeyItems in destKeys:
-                destKey = destKeyItems[0]
-                #print 'destKey', destKey
-                inst = self.paramObj.parser.get(destKey, self.const.ConfFileSection_serviceNameKey)
-                instAliases = self.paramObj.parser.get(destKey, self.const.ConfFileSection_instanceAliasesKey)
-                instances = instAliases.split(',')
-                instances.append(inst)
-                for curInstName in instances:
-                    self.logger.debug("comparing {0} and {1}".format(curInstName, sourceOraServName))
-                    if Util.isEqualIgnoreDomain(curInstName, sourceOraServName):
-                        retVal = destKey
-                        return retVal
-        else:
-            msg = 'There is no published parameter in the FMW named {0}.  This parameter' + \
-                  'is required for the source to be bcgw.'
-            self.logger.warning(msg.format(srcServiceNameParamName))
-            
-        #msg = "the source oracle service name {0} is not a BCGW instance.  " + \
-        #      "It is not defined as an instance for any of the following " + \
-        #      "environments: (DLV|TST|PRD) " 
-        #msg = msg.format(sourceOraServName)
-        #self.logger.debug(msg)
+        msg = 'retrieving the source oracle service name parameter for position {0}'
+        msg = msg.format(position)
+        self.logger.info(msg)
+        sourceOraServName = self.getSourceOracleServiceName(position)
+        self.logger.debug("Oracle source service name: {0} position {1}".format(sourceOraServName, position))
+
+        retVal = False
+        destKeys = self.paramObj.parser.items(self.const.ConfFileSection_destKeywords)
+        for destKeyItems in destKeys:
+            destKey = destKeyItems[0]
+            #print 'destKey', destKey
+            servName = self.paramObj.parser.get(destKey, self.const.ConfFileSection_serviceNameKey)
+            servNameAliases = self.paramObj.parser.get(destKey, self.const.ConfFileSection_instanceAliasesKey)
+            instances = servNameAliases.split(',')
+            instances.append(servName)
+            for curInstName in instances:
+                self.logger.debug("comparing {0} and {1}".format(curInstName, sourceOraServName))
+                if Util.isEqualIgnoreDomain(curInstName, sourceOraServName):
+                    retVal = True
+                    return retVal
         return retVal
         
 class CalcParamsDevelopment(object):
@@ -1779,9 +1801,9 @@ class CalcParamsDevelopment(object):
         self.fmeMacroVals =self.parent.fmeMacroVals
         self.paramObj = self.parent.paramObj
         
-        fmwDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
-        fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
-        destKey = self.fmeMacroVals[self.const.FMWParams_DestKey]
+        fmwDir = self.parent.getFMWDirectory()
+        fmwName = self.parent.getFMWFile()
+        destKey = self.parent.getDestDatabaseEnvKey()
         
         ModuleLogConfig(fmwDir, fmwName, destKey)
         
@@ -1824,7 +1846,7 @@ class CalcParamsDevelopment(object):
                 
         # calculate the expected location of the creds file, ie the creds file 
         # name in the current fmw path.
-        fmwPath = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        fmwPath = self.parent.getFMWDirectory()
         self.logger.debug("fmwPath: {0}".format(fmwPath))
         credsFileFMWPath = os.path.join(fmwPath, exampleCredsFile)
         credsFileFMWPath = os.path.realpath(credsFileFMWPath)
@@ -1852,10 +1874,10 @@ class CalcParamsDevelopment(object):
             # road when the script attempts to find parameters in this file.
         return credsFileFMWPath
         
-    def getDestinationPassword(self):
+    def getDestinationPassword(self, position=None):
         retVal = None
         self.logger.debug("getting password in development mode")
-        destSchema = self.parent.fmeMacroVals[self.const.FMWParams_DestSchema]
+        destSchema = self.parent.getDestinationSchema(position)
         destServiceName = self.parent.getDestinationServiceName()
         
         #destInstance = self.parent.getDestinationInstance()
@@ -1904,12 +1926,9 @@ class CalcParamsDevelopment(object):
     def getSourceSqlServerPassword(self, position):
         self.logger.debug("getSourceSqlServerPassword")
         retVal = None
-        sqlServerProxySchema = self.parent.getMacroValueUsingPosition(self.const.FMWParams_SrcProxySSSchema, position)
-        if sqlServerProxySchema in self.fmeMacroVals:
-            schema = self.parent.getSrcSqlServerProxySchema(position)
-        else:
-            schema = self.parent.getSrcSQLServerSchema(position)
-
+        
+        schema = self.parent.getSourceSqlServerConnectionSchema()
+        
         #schema = self.parent.getSrcSQLServerSchema(position)
         ssDbName = self.parent.getSrcSqlServerDatabaseName(position)
         ssHost = self.parent.getSrcHost(position)
@@ -1980,25 +1999,25 @@ class CalcParamsDevelopment(object):
         schema@service_name:host:port, thus if the host and port exist they 
         help refine the password search.
         '''
-        schemaMacroKey, serviceNameMacroKey = self.parent.getSchemaAndServiceNameForPasswordRetrieval(position)
-        #host = self.parent.getSrcHost()
-        #port = self.parent.getSrcPort()
-        self.logger.debug("servicename: {0} schema: {1}".format(serviceNameMacroKey, schemaMacroKey))
-        msg = 'Trying to retrieve the source password, in order to do this ' + \
-          'you must define the parameters {0}, and {1}.  One or both of ' + \
-          'these is not defined'
-        # can't proceed if the schema is not defined in the fmw macros
-        if schemaMacroKey not in self.fmeMacroVals:
-            raise ValueError, msg.format(schemaMacroKey, serviceNameMacroKey)
-        # can't proceed if the servicename is not defined in the fmw macros
-        if serviceNameMacroKey not in self.fmeMacroVals:
-            raise ValueError, msg.format(schemaMacroKey, serviceNameMacroKey)
-            
-        srcSchema = self.fmeMacroVals[schemaMacroKey]
-        srcServiceName = self.fmeMacroVals[serviceNameMacroKey]
-
+        # No checking for parameter existence goes here as that should
+        # have already been dealt with in the class that called
+        # this method.
+        
+        # This code is only to help with error messages relating to 
+        # the src service name and src schema not being defined.
+        if self.parent.existsMacroKey(self.const.FMWParams_SrcProxySchema):
+            msg = "getting the oracle user from the parameter {0}".format(self.const.FMWParams_SrcProxySchema)
+            self.logger.debug(msg)
+            srcOraSchema = self.parent.getSourceOracleProxySchema(position)
+        else:
+            msg = "getting the oracle user from the parameter {0}".format(self.const.FMWParams_SrcSchema)
+            self.logger.debug(msg)
+            srcOraSchema = self.parent.getSourceOracleSchema(position)
+        
+        srcOraServName = self.parent.getSourceOracleServiceName(position)
+        
         msg = 'Getting source password for user ({0}) and service name ({1})'
-        msg = msg.format(srcSchema, srcServiceName)
+        msg = msg.format(srcOraSchema, srcOraServName)
         self.logger.info(msg)
         
         retVal = None
@@ -2007,8 +2026,8 @@ class CalcParamsDevelopment(object):
             dbUser = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbUser]
             dbServName = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbServName]
             dbPass = dbParams[self.const.DevelopmentDatabaseCredentialsFile_dbPswd]
-            if dbServName.lower().strip() == srcServiceName.lower().strip() and \
-               dbUser.lower().strip() == srcSchema.lower().strip():
+            if dbServName.lower().strip() == srcOraServName.lower().strip() and \
+               dbUser.lower().strip() == srcOraSchema.lower().strip():
                 retVal =  dbPass
                 break
         if not retVal:
@@ -2018,8 +2037,8 @@ class CalcParamsDevelopment(object):
             msg = 'Running in DevMod.  This means that the template is attempting ' +  \
                   'to retrieve the password from the json credential file {4} Was unable to ' + \
                   'retrieve the password for ' + \
-                  'the srcSchema: {1} and the source service name {2} in the section {3}'
-            msg = msg.format(self.credsFileFullPath, srcSchema, srcServiceName, 
+                  'the srcOraSchema: {1} and the source service name {2} in the section {3}'
+            msg = msg.format(self.credsFileFullPath, srcOraSchema, srcOraServName, 
                              self.const.DevelopmentDatabaseCredentialsFile_SourceCreds, 
                              self.credsFileFullPath)
             raise ValueError, msg
@@ -2036,11 +2055,7 @@ class CalcParamsDevelopment(object):
         retVal = None
         
         # These are the params that come from macros in the FMW
-        sqlServerProxySchema = self.parent.getMacroValueUsingPosition(self.const.FMWParams_SrcProxySSSchema, position)
-        if sqlServerProxySchema in self.fmeMacroVals:
-            schema = self.parent.getSrcSqlServerProxySchema(position)
-        else:
-            schema = self.parent.getSrcSQLServerSchema(position)
+        schema = self.parent.getSourceSqlServerConnectionSchema(position)
         ssDbName = self.parent.getSrcSqlServerDatabaseName(position)
         ssDbName = Util.removeDomain(ssDbName)
         ssHost = self.parent.getSrcHost(position)
@@ -2086,19 +2101,24 @@ class CalcParamsDevelopment(object):
         For now just ignores the domain when searching for the password
         '''
         retVal = None
-        schemaMacroKey, serviceNameMacroKey = self.parent.getSchemaAndServiceNameForPasswordRetrieval(position)
+        #schemaMacroKey, serviceNameMacroKey = self.parent.getSchemaAndServiceNameForPasswordRetrieval(position)
         
-        msg = 'Trying to retrieve the source password, in order to do this ' + \
-              'you must define the parameters {0}, and {1}.  One or both of ' + \
-              'these is not defined'
-        if not schemaMacroKey in self.parent.fmeMacroVals:
-            raise ValueError, msg.format(schemaMacroKey, serviceNameMacroKey)
+        if not self.parent.existsSourceOracleSchema(position):
+            macroKeyProxy = self.const.FMWParams_SrcProxySchema
+            macroKeyProxy = self.getMacroKeyForPosition(macroKeyProxy, position )
+            macroKeyData = self.const.FMWParams_SrcSchema
+            macroKeyData = self.getMacroKeyForPosition(macroKeyData, position )
+            msg = 'The source oracle schema must be defined in one of ' + \
+                  'these two parameters to be able to retrieve a source ' + \
+                  'password, {0} or {1}'
+            msg = msg.format(macroKeyProxy, macroKeyData)
         
-        if not schemaMacroKey in self.parent.fmeMacroVals:
-            raise ValueError, msg.format(schemaMacroKey, serviceNameMacroKey)
+        if self.parent.existsSourceOracleProxySchema(position):
+            srcSchema = self.parent.getSourceOracleProxySchema(position)
+        else:
+            srcSchema = self.parent.getSourceOracleSchema(position)
         
-        srcSchema = self.parent.fmeMacroVals[schemaMacroKey]
-        srcServiceName = self.parent.fmeMacroVals[serviceNameMacroKey]
+        srcServiceName = self.parent.getSourceOracleServiceName(position)
         srcServiceName = Util.removeDomain(srcServiceName)
         
         for dbParams in self.data[self.const.DevelopmentDatabaseCredentialsFile_SourceCreds]:
@@ -2137,7 +2157,7 @@ class CalcParamsDevelopment(object):
         
         The csv file will be failedFeatures.csv
         '''
-        fmwDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        fmwDir = self.parent.getFMWDirectory()
         #fmwFile = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
         # params to get from config file
         # outputsbasedir
@@ -2174,7 +2194,7 @@ class CalcParamsDevelopment(object):
         return ffFile
         
     def getDestDatabaseConnectionFilePath(self, position=None):
-        destDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        destDir = self.parent.getFMWDirectory()
         host = self.parent.getDestinationHost()
         serviceName = self.parent.getDestinationServiceName()
         fileNameTmpl = '{0}__{1}.sde'
@@ -2193,9 +2213,9 @@ class CalcParamsDevelopment(object):
         return connectionFileFullPath
     
     def getSrcDatabaseConnectionFilePath(self, position=None):
-        destDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
+        destDir = self.parent.getFMWDirectory()
         host = self.parent.getSrcHost(position)
-        serviceName = self.parent.getSrcServiceName(position)
+        serviceName = self.parent.getSrcOraServiceName(position)
         port = self.parent.getSrcPort(position)
         fileNameTmpl = '{0}__{1}.sde'
         connectionFile = fileNameTmpl.format(host, serviceName)
@@ -2217,12 +2237,8 @@ class CalcParamsDataBC(object):
         self.const = self.parent.const
         self.paramObj = self.parent.paramObj
         
-        #fmwDir = self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
-        #fmwName = self.parent.fmeMacroVals[self.const.FMWMacroKey_FMWName]
-        #ModuleLogConfig(fmwDir, fmwName)
+        self.destKey = self.parent.getDestDatabaseEnvKey()
         
-        #ModuleLogConfig()
-        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         self.logger.debug("CalcParamsDataBC logger name: {0}".format(modDotClass))
@@ -2234,7 +2250,7 @@ class CalcParamsDataBC(object):
         
         host = self.parent.getSrcHost()
         port = self.parent.getSrcPort()
-        servName = self.parent.getSrcServiceName()
+        servName = self.parent.getSrcOraServiceName()
         
         msg = 'In order to calculate the name of the source database connection ' + \
               'the {1} parameter: {0} must be defined as a published ' + \
@@ -2323,96 +2339,53 @@ class CalcParamsDataBC(object):
         if not os.path.exists(connectionFileFullPath):
             # get the url, token
             self.__createSDEConnectionFile(connectionFileFullPath, host, serviceName )
-
         else:
             self.logger.debug("SDE connection file {0} already exists".format(connectionFileFullPath))
         return connectionFileFullPath
         
-    def getDestinationPassword(self, destKey=None, schema=None):
+    def getDestinationPassword(self, destKey=None, schema=None, position=None):        
         self.logger.debug("params: getDestinationPassword")
         if not destKey:
-            destKey = self.fmeMacroVals[self.const.FMWParams_DestKey]
+            destKey = self.destKey
         else: 
             self.paramObj.validateKey(destKey)
             destKey = self.paramObj.getDestinationDatabaseKey(destKey)
         self.logger.debug("destination key used in password retrieval: {0}".format(destKey) )
+        
         if not schema:
-            if self.const.FMWParams_DestSchema in self.fmeMacroVals:
-                schema = self.fmeMacroVals[self.const.FMWParams_DestSchema]
-        if not schema:
-            msg = 'Unable to retrieve a destination password because there is ' + \
-                  'no destination schema defined in the fmw.  Create a parameter ' +\
-                  'called {0} and populate it with your destination schema ' + \
-                  'and then re-run'
-            raise ValueError, msg.format(self.const.FMWParams_DestSchema)
-                 
-        pmpRes = self.paramObj.getDestinationPmpResource(destKey)
-        computerName = Util.getComputerName()
-        self.logger.debug("computer name: {0}".format(computerName))
-        pmpDict = {'token': self.paramObj.getPmpToken(computerName),
-                   'baseurl': self.paramObj.getPmpBaseUrl(), 
-                   'restdir': self.paramObj.getPmpRestDir()}
-        pmp = PMP.PMPRestConnect.PMP(pmpDict)
-        #self.logger.debug("pmp dict used to contruct pmp obj: {0}".format(pmpDict))
+            schema = self.parent.getDestinationSchema()
+        
+        # TODO HERE NOW
+        # -----------------------------------
+        pmpHelper = PMPHelper(self.paramObj, destKey)
+        
         msg = 'retrieving the destination password for schema: ({0}) db env key: ({1})'
         msg = msg.format(schema, destKey)
         self.logger.debug(msg)
-        try:
-            passwrd = pmp.getAccountPassword(schema, pmpRes)
-        except:
-            pmpAltUrl = self.paramObj.getPmpAltUrl()
-            msg = 'failed to communicate with PMP, trying the alternative ' + \
-                   'url {0}'
-            msg = msg.format()
-            self.logger.warn(msg.format(pmpAltUrl))
-            
-            pmpDict = self.getPmpDict(url=pmpAltUrl)
-            pmp = PMP.PMPRestConnect.PMP(pmpDict)
-            try:
-                passwrd = pmp.getAccountPassword(schema, pmpRes)
-            except:
-                msg = 'Communication problem with pmp, tried both these urls ' + \
-                      '({0}) ({1})neither is responding'
-                url = self.paramObj.getPmpBaseUrl()
-                self.logger.error(msg.format(url, pmpAltUrl))
-                raise
-        if not passwrd:
-            msg = 'Cant find the password in PMP resource {0} for the account {1}'
-            msg = msg.format(pmpRes, schema)
-            self.logger.warning(msg)
+        
+        passwrd = pmpHelper.getDestinationPMPAccountPassword(schema)
         self.logger.info("successfully retrieved password!")
-        
         return passwrd
-        
-    def getPmpDict(self, url=None):
-        '''
-        retrieves the pmp parameters (values required to connect with service
-        like host, port, etc) from the config file and formats them into 
-        a dictionary required by the pmp module.
-        '''
-        if not url:
-            url = self.paramObj.getPmpBaseUrl()
-        computerName = Util.getComputerName()
-        pmpDict = {'token': self.paramObj.getPmpToken(computerName),
-                   'baseurl': url,
-                   'restdir': self.paramObj.getPmpRestDir()}
-        return pmpDict
-    
+            
     def getSourceSqlServerPassword(self, position, ignoreDomain=False, retry=False):
         self.logger.debug("getSourceSqlServerPassword")
         pswd = None
-        # pmp connection
     
-        pmp = self.__getPMPObj()
-        resrcs = pmp.getResources()
+        pmpHelper = PMPHelper(self.paramObj, self.destKey)
+    
+        #pmp = self.__getPMPObj()
+        #resrcs = pmp.getResources()
         
         # get the schema / host / dbname from the 
         # fme parameters
-        sqlServerProxySchema = self.parent.getMacroValueUsingPosition(self.const.FMWParams_SrcProxySSSchema, position)
-        if sqlServerProxySchema in self.fmeMacroVals:
-            srcSchemaInFMW = self.parent.getSrcSqlServerProxySchema(position)
-        else:
-            srcSchemaInFMW = self.parent.getSrcSQLServerSchema(position)
+        srcSchemaInFMW = self.parent.getSourceSqlServerConnectionSchema(position)
+        self.logger.debug("using the schema: {0}".format(srcSchemaInFMW))
+        #if sqlServerProxySchema in self.fmeMacroVals:
+        #    srcSchemaInFMW = self.parent.getSrcSqlServerProxySchema(position)
+        #else:
+        #    srcSchemaInFMW = self.parent.getSrcSQLServerSchema(position)
+            
+            
         ssDbNameInFMW = self.parent.getSrcSqlServerDatabaseName(position, ignoreDomain)
         ssHostInFMW = self.parent.getSrcHost(position, ignoreDomain)
         self.logger.debug("host from fmw {0}".format(ssHostInFMW))
@@ -2423,6 +2396,8 @@ class CalcParamsDataBC(object):
         self.logger.debug("src resources are: {0}".format(srcResources))
         accntCnt = 1
         
+        # TODO: most of the logic below should be moved into the pmp helper class with a new method witha title like 
+        
         # pmp sql server identifier
         sqlServerIdentifier = self.paramObj.getSqlServerPMPIdentifier()
         for pmpResource in srcResources:
@@ -2431,17 +2406,8 @@ class CalcParamsDataBC(object):
             # start by trying to just retrieve the account using 
             # destSchema@servicename as the "User Account" parameter
             
-            #accntATInstance = accntNameInFMW.strip() + '@' + instance.strip()
-            #self.logger.debug("account@instance search string: {0}".format(accntATInstance))
-            # todo, need to modify so it can find the account associated with
-            # user@inst:host:port
-            resId = pmp.getResourceId(pmpResource)
-            if not resId:
-                msg = 'Unable to retrieve a resource id in pmp for the resource name {0} using the token {1}'
-                msg = msg.format(pmpResource, self.token)
-                raise ValueError, msg
             self.logger.debug("getting account ids")
-            accnts = pmp.getAccountsForResourceID(resId)
+            accnts = pmpHelper.getAccountDictionary(pmpResource)
             for accntDict in accnts:
                 
                 pmpSrcRecordParser = PMPSourceAccountParser(accntDict[self.const.PMPKey_AccountName], sqlServerIdentifier)
@@ -2468,7 +2434,9 @@ class CalcParamsDataBC(object):
                             # we have a match
                             self.logger.debug("host and database names match")
                             accntId = accntDict[self.const.PMPKey_AccountId]
-                            pswd = pmp.getAccountPasswordWithAccountId(accntId, resId)
+                            
+                            pswd = pmpHelper.getPMPPassword(accntId, pmpResource)
+                            
                             break
                 accntCnt+=1
         if not pswd and not retry:
@@ -2481,71 +2449,19 @@ class CalcParamsDataBC(object):
             raise ValueError, msg.format(srcSchemaInFMW, ssDbNameInFMW, ssHostInFMW)
         return pswd
     
-    def __getPMPObj(self):
-        pmpDict = self.getPmpDict()
-        pmp = PMP.PMPRestConnect.PMP(pmpDict)
-        
-        # first try to connect using the default pmp params to retrieve 
-        # pmp resources, if fail then try alternate url
-        try:
-            resrcs = pmp.getResources()
-        except:
-            # failed to communicate with pmp, second attempt, try the alt url
-            pmpAltUrl = self.paramObj.getPmpAltUrl()
-            msg = 'failed to communicate with PMP, trying the alternative ' + \
-                   'url {0}'
-            msg = msg.format()
-            self.logger.warn(msg.format(pmpAltUrl))
-            
-            pmpDict = self.getPmpDict(url=pmpAltUrl)
-            pmp = PMP.PMPRestConnect.PMP(pmpDict)
-            try:
-                resrcs = pmp.getResources()
-            except:
-                msg = 'Communication problem with pmp, tried both these urls ' + \
-                      '({0}) ({1})neither is responding'
-                url = self.paramObj.getPmpBaseUrl()
-                altUrl = self.paramObj.getPmpAltUrl()
-                self.logger.error(msg.format(url, altUrl))
-                raise
-        return pmp
-
     def getSourcePassword(self, position=None):
         # pmp connection
-        pmp = self.__getPMPObj()
-        #resrcs = pmp.getResources()
-
+        #pmp = self.__getPMPObj()
         self.logger.debug("params: getSourcePassword")
-        
-        # TODO: Should actually move the logic to retrieve the schema / service name from the fmw into the parent class
-        # Getting the schema and servicename...  then host and port
-        schemaMacroKey, serviceNameMacroKey = self.parent.getSchemaAndServiceNameForPasswordRetrieval(position)
+        pmpHelper = PMPHelper(self.paramObj, self.destKey)
+    
+        # get the source schema  
+        if self.parent.existsMacroKey(self.const.FMWParams_SrcProxySchema):
+            srcOraSchema = self.parent.getSourceOracleProxySchema(position)
+        else:
+            srcOraSchema = self.parent.getSourceOracleSchema(position)
+        srcOraServName = self.parent.getSourceOracleServiceName(position)
 
-        missingParamMsg = 'Trying to retrieve the source password from PMP.  In ' + \
-                  'order to do so the published parameter {0} needs to exist ' +\
-                  'and be populated.  Currently it does not exist in the FMW ' + \
-                  'that is being run.'
-        # raise error if source schema not defined in the FMW
-        if not self.fmeMacroVals.has_key(schemaMacroKey):
-            msg = missingParamMsg.format(schemaMacroKey)
-            self.logger.error(msg)
-            raise ValueError, msg
-        
-        # get the source schema      
-        # accntNameInFMW = self.fmeMacroVals[schemaMacroKey]
-        #srcSchemaInFMW = self.fmeMacroVals[schemaMacroKey]
-        srcSchemaInFMW = Util.getParamValue(schemaMacroKey, self.fmeMacroVals)
-        
-        # raise error if the servicename is not defined as a published parameter in the FMW
-        if not serviceNameMacroKey in self.fmeMacroVals:
-            msg = missingParamMsg.format(serviceNameMacroKey)
-            self.logger.error(msg)
-            raise ValueError, msg
-        
-        # delete this, no longer using the "instance Name" parameter
-        #instanceInFMW = self.fmeMacroVals[serviceNameMacroKey]
-        #srcServiceNameInFMW = self.fmeMacroVals[serviceNameMacroKey]
-        srcServiceNameInFMW = Util.getParamValue(serviceNameMacroKey, self.fmeMacroVals)
         pswd = None
 
         # Need to detect if the source instance is bcgw.  If it is then
@@ -2558,10 +2474,11 @@ class CalcParamsDataBC(object):
                   'keyword {0}'
             msg = msg.format(srcDestKey)
             self.logger.info(msg)
-            pswd = self.getDestinationPassword(srcDestKey, srcSchemaInFMW)
+
+            pswd = self.getDestinationPassword(destKey=srcDestKey, schema=srcOraSchema)
         else:
             msg = 'retrieving source password from pmp for schema: ({0}), service name: ({1})'
-            msg = msg.format(srcSchemaInFMW, serviceNameMacroKey)
+            msg = msg.format(srcOraSchema, srcOraServName)
             self.logger.info(msg)
             srcResources = self.paramObj.getSourcePmpResources()
             
@@ -2576,38 +2493,40 @@ class CalcParamsDataBC(object):
                     #self.logger.debug("account@instance search string: {0}".format(accntATInstance))
                     # todo, need to modify so it can find the account associated with
                     # user@inst:host:port
-                    resId = pmp.getResourceId(pmpResource)
-                    if not resId:
-                        msg = 'Unable to retrieve a resource id in pmp for the resource name {0} using the token {1}'
-                        msg = msg.format(pmpResource, self.token)
-                        raise ValueError, msg
+                    #resId = pmp.getResourceId(pmpResource)
+                    #if not resId:
+                    #    msg = 'Unable to retrieve a resource id in pmp for the resource name {0} using the token {1}'
+                    #    msg = msg.format(pmpResource, self.token)
+                    #    raise ValueError, msg
                     self.logger.debug("getting account ids")
-                    accnts = pmp.getAccountsForResourceID(resId)
+                    accnts = pmpHelper.getAccountDictionary(pmpResource)
+                    #accnts = pmp.getAccountsForResourceID(pmpResource)
                     for accntDict in accnts:
                         accntName = PMPSourceAccountParser(accntDict[self.const.PMPKey_AccountName], sqlServerIdentifier)
                         schema = accntName.getSchema()
                         #self.logger.debug("cur schema / search schema: {0} / {1}".format(schema, accntNameInFMW))
-                        if schema.lower() == srcSchemaInFMW.lower():
+                        if schema.lower() == srcOraSchema.lower():
                             self.logger.debug("schemas match {0}".format(accntDict[self.const.PMPKey_AccountName]))
                             serviceName = accntName.getServiceName()
-                            self.logger.debug("cur service_name / search serivce_name: {0}, {1}".format(serviceName, srcServiceNameInFMW))
-                            if serviceName.lower() == srcServiceNameInFMW.lower():
+                            self.logger.debug("cur service_name / search serivce_name: {0}, {1}".format(serviceName, srcOraServName))
+                            if serviceName.lower() == srcOraServName.lower():
                                 # match return password for this account
                                 accntId = accntDict[self.const.PMPKey_AccountId]
-                                pswd = pmp.getAccountPasswordWithAccountId(accntId, resId)
+                                #pswd = pmp.getAccountPasswordWithAccountId(accntId, resId)
+                                pswd = pmpHelper.getPMPPassword(accntId, pmpResource)
                                 break
                     if not pswd:
                         msg = 'unable to get password for the account name: {0} and ' +\
                               'database service name {1}'
-                        raise ValueError, msg.format(srcSchemaInFMW, srcServiceNameInFMW)
+                        raise ValueError, msg.format(srcOraSchema, srcOraServName)
                     #pswd = pmp.getAccountPassword(accntATInstance, pmpResource)
                 except ValueError:
                     msg = 'There is no account for schema {0} / service name {1} in pmp for the resource {2} using the token {3} from the machine {4}'
-                    msg = msg.format(srcSchemaInFMW,
-                                     srcServiceNameInFMW,
-                                     pmpResource, pmp.token, platform.node())
+                    msg = msg.format(srcOraSchema,
+                                     srcOraServName,
+                                     pmpResource, pmpHelper.pmpDict['token'], platform.node())
                     self.logger.warning(msg)
-                    self.logger.info("trying a heuristic that ignores domain information to find a password for {0}@{1}".format(srcSchemaInFMW, srcServiceNameInFMW))
+                    self.logger.info("trying a heuristic that ignores domain information to find a password for {0}@{1}".format(srcOraSchema, srcOraServName))
                     # Going to do a search for accounts that might match the user
                     pswd = self.getSourcePasswordHeuristic(position)
                 if pswd:
@@ -2639,31 +2558,20 @@ class CalcParamsDataBC(object):
         :rtype: str
         '''
         self.logger.debug("params: getSourcePasswordHeuristic")
-
-        #schemaMacroKey, instanceMacroKey = self.parent.getSchemaForPasswordRetrieval(position)
-        schemaMacroKey, serviceNameMacroKey = self.parent.getSchemaAndServiceNameForPasswordRetrieval(position)
         
-        # verify that the required keys exist
-        msg = 'Source password retrieval uses the schema and the service name parameters ' + \
-                  'to extract a password from PMP.  The parameter {0} used to describe the ' + \
-                  'source {1} is undefined.  Please add to your FMW and re-run.'
-        if not schemaMacroKey in self.fmeMacroVals:
-            raise ValueError, msg.format(schemaMacroKey, 'schema')
-        if not serviceNameMacroKey in self.fmeMacroVals:
-            raise ValueError, msg.format(serviceNameMacroKey, 'service name')
+        # Getting the oracle schema and service name, so can get 
+        # corresponding password
+        if self.parent.existsMacroKey(self.const.FMWParams_SrcProxySchema):
+            srcOraSchema = self.parent.getSourceOracleProxySchema(position)
+        else:
+            srcOraSchema = self.parent.getSourceOracleSchema(position)
+        srcOraServNameWithDomain = self.parent.getSourceOracleServiceName(position)
         
-        # retrieve the source schema and service name from the fmw 
-        #srcServiceNameInFMW = self.fmeMacroVals[serviceNameMacroKey].lower().strip()
-        #srcSchemaInFMW = self.fmeMacroVals[schemaMacroKey].lower().strip()
-        srcServiceNameInFMW = Util.getParamValue(serviceNameMacroKey, self.fmeMacroVals)
-        srcSchemaInFMW = Util.getParamValue(schemaMacroKey, self.fmeMacroVals)
-        
-        # sometimes the source instance includes the domain so making sure this 
-        # is stripped out, example idwprod1.env.gov.bc.ca becomes just idwprod1
-        srcServiceNameInFMWLst = srcServiceNameInFMW.split('.')
-        srcServiceNameInFMW = srcServiceNameInFMWLst[0]
+        # remove domain from the service name for this search
+        srcOraServName = Util.removeDomain(srcOraServNameWithDomain)
+                
         msg = "Using a heuristic to try to find the password for schema/service name: {0}/{1}"
-        self.logger.debug(msg.format(srcSchemaInFMW, srcServiceNameInFMW))
+        self.logger.debug(msg.format(srcOraSchema, srcOraServName))
         
         # setting up pmp connection
         pmpResource = self.currentPMPResource
@@ -2671,90 +2579,79 @@ class CalcParamsDataBC(object):
             srcResources = self.paramObj.getSourcePmpResources()
         else:
             srcResources = [self.currentPMPResource]
+            
         pswd = None
-        pmpDict = self.getPmpDict()
-        pmp = PMP.PMPRestConnect.PMP(pmpDict)
+        #pmpDict = self.getPmpDict()
+        pmpHelper = PMPHelper(self.paramObj, self.destKey)
+        #pmp = PMP.PMPRestConnect.PMP(pmpDict)
         # test pmp connectivity
         self.logger.debug("testing connectivity with PMP")
-        try:
-            resrcs = pmp.getResources()
-        except:
-            pmpAltUrl = self.paramObj.getPmpAltUrl()
-            msg = 'failed to communicate with PMP, trying the alternative ' + \
-                   'url {0}'
-            msg = msg.format()
-            self.logger.warn(msg.format(pmpAltUrl))
-            
-            pmpDict = self.getPmpDict(url=pmpAltUrl)
-            pmp = PMP.PMPRestConnect.PMP(pmpDict)
-            try:
-                resrcs = pmp.getResources()
-            except:
-                msg = 'Communication problem with pmp, tried both these urls ' + \
-                      '({0}) ({1})neither is responding'
-                url = self.paramObj.getPmpBaseUrl()
-                altUrl = self.paramObj.getPmpAltUrl()
-                self.logger.error(msg.format(url, altUrl))
-                raise
         
+        # need this parameter to create the PMPSourceAccountParser object
+        # but doesn't get used as this method retrieves oracle passwords
         sqlServerIdentifier = self.paramObj.getSqlServerPMPIdentifier()
         
         # iterate through pmp resources / accounts looking for a match
         for pmpResource in srcResources:
             # resource id for the pmp resource.
-            resId = pmp.getResourceId(pmpResource)
+            #resId = pmp.getResourceId(pmpResource)
             # list of accounts attached to the resource
-            accounts = pmp.getAccountsForResourceID(resId)
-            instList = []
-            msg = 'iterating through the accounts in resource id {0}, resource name {1}'
-            self.logger.debug(msg.format(resId, pmpResource))
+            #accounts = pmp.getAccountsForResourceID(resId)
+            accounts = pmpHelper.getAccountDictionary(pmpResource)
+            snList = []
+            msg = 'iterating through the accounts in resource name {0}'
+            self.logger.debug(msg.format( pmpResource))
             # source instance, and the source instance less the domain portion
             for accntDict in accounts:
                 accntName = PMPSourceAccountParser(accntDict[self.const.PMPKey_AccountName], sqlServerIdentifier) # 'ACCOUNT NAME'
-                self.logger.debug("account name: ({0}) searching for ({1})".format(accntName.getSchema(), srcSchemaInFMW))
+                self.logger.debug("account name: ({0}) searching for ({1})".format(accntName.getSchema(), srcOraSchema))
                 schema = accntName.getSchema()
-                if schema.lower().strip() == srcSchemaInFMW.lower().strip():
+                if schema.lower().strip() == srcOraSchema.lower().strip():
                     # found the srcSchema
                     # now check see if the instance matches
                     #print 'schemas {0} : {1}'.format(destSchema, self.fmeMacroVals[self.const.FMWParams_SrcSchema])
-                    self.logger.debug("schemas match {0} {1}".format(schema, srcSchemaInFMW))
-                    inst = accntName.getInstanceNoDomain()
-                    self.logger.debug("instances {0} {1}".format(inst, srcServiceNameInFMW))
-                    if inst.lower().strip() == srcServiceNameInFMW.lower().strip():
-                        instList.append([accntDict[self.const.PMPKey_AccountName], accntDict[self.const.PMPKey_AccountId]])
-        if instList:
-            if len(instList) > 1:
+                    self.logger.debug("schemas match {0} {1}".format(schema, srcOraSchema))
+                    servName = accntName.getServiceNameNoDomain()
+                    self.logger.debug("service name {0} {1}".format(servName, srcOraServName))
+                    if servName.lower().strip() == srcOraServName.lower().strip():
+                        snList.append([accntDict[self.const.PMPKey_AccountName], accntDict[self.const.PMPKey_AccountId]])
+        if snList:
+            if len(snList) > 1:
                 # get the passwords, if they are the same then return
                 # the password
                 msg = 'found more than one possible source password match for the service name: {0}'
-                msg = msg.format(srcServiceNameInFMW)
+                msg = msg.format(srcOraServName)
                 self.logger.warning(msg)
-                msg = 'service names that match include {0}'.format(','.join(instList))
+                msg = 'service names that match include {0}'.format(','.join(snList))
                 self.logger.debug(msg)
                 pswdList = []
                 # eliminating any possible duplicates then 
-                for accnts in instList:
-                    pswdList.append(pmp.getAccountPasswordWithAccountId(accnts[1], resId))
+                for accnts in snList:
+                    pswd = pmpHelper.getPMPPassword(accnts[1],pmpResource )
+                    pswdList.append(pswd)
+                    #pswdList.append(pmp.getAccountPasswordWithAccountId(accnts[1], resId))
                 pswdList = list(set(pswdList))
                 if len(pswdList) > 1:
-                    msg = 'Looking for the password for the destination schema {0}, and serive name {1}' +\
+                    serviceNameMacroKey = self.parent.getMacroKeyForPosition(self.const.FMWParams_SrcServiceName, position)
+                    msg = 'Looking for the password for the schema {0}, and service name {1}' +\
                           'Found the following accounts that roughly match that combination {2}' + \
                           'pmp has different passwords for each of these.  Unable to proceed as ' + \
-                          'not sure which password to use.  Fix this by changing the parameter {3} ' + \
+                          'not sure which password to use.  Fix this by changing the parameter ' + \
                           'to match a "User Account" in pmp exactly.'
-                    msg = msg.format(self.fmeMacroVals[schemaMacroKey], 
-                                     self.fmeMacroVals[serviceNameMacroKey], 
-                                     ','.join(instList), 
+                    msg = msg.format(srcOraSchema,
+                                     srcOraServName,
+                                     ','.join(snList),
                                      serviceNameMacroKey)
                     raise ValueError, msg
             else:
                 # get the password and return it
-                pswd = pmp.getAccountPasswordWithAccountId(instList[0][1], resId)
+                pswd = pmpHelper.getPMPPassword(snList[0][1], pmpResource )
+                #pswd = pmp.getAccountPasswordWithAccountId(snList[0][1], resId)
         if not pswd:
             msg = 'unable to find the password using the heuristic search for the ' + \
                   'schema: {0}, service name {1}'
-            self.logger.error(msg.format(srcSchemaInFMW, srcServiceNameInFMW))
-            raise ValueError, msg.format(srcSchemaInFMW, srcServiceNameInFMW)
+            self.logger.error(msg.format(srcOraSchema, srcOraServName))
+            raise ValueError, msg.format(srcOraSchema, srcOraServName)
         return pswd
             
     def getFailedFeaturesFile(self, failedFeatsFileName=None):
@@ -2920,7 +2817,132 @@ class ModuleLogConfig(object):
         else:
             tmpLog.debug("log already configured")
             pass
+     
+class PMPHelper(object):
+    '''
+    This class has been created to ensure that every time 
+    we need a pmp object it is created in a consistent manner
+    and also enables all time we need pmp communication 
+    that it use the failover address if initial 
+    communication attempts fail.
+    '''
+    
+    def __init__(self, paramObj, destKey):
+        modDotClass = '{0}'.format(__name__)
+        self.logger = logging.getLogger(modDotClass)
+        self.paramObj = paramObj
+        self.destKey = destKey
+        
+        self.pmpDict = self.getPMPConnectionDictionary()
+        self.pmp = PMP.PMPRestConnect.PMP(self.pmpDict)
+        self.resources = None
+        self.attemptCommunication()
+        
+        self.resIdCache = {}
+        
+        self.failWaitTime = 60*5 
+        self.maxWaitIntervals = 5
+        self.currentRetry = 0
+        
+    def getPMPConnectionDictionary(self, baseUrl=None):
+        computerName = Util.getComputerName()
+        if not baseUrl:
+            baseUrl = self.paramObj.getPmpBaseUrl()
+        pmpDict = {'token': self.paramObj.getPmpToken(computerName),
+                   'baseurl': baseUrl,
+                   'restdir': self.paramObj.getPmpRestDir()}
+        return pmpDict
+    
+    def getDestinationPMPAccountPassword(self, schema):
+        pmpRes = self.paramObj.getDestinationPmpResource(self.destKey)
+        print 'pmpRes', pmpRes
+        passwrd = self.pmp.getAccountPassword(schema, pmpRes)
+        if not passwrd:
+            msg = 'Cant find the password in PMP resource {0} for the account {1}'
+            msg = msg.format(pmpRes, schema)
+            self.logger.warning(msg)
+
+        return passwrd
+        
+    def attemptCommunication(self):
+        try:
+            # try communication with the default url
+            self.getResources()
+        except:
+            # error trapped, now try alt url
+            altUrl = self.paramObj.getPmpAltUrl()
+            msg = "error raised in attempt to communicate with pmp." +\
+                  "switching to use the alternative url: {0}"
+            self.logger.warning(msg.format(altUrl))
+            self.pmpDict = self.getPMPConnectionDictionary(baseUrl=altUrl)
+            self.pmp = PMP.PMPRestConnect.PMP(self.pmpDict)
             
+            self.resources = None
+            try:
+                self.getResources()
+            except:
+                
+                msg = 'Communication problem with pmp, tried both these urls ' + \
+                      '({0}) ({1})neither is responding'
+                url = self.paramObj.getPmpBaseUrl()
+                altUrl = self.paramObj.getPmpAltUrl()
+                self.logger.error(msg.format(url, altUrl))
+                
+                if self.currentRetry >= self.maxWaitIntervals:
+                    
+                    #self.failWaitTime = 60*5 
+                    #self.maxWaitIntervals = 5
+                    #raise IOError, msg.format(url, altUrl)
+                    self.logger.error("Unable to communicate with PMP or the alternate PMP url")
+                    raise
+                else:
+                    msg = "unable to communicate with PMP. Waiting {0} seconds " +\
+                          'currently on retry interval {1} of {2}'
+                    msg = msg.format()
+                    self.logger.warning(self.failWaitTime,self.currentRetry, self.maxWaitIntervals)
+                    time.sleep(self.failWaitTime)
+                    
+                    # return to base parameters
+                    self.pmpDict = self.getPMPConnectionDictionary()
+                    self.pmp = PMP.PMPRestConnect.PMP(self.pmpDict)
+
+                    self.currentRetry += 1
+                    self.attemptCommunication()
+                
+    def getResources(self):
+        if not self.resources:
+            self.resources = self.pmp.getResources()
+        
+    def getResourceId(self, resourceName):
+        retVal = None
+        if resourceName in self.resIdCache:
+            retVal = self.resIdCache[resourceName]
+        else:
+            retVal = self.pmp.getResourceId(resourceName)
+            self.resIdCache[resourceName] = retVal
+        msg = "resource id / resource name: {0}/{1}".format(retVal, resourceName)
+        self.logger.info(msg)
+        return retVal
+    
+    def getAccountDictionary(self, resourceName):
+        resId = self.getResourceId(resourceName)
+        token = self.pmpDict['token']
+        if not resId:
+            msg = 'Unable to retrieve a resource id in pmp for the resource name {0} using the token {1}'
+            msg = msg.format(resourceName, token)
+            raise ValueError, msg
+        accnts = self.pmp.getAccountsForResourceID(resId)
+        return accnts
+    
+    def getAccountPassword(self, accountName, resourceName):
+        passwrd = self.pmp.getAccountPassword(accountName, resourceName)
+        return passwrd
+    
+    def getPMPPassword(self, accountId, resourceName):
+        resId = self.getResourceId(resourceName)
+        pswd = self.pmp.getAccountPasswordWithAccountId(accountId, resId)
+        return pswd
+    
 class DWMWriter(object ):
     '''
     Things that were logged by the other logger:
@@ -3003,22 +3025,27 @@ class DWMWriter(object ):
         #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
-        destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
-        self.config = TemplateConfigFileReader(destKey)
+        
+        self.params = CalcParamsBase(self.fme.macroValues)
+
+        self.destKey = self.params.getDestDatabaseEnvKey()
+        self.config = TemplateConfigFileReader(self.destKey)
         self.getDatabaseConnection()
         
     def getDatabaseConnection(self):
         computerName = Util.getComputerName()
-        pmpDict = {'token': self.config.getPmpToken(computerName),
-                   'baseurl': self.config.getPmpBaseUrl(), 
-                   'restdir': self.config.getPmpRestDir()}
-        pmp = PMP.PMPRestConnect.PMP(pmpDict)
+        #pmpDict = {'token': self.config.getPmpToken(computerName),
+        #           'baseurl': self.config.getPmpBaseUrl(), 
+        #           'restdir': self.config.getPmpRestDir()}
+        pmpHelper = PMPHelper(self.config, self.destKey)
+        #pmp = PMP.PMPRestConnect.PMP(pmpDict)
         accntName = self.config.getDWMDbUser()
         serviceName = self.config.getDestinationServiceName()
         
         #instance = self.config.getDestinationServiceName()
         pmpResource = self.config.getDestinationPmpResource()
-        passwrd = pmp.getAccountPassword(accntName, pmpResource)
+        passwrd = pmpHelper.getAccountPassword(accntName, pmpResource)
+        #passwrd = pmp.getAccountPassword(accntName, pmpResource)
         if isinstance(passwrd, unicode):
             # when attempting to connect to database using unicode encoded password
             # am getting a error message:
@@ -3137,8 +3164,8 @@ class DWMWriter(object ):
         # the Name: property.
         # This property is not always correct.  Changing this to 
         # get the property from the file name.
-        
-        mapFileId = self.fme.macroValues[self.const.FMWMacroKey_FMWName]
+        mapFileId = self.params.getFMWFile()
+        #mapFileId = self.fme.macroValues[self.const.FMWMacroKey_FMWName]
         mapFileId, extension = os.path.splitext(mapFileId)
         del extension
         
@@ -3241,7 +3268,9 @@ class DWMWriter(object ):
         return destServName
      
     def getDestSchema(self):
-        return self.fme.macroValues[self.const.FMWParams_DestSchema]
+        destSchema =  self.params.getDestinationSchema()
+        #destSchema = self.fme.macroValues[self.const.FMWParams_DestSchema]
+        return destSchema
     
     def getDestTable(self):
         # again only captures the first feature class
