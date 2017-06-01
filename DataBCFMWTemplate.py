@@ -1,27 +1,23 @@
 '''
---------------------------------------------------
---- THIS IS THE CODE THAT HAS BEEN EXTRACTED FROM
---- THE FMW
---------------------------------------------------
-logging in shutdown:
------------------------
-   logger = open(FME_LogFileName,'a')
-   logger.write("wow - this message will actually be written to log file")
-   logger.close()
 
-logging in 
-   - python transformer
-   - scripted parameter
-   - startup
-       logger = fmeobjects.FMELogFile()
-       #Send message to the logger
-       logger.logMessageString("Hello I am Logging Now")
-       pass
+This is the library that is used to support the DataBC 
+FME framework.  The framework does the following:
 
-import fme
-import DataBCFMWTemplate
-template = DataBCFMWTemplate(fme)
-template.startup()
+a) standardizes the parameter names that can be used in 
+   an FMW for source and destination data sets.  This 
+   is what allows us to quickly answer questions about
+   the status of data sets.
+   
+b) a library (this lib) that is used to calculate various 
+   derived values such as:
+     - passwords (retrieved from pmp)
+     - oracle easy connect strings
+     - oracle sde direct connect strings 
+     - etc...
+     
+ 
+
+
 '''
 # for some reason this has to manually added
 #import sys
@@ -55,6 +51,7 @@ import shutil
 import sys
 import requests
 import time
+import FMWExecutionOrderDependencies
 
 class TemplateConstants(object):
     # no need for a logger in this class as its just
@@ -116,6 +113,12 @@ class TemplateConstants(object):
     ConfFile_dwm_dbserver = 'db_server'
     ConfFile_dwm_dbport = 'db_port'
     ConfFile_dwm_table = 'dwmtable'
+    
+    # dependency management related parameters
+    ConfFile_deps = 'dependencies'
+    ConfFile_deps_timewindow = 'timewindow'
+    ConfFile_deps_maxretries = 'maxretries'
+    ConfFile_deps_waittime = 'waittime'
     
     # jenkins params
     jenkinsSection = 'jenkins'
@@ -181,6 +184,12 @@ class TemplateConstants(object):
     FMWParams_SSHTunnel_DestHost = 'SSH_DESTHOST'
     FMWParams_SSHTunnel_HostUsername = 'SSH_USERNAME'
     FMWParams_SSHTunnel_KeyFile = 'SSH_KEYFILE'
+    
+    # dependency management parameters
+    FMWParams_Deps_fmwList = 'DEP_FMW'
+    FMWParams_Deps_timeWindow = 'DEP_TIMEWINDOW'
+    FMWParams_Deps_waitTime = 'DEP_WAITTIME'
+    FMWParams_Deps_maxRetry = 'DEP_MAXRETRIES'
            
     # The fmw macrovalue used to retrieve the directory 
     # that the fmw is in.
@@ -237,6 +246,68 @@ class TemplateConstants(object):
     PIDFileName = 'pid.txt'
     
     LoggingExtendedLoggerName = 'ExtendedStartup'
+    
+    # keys used to retrieve objects from FME Server
+    # here is an example structure of a detailed job object
+    '''
+    {   175323: {   u'description': u'',
+                u'engineHost': u'arneb',
+                u'engineName': u'ARNEB_Engine6',
+                u'id': 175323,
+                u'request': {   u'FMEDirectives': {   },
+                                u'NMDirectives': {   u'failureTopics': [],
+                                                     u'successTopics': []},
+                                u'TMDirectives': {   u'description': u'',
+                                                     u'priority': 100,
+                                                     u'rtc': False,
+                                                     u'tag': u''},
+                                u'publishedParameters': [   {   u'name': u'SRC_DATASET_FGDB_1',
+                                                                u'raw': u'\\\\data.bcgov\\data_staging\\BCGW\\administrative_boundaries\\alr_data.gdb'},
+                                                            {   u'name': u'FME_SECURITY_ROLES',
+                                                                u'raw': u'fmeadmin fmesuperuser'},
+                                                            {   u'name': u'DEST_DB_ENV_KEY',
+                                                                u'raw': u'PRD'},
+                                                            {   u'name': u'DEST_SCHEMA',
+                                                                u'raw': u'whse_legal_admin_boundaries'},
+                                                            {   u'name': u'FME_SECURITY_USER',
+                                                                u'raw': u'dwrs'},
+                                                            {   u'name': u'FILE_CHANGE_DETECTION',
+                                                                u'raw': u'TRUE'},
+                                                            {   u'name': u'SRC_FEATURE_1',
+                                                                u'raw': u'ALR_Arcs'},
+                                                            {   u'name': u'DEST_FEATURE_1',
+                                                                u'raw': u'OATS_ALR_BOUNDARY_LINES'}],
+                                u'subsection': u'REST_SERVICE',
+                                u'workspacePath': u'"BCGW_SCHEDULED/oats_alr_boundary_lines_staging_gdb_bcgw/oats_alr_boundary_lines_staging_gdb_bcgw.fmw"'},
+                u'result': {   u'id': 175323,
+                               u'numFeaturesOutput': 53925,
+                               u'priority': 100,
+                               u'requesterHost': u'142.34.140.26',
+                               u'requesterResultPort': -1,
+                               u'status': u'SUCCESS',
+                               u'statusMessage': u'Translation Successful',
+                               u'timeFinished': u'2017-05-29T01:33:55',
+                               u'timeRequested': u'2017-05-29T01:30:00',
+                               u'timeStarted': u'2017-05-29T01:30:00'},
+                u'status': u'SUCCESS',
+                u'timeDelivered': u'2017-05-29T01:33:55',
+                u'timeFinished': u'2017-05-29T01:33:55',
+                u'timeQueued': u'2017-05-29T01:30:00',
+                u'timeStarted': u'2017-05-29T01:30:00',
+                u'timeSubmitted': u'2017-05-29T01:30:00'},
+    
+    '''
+    FMEServerParams_timeFinished = 'timeFinished' # key used to retrieve time finished from fme server rest api job object
+    FMEServerParams_timeSubmitted = 'timeSubmitted'
+    FMEServerParams_request = 'request'
+    FMEServerParams_pubParams = 'publishedParameters'
+    FMEServerParams_wsPath = 'workspacePath'
+    FMEServerParams_result = 'result'
+    FMEServerParams_status = 'status'
+    
+    # example of a date string returned from fme server rest api:
+    #                 u'timeStarted': u'2017-05-29T10:00:04',
+    FMEServer_DatetimeFormat = '%Y-%m-%dT%H:%M:%S'
     
     # records in PMP will have this string as their 
     # sql server identifier format is account@SQLSERVER:<dbname>:<host>:<port>
@@ -302,26 +373,34 @@ class TemplateConstants(object):
 class Start(object):
     
     def __init__(self, fme):
+
         # getting the app constants
         self.const = TemplateConstants()
-        fmwDir = fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
-        fmwName = fme.macroValues[self.const.FMWMacroKey_FMWName]
-        destKey = fme.macroValues[self.const.FMWParams_DestKey]
-        
+        self.fme = fme
+        self.params = CalcParamsBase(self.fme.macroValues)
+
+        fmwDir = self.params.getFMWDirectory()
+        fmwName = self.params.getFMWFile()
+        destKey = self.params.getDestDatabaseEnvKey()
+        print '----- params calced in start'
+
+        #fmwDir = fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
+        #fmwName = fme.macroValues[self.const.FMWMacroKey_FMWName]
+        #destKey = fme.macroValues[self.const.FMWParams_DestKey]
         # set up logging
         ModuleLogConfig(fmwDir, fmwName, destKey)    
-        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
 
-        self.fme = fme
         self.logger.info('running the template startup')
         # Reading the global paramater config file
-        self.paramObj = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
+        
+        self.paramObj = TemplateConfigFileReader(destKey)
+        customScriptDir = self.paramObj.getCustomScriptDirectory()
         # Extract the custom script directory from config file
-        customScriptDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
+        #customScriptDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
         # Assemble the name of a the custom script
-        justScript = (os.path.splitext(self.fme.macroValues[self.const.FMWMacroKey_FMWName]))[0]
+        justScript = (os.path.splitext(fmwName))[0]
 
         customScriptFullPath = os.path.join(customScriptDir, justScript + '.py')
         customScriptLocal = os.path.join(self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory], justScript + '.py')
@@ -367,12 +446,71 @@ class Start(object):
 class DefaultStart(object):
     def __init__(self, fme):
         self.fme = fme
+        modDotClass = '{0}'.format(__name__)
+        self.logger = logging.getLogger(modDotClass)
         
     def startup(self):
         # currently there is no default startup code.
         # if there was it would go here
+        #params = GetPublishedParams(self.fme.macroValues)
+        params = CalcParamsBase(self.fme.macroValues)
+        envKey = params.getDestDatabaseEnvKey()
+        config = TemplateConfigFileReader(envKey)
+        const = TemplateConstants()
+
+        # Need to think about best way to handle this, only really want to 
+        # do a dep search if running on fme server.s
         
-        pass
+        # possible statuses:
+        #  - SUCCESS - most common
+        #  - FME_FAILURE - most common failure status
+        #  - JOB_FAILURE - other failed status
+        #  - SUBMITTED
+        #  - QUEUED
+        #  - DELAYED
+        #  - PAUSED
+        #  - IN_PROCESS
+        #  - DELETED
+        #  - ABORTED
+        #  - PULLED
+        
+        # TODO: need another if statement as dependency code should only be run if being 
+        # run on fme server.
+        print 'here, about to deal with the dependencies'
+        if params.existsDependentFMWSs():
+            # retrieve the parameters to create the dependencies
+            depFMWs = params.getDependentFMWs()
+            depTimeWindow = params.getDependencyTimeWindow()
+            depMaxRetries = params.getDependencyMaxRetries()
+            depWaitTime = params.getDependencyWaitTime()
+            
+            fmeSrvHost =  config.getFMEServerHost()
+            fmeSrvDir = config.getFMEServerRootDir()
+            fmeSrvToken = config.getFMEServerToken()
+                        
+            execOrder = FMWExecutionOrderDependencies.ExecutionOrder(depFMWs, depTimeWindow, depMaxRetries, depWaitTime, fmeSrvHost, fmeSrvToken)
+            retries = 0
+            
+            complete = execOrder.isParentsComplete()
+            if not complete:
+                while not complete:
+                    if retries >= depMaxRetries:
+                        msg = 'The dependent FMW jobs: {0} described in the parameter ' + \
+                              '{1} have not been run.  FME Server has been probed {2} ' + \
+                              'times.  This FMW will not proceed.'
+                        msg = msg.format(depFMWs, const.FMWParams_Deps_fmwList, retries)
+                        self.logger.error(msg)
+                        raise DependenciesNotMet, msg
+                    else:
+                        msg = "The dependencies: {0} described in the parameter {1} have " + \
+                              "not been found to have run yet, or they are currently still " + \
+                              "in process. Currently on retry {2} of a maximum of {3}"
+                        msg = msg.format(depFMWs, const.FMWParams_Deps_fmwList, retries, depMaxRetries)
+                        self.logger.info(msg)
+                        self.logger.info("waiting for {0} seconds".format(depWaitTime))
+                        time.sleep(depWaitTime)
+                    complete = execOrder.isParentsComplete()
+                    retries += 1
         
 class Shutdown(object):
     
@@ -383,30 +521,29 @@ class Shutdown(object):
         
         self.params = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
         
+        fmwDir = self.params.getFMWDirectory()
+        fmwName = self.params.getFMWFile()
+        destKey = self.params.getDestDatabaseEnvKey()
+        
         # logging configuration
-        fmwDir = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
-        fmwName = self.fme.macroValues[self.const.FMWMacroKey_FMWName]
-        destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
-
         ModuleLogConfig(fmwDir, fmwName, destKey)
-        #modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         self.logger.debug("Shutdown has been called...")
         self.logger.debug("log file name: {0}".format(self.fme.logFileName))
         
         # looking for custom script for shutdown
-        customScriptDir = self.params.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
-        justScript, ext = os.path.splitext(self.fme.macroValues[self.const.FMWMacroKey_FMWName])
-        del ext
+        customScriptDir = self.params.getCustomScriptDirectory()
+        
+        justScript = os.path.splitext(fmwName)[0]
         customScriptFullPath = os.path.join(customScriptDir, justScript + '.py')
-        customScriptLocal = os.path.join(self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory], justScript + '.py')
+        customScriptLocal = os.path.join(fmwDir, justScript + '.py')
         
         # test to see if the custom script exists, if it does import it, and 
         # set the plugin parameter = to the Shutdown() object.
         shutdownScriptDirPath = None
         if os.path.exists(customScriptLocal):
-            shutdownScriptDirPath = self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
+            shutdownScriptDirPath = fmwDir
         elif os.path.exists(customScriptFullPath):
             shutdownScriptDirPath = customScriptDir
             site.addsitedir(shutdownScriptDirPath)
@@ -553,6 +690,10 @@ class TemplateConfigFileReader(object):
         confDirName = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_configDirName)
         return confDirName
 
+    def getCustomScriptDirectory(self):
+        customScriptDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
+        return customScriptDir
+
     def getDataBCFmeServerNodes(self):
         nodeString = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_govFmeServer)
         nodeList = nodeString.split(',')
@@ -579,6 +720,34 @@ class TemplateConfigFileReader(object):
     def getDefaultOraclePort(self):
         srcDefaultOraPort = self.parser.get(self.const.ConfFileSection_pmpSrc, self.const.ConfFileSection_pmpSrc_defaultOraPort)
         return srcDefaultOraPort
+    
+    def getDependencyTimeWindow(self):
+        '''
+        Returns the default depencency time window parameter that is 
+        stored in the framework config file
+        
+        '''
+        self.logger.debug("getDependencyTimeWindow")
+        depTimeWindow = self.parser.get(self.const.ConfFile_deps, self.const.ConfFile_deps_timewindow)
+        return depTimeWindow
+    
+    def getDependencyMaxRetries(self):
+        '''
+         Returns the depencendy maximum number of retries to perform 
+         when search fme server for a dependent job.
+        '''
+        self.logger.debug("getDependencyMaxRetries")
+        maxRetries = self.parser.get(self.const.ConfFile_deps, self.const.ConfFile_deps_maxretries)
+        return maxRetries
+    
+    def getDependencyWaitTime(self):
+        '''
+         Returns the default wait time parameter that gets used when
+         searching FME Server for a dependent job. 
+        '''
+        self.logger.debug("getDependencyWaitTime")
+        waitTime = self.parser.get(self.const.ConfFile_deps, self.const.ConfFile_deps_waittime)
+        return waitTime
     
     def getDestinationDatabaseKey(self, inkey):
         '''
@@ -1152,6 +1321,13 @@ class GetPublishedParams(object):
             retVal = False
         return retVal
     
+    def existsDependentFMWSs(self):
+        retVal = True
+        macroKey = self.const.FMWParams_Deps_fmwList
+        if not self.existsMacroKey(macroKey):
+            retVal = False
+        return retVal
+    
     def existsDestinationSchema(self, position):
         retVal = True        
         destSchemaKey = self.const.FMWParams_DestSchema
@@ -1188,44 +1364,29 @@ class GetPublishedParams(object):
         if not self.existsMacroKey(macroKey):
             retVal = False
         return retVal
+        
+    def getDependentFMWs(self):
+        macroKey = self.const.FMWParams_Deps_fmwList
+        depFMWs = self.getFMEMacroValue(macroKey)
+        # removing any whitespace in between elements 
+        # in list
+        depFMWs = depFMWs.strip()
+        depsList = depFMWs.split(',')
+        for depCnt in range(0, len(depsList)):
+            depsList[depCnt] =  depsList[depCnt].strip()
+        return depsList
     
-    def getSrcSDEDirectConnectClientString(self, position):
-        macroKey = self.const.FMWParams_SrcSDEDirectConnectClientStr
-        macroKey = self.getMacroKeyForPosition(macroKey, position )
-        srcDCConnStr = self.getFMEMacroValue(macroKey)
-        return srcDCConnStr
-    
-    def getSourceOracleSchema(self, position=None):
-        macroKey = self.const.FMWParams_SrcSchema
-        macroKey = self.getMacroKeyForPosition(macroKey, position )
-        srcOraSchema = self.getFMEMacroValue(macroKey)
-        return srcOraSchema
-    
-    def getSourceOracleProxySchema(self, position=None):
-        macroKey = self.const.FMWParams_SrcProxySchema
-        macroKey = self.getMacroKeyForPosition(macroKey, position )
-        #srcOraProxySchema = ''
-        #if self.existsMacroKey(macroKey):
-        srcOraProxySchema = self.getFMEMacroValue(macroKey)
-        return srcOraProxySchema
-               
-    def getSourceOracleServiceName(self, position=None):
-        macroKey = self.const.FMWParams_SrcServiceName
-        macroKey = self.getMacroKeyForPosition(macroKey, position )
-        srcOraServName = self.getFMEMacroValue(macroKey)
-        return srcOraServName
-                
     def getDestDatabaseEnvKey(self):
         macroKey = self.const.FMWParams_DestKey
         destDbEnvKey = self.getFMEMacroValue(macroKey)
         return destDbEnvKey
-             
+    
     def getDestinationSchema(self, position=None):       
         destSchemaKey = self.const.FMWParams_DestSchema
         destSchemaKey = self.getMacroKeyForPosition(destSchemaKey, position )
         destSchema = self.getFMEMacroValue(destSchemaKey)
         return destSchema
-                
+    
     def getFMWDirectory(self):
         macroKey = self.const.FMWMacroKey_FMWDirectory
         fmwDir = self.getFMEMacroValue(macroKey)
@@ -1235,94 +1396,45 @@ class GetPublishedParams(object):
         macroKey = self.const.FMWMacroKey_FMWName
         fmwFile = self.getFMEMacroValue(macroKey)
         return fmwFile
-    
-    def getSourceSqlServerConnectionSchema(self, position=None):
+
+    def getFMEMacroValue(self, paramNameRaw):
         '''
-        If a proxy schema is defined then it will return that 
-        schema, otherwise it will return the same schema 
-        the data resides within
-        '''
-        macroKeyProxy = self.getMacroKeyForPosition(self.const.FMWParams_SrcProxySSSchema, position )
-        macroKeyData = self.getMacroKeyForPosition(self.const.FMWParams_SrcSSSchema, position )
+        When you link parameters together, the parameter ends up being equal 
+        to the name of the parameter it is linked to.  Example:
         
-        if self.existsMacroKey(macroKeyProxy):
-            macroKey = macroKeyProxy
+        PARAM1 is linked to PARAM2, then when you retrieve PARAM1 it will 
+        be equal to $(PARAM2).  This method will retrieve the actual 
+        value.
+        
+        Use this method to retrieve all macro values.
+        '''
+        logger = logging.getLogger(__name__)
+        paramName = paramNameRaw.strip()
+
+        # start by getting the parameter value
+        if not paramName in self.fmeMacroVals:
+            msg = 'Trying to retrieve the published parameter {0} however it is ' + \
+                  'undefined in the FMW.  Current values include: {1}'
+            raise KeyError, msg.format(paramName, self.fmeMacroVals.keys())
+        
+        paramValue = self.fmeMacroVals[paramName]
+        logger.debug('input param value/name: -{0}/{1}-'.format(paramName, paramValue))
+        if not isinstance(paramValue, basestring):
+            msg = 'The macro value for the key {0} is not a string type.  Its a {1} type' +\
+                  'When a parameter value is not a string type assume it cannot be ' +\
+                  'a linked parameter'
+            self.logger.warning(msg.format(paramName, type(paramValue)))
         else:
-            macroKey = macroKeyData
-        #macroKey = self.getMacroKeyForPosition(macroKey, position )
-        
-        msg = "retrieving data from the parameter {0}"
-        self.logger.debug(msg.format(macroKey))
+            # checking to see if the parameter is a linked variable
+            isParamNameRegex = re.compile('^\$\((.*?)\)$')
+            if isParamNameRegex.match(paramValue):
+                justParamName = (isParamNameRegex.search(paramValue)).group(1)
+                logger.debug('detected parameter {0}'.format(paramValue))
+                paramValue = Util.getParamValue(justParamName, self.fmeMacroVals)
+                print 'Value extracted from linked parameter {0}'.format(paramValue)
+                logger.debug('Value extracted from linked parameter {0}'.format(paramValue))
+        return paramValue
 
-        srcSqlServerProxySchema = self.getFMEMacroValue(macroKey)
-        return srcSqlServerProxySchema
-    
-    def getSrcSqlServerDatabaseName(self, position=None, noDomain=False):
-        self.logger.debug(self.debugMethodMessage.format("getSQLServerSchema"))
-        # these are the keys that are used to recover values from the
-        # fmwmacro dictionary
-        # TODO: THIS IS WHERE I AM
-        macroKey = self.const.FMWParams_SrcSSDbName
-        macroKey = self.getMacroKeyForPosition(macroKey, position )
-        
-        self.logger.debug('schemaMacroKey: {0}'.format(macroKey))
-        srcSqlServerDbName = self.getFMEMacroValue(macroKey)
-        if noDomain:
-            srcSqlServerDbName = Util.removeDomain(srcSqlServerDbName)
-        return srcSqlServerDbName
-    
-    def getSrcSQLServerSchema(self, position=None):
-        macroKey = self.const.FMWParams_SrcSSSchema
-        macroKey = self.getMacroKeyForPosition(macroKey, position)
-        srcSchema = self.getFMEMacroValue(macroKey)
-        return srcSchema
-    
-    def getSrcSqlServerProxySchema(self, position=None):
-        macroKey = self.const.FMWParams_SrcProxySSSchema
-        macroKey = self.getMacroKeyForPosition(macroKey, position )
-        proxySchema = self.getFMEMacroValue(macroKey)
-        return proxySchema
-
-    def getSrcOraServiceName(self, position=None):
-        '''
-        if the fmw has the source service name defined as a published parameter
-        this method will return it.  If it does not exist then this 
-        method will return none.
-        '''
-        macroKey = self.const.FMWParams_SrcServiceName
-        macroKey = self.getMacroKeyForPosition(macroKey, position )
-        srcServName = self.getFMEMacroValue(macroKey)
-        return srcServName
-
-    def getSrcHost(self, position=None, noDomain=False):
-        '''
-        if the fmw has the source host defined as a published parameter
-        this method will return it.  If it does not exist then this 
-        method will return none
-        '''
-        macroKey = self.const.FMWParams_SrcHost
-        macroKey = self.getMacroKeyForPosition(macroKey, position )
-        srcHost = self.getFMEMacroValue(macroKey)
-        if noDomain:
-            srcHost = Util.removeDomain(srcHost)
-        return srcHost        
-        
-    def getSrcPort(self, position=None):
-        '''
-        if the fmw has the source host defined as a published parameter
-        this method will return it.  If it does not exist then this 
-        method will return none
-        '''
-        macroKey = self.const.FMWParams_SrcPort
-        macroKey = self.getMacroKeyForPosition(macroKey, position )
-        srcPort = None
-        if not self.existsMacroKey(macroKey):
-            msg = "There is no: {0} macro key defined"
-            self.logger.warning(msg.format(macroKey))
-        else:
-            srcPort = self.getFMEMacroValue(macroKey)
-        return srcPort
-        
     def getMacroKeyForPosition(self, macroKey, position=None):
         '''
         Some parameters defined by the DataBC FME framework can have multiple instances.
@@ -1379,42 +1491,120 @@ class GetPublishedParams(object):
             macroKey = '_'.join(attributePieces)
             retVal = macroKey
         return retVal
-            
-    def getFMEMacroValue(self, paramNameRaw):
-        '''
-        When you link parameters together, the parameter ends up being equal 
-        to the name of the parameter it is linked to.  Example:
-        
-        PARAM1 is linked to PARAM2, then when you retrieve PARAM1 it will 
-        be equal to $(PARAM2).  This method will retrieve the actual 
-        value.
-        
-        Use this method to retrieve all macro values.
-        '''
-        logger = logging.getLogger(__name__)
-        paramName = paramNameRaw.strip()
 
-        # start by getting the parameter value
-        if not paramName in self.fmeMacroVals:
-            msg = 'Trying to retrieve the published parameter {0} however it is ' + \
-                  'undefined in the FMW.  Current values include: {1}'
-            raise KeyError, msg.format(paramName, self.fmeMacroVals.keys())
-        
-        paramValue = self.fmeMacroVals[paramName]
-        if not isinstance(paramValue, basestring):
-            msg = 'The macro value for the key {0} is not a string type.  Its a {1}'
-            raise ValueError, msg.format(paramName, type(paramValue))
-        
-        logger.debug('input param value/name: -{0}/{1}-'.format(paramName, paramValue))
-        isParamNameRegex = re.compile('^\$\((.*?)\)$')
-        if isParamNameRegex.match(paramValue):
-            justParamName = (isParamNameRegex.search(paramValue)).group(1)
-            logger.debug('detected parameter {0}'.format(paramValue))
-            paramValue = Util.getParamValue(justParamName, self.fmeMacroVals)
-            print 'Value extracted from linked parameter {0}'.format(paramValue)
-            logger.debug('Value extracted from linked parameter {0}'.format(paramValue))
-        return paramValue
+    def getSourceOracleProxySchema(self, position=None):
+        macroKey = self.const.FMWParams_SrcProxySchema
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        #srcOraProxySchema = ''
+        #if self.existsMacroKey(macroKey):
+        srcOraProxySchema = self.getFMEMacroValue(macroKey)
+        return srcOraProxySchema
     
+    def getSrcSDEDirectConnectClientString(self, position):
+        macroKey = self.const.FMWParams_SrcSDEDirectConnectClientStr
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcDCConnStr = self.getFMEMacroValue(macroKey)
+        return srcDCConnStr
+    
+    def getSourceOracleSchema(self, position=None):
+        macroKey = self.const.FMWParams_SrcSchema
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcOraSchema = self.getFMEMacroValue(macroKey)
+        return srcOraSchema
+      
+    def getSourceOracleServiceName(self, position=None):
+        macroKey = self.const.FMWParams_SrcServiceName
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcOraServName = self.getFMEMacroValue(macroKey)
+        return srcOraServName
+           
+    def getSrcHost(self, position=None, noDomain=False):
+        '''
+        if the fmw has the source host defined as a published parameter
+        this method will return it.  If it does not exist then this 
+        method will return none
+        '''
+        macroKey = self.const.FMWParams_SrcHost
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcHost = self.getFMEMacroValue(macroKey)
+        if noDomain:
+            srcHost = Util.removeDomain(srcHost)
+        return srcHost        
+                 
+    def getSrcPort(self, position=None):
+        '''
+        if the fmw has the source host defined as a published parameter
+        this method will return it.  If it does not exist then this 
+        method will return none
+        '''
+        macroKey = self.const.FMWParams_SrcPort
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcPort = None
+        if not self.existsMacroKey(macroKey):
+            msg = "There is no: {0} macro key defined"
+            self.logger.warning(msg.format(macroKey))
+        else:
+            srcPort = self.getFMEMacroValue(macroKey)
+        return srcPort
+                 
+    def getSrcOraServiceName(self, position=None):
+        '''
+        if the fmw has the source service name defined as a published parameter
+        this method will return it.  If it does not exist then this 
+        method will return none.
+        '''
+        macroKey = self.const.FMWParams_SrcServiceName
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcServName = self.getFMEMacroValue(macroKey)
+        return srcServName
+                 
+    def getSourceSqlServerConnectionSchema(self, position=None):
+        '''
+        If a proxy schema is defined then it will return that 
+        schema, otherwise it will return the same schema 
+        the data resides within
+        '''
+        macroKeyProxy = self.getMacroKeyForPosition(self.const.FMWParams_SrcProxySSSchema, position )
+        macroKeyData = self.getMacroKeyForPosition(self.const.FMWParams_SrcSSSchema, position )
+        
+        if self.existsMacroKey(macroKeyProxy):
+            macroKey = macroKeyProxy
+        else:
+            macroKey = macroKeyData
+        #macroKey = self.getMacroKeyForPosition(macroKey, position )
+        
+        msg = "retrieving data from the parameter {0}"
+        self.logger.debug(msg.format(macroKey))
+
+        srcSqlServerProxySchema = self.getFMEMacroValue(macroKey)
+        return srcSqlServerProxySchema
+                   
+    def getSrcSqlServerDatabaseName(self, position=None, noDomain=False):
+        self.logger.debug(self.debugMethodMessage.format("getSQLServerSchema"))
+        # these are the keys that are used to recover values from the
+        # fmwmacro dictionary
+        # TODO: THIS IS WHERE I AM
+        macroKey = self.const.FMWParams_SrcSSDbName
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        
+        self.logger.debug('schemaMacroKey: {0}'.format(macroKey))
+        srcSqlServerDbName = self.getFMEMacroValue(macroKey)
+        if noDomain:
+            srcSqlServerDbName = Util.removeDomain(srcSqlServerDbName)
+        return srcSqlServerDbName
+    
+    def getSrcSqlServerProxySchema(self, position=None):
+        macroKey = self.const.FMWParams_SrcProxySSSchema
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        proxySchema = self.getFMEMacroValue(macroKey)
+        return proxySchema
+    
+    def getSrcSQLServerSchema(self, position=None):
+        macroKey = self.const.FMWParams_SrcSSSchema
+        macroKey = self.getMacroKeyForPosition(macroKey, position)
+        srcSchema = self.getFMEMacroValue(macroKey)
+        return srcSchema
+        
 class CalcParamsBase( GetPublishedParams ):
     '''
     This method contains the base functionality which 
@@ -1430,6 +1620,7 @@ class CalcParamsBase( GetPublishedParams ):
           will be retrieved from a hardcoded json file 
     '''
     def __init__(self, fmeMacroVals):
+
         GetPublishedParams.__init__(self, fmeMacroVals)
         # don't need these lines as they are populated by the parent class
         #self.fmeMacroVals = fmeMacroVals
@@ -1449,12 +1640,10 @@ class CalcParamsBase( GetPublishedParams ):
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         self.logger.debug("CalcParamsBase logger name {0}".format(modDotClass))
-
         self.paramObj = TemplateConfigFileReader(self.destKey)
-                
         #self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
         self.debugMethodMessage = "method: {0}"
-            
+        
     def addPlugin(self, forceDevel=False):
         if forceDevel:
             self.logger.debug("Template is operating in Development mode.")
@@ -1539,6 +1728,117 @@ class CalcParamsBase( GetPublishedParams ):
         self.logger.debug(self.debugMethodMessage.format("getDestinationOraclePort"))
         port = self.paramObj.getDestinationOraclePort()
         return port 
+        
+    def getDependencyMaxRetries(self):
+        '''
+        This parameter is used to when a FMW has a dependency.  
+        
+        Dependencies work by filling in the published parameter
+        DEPS_FMW with a list of the parent dependencies.  Tbe job 
+        with that parameter will not start executing until it has 
+        found all jobs defined in the paremter DEPS_FMW, OR until 
+        the maximum number or searches for dependencies has been 
+        exceeded.
+        
+        When searching FMW Server for a dependent job fails it retries
+        the query later.  This parameter controls how many times
+        the query searching for dependent jobs will be executed.
+        
+        If this parameter is not populated then the framework will 
+        use the default amount which is identified in the framework
+        config file in the section [dependencies] under timewindow.        
+        '''
+        self.logger.debug(self.debugMethodMessage.format("getDependencyTimeWindow"))
+        maxRetriesMacroKey = self.const.FMWParams_Deps_maxRetry
+        if not self.existsMacroKey(maxRetriesMacroKey):
+            maxRetries = self.paramObj.getDependencyMaxRetries()
+        else:
+            maxRetriesMacroKey = self.getMacroKeyForPosition(maxRetriesMacroKey)
+            maxRetries = self.getFMEMacroValue(maxRetriesMacroKey)
+        try:
+            maxRetries = int(maxRetries)
+        except ValueError:
+            msg = 'The value for the parameter {0} is {1}. This value ' + \
+                  'cannot be converted to a numeric type'
+            msg = msg.format('max retries', maxRetries )
+            self.logger.error(msg)
+            raise ValueError, msg
+        
+        return maxRetries
+    
+    def getDependencyTimeWindow(self):
+        '''
+        This parameter is used to when a FMW has a dependency.  
+        
+        Dependencies work by filling in the published parameter
+        DEPS_FMW with a list of the parent dependencies.  Tbe job 
+        with that parameter will not start executing until it has 
+        found all jobs defined in the paremter DEPS_FMW, OR until 
+        the maximum number or searches for dependencies has been 
+        exceeded.
+        
+        This method returns the time window parameter.  This parameter
+        tells the query that is searching for completed jobs in fme
+        server how far to look back in time.  This parameter is always
+        reported in seconds.
+        
+        If this parameter is not populated then the framework will 
+        use the default amount which is identified in the framework
+        config file in the section [dependencies] under timewindow.        
+        '''
+        self.logger.debug(self.debugMethodMessage.format("getDependencyTimeWindow"))
+        depTimeWindowMacro = self.const.FMWParams_Deps_timeWindow
+        if not self.existsMacroKey(depTimeWindowMacro):
+            timeWindow = self.paramObj.getDependencyTimeWindow()
+        else:
+            timeWindowMacroKey = self.getMacroKeyForPosition(depTimeWindowMacro)
+            timeWindow = self.getFMEMacroValue(timeWindowMacroKey)
+        try:
+            timeWindow = int(timeWindow)
+        except ValueError:
+            msg = 'The value for the parameter {0} is {1}. This value ' + \
+                  'cannot be converted to a numeric type'
+            msg = msg.format('time Window', timeWindow )
+            self.logger.error(msg)
+            raise ValueError, msg
+        return timeWindow
+
+    def getDependencyWaitTime(self):
+        '''
+        This parameter is used to when a FMW has a dependency.  
+        
+        Dependencies work by filling in the published parameter
+        DEPS_FMW with a list of the parent dependencies.  Tbe job 
+        with that parameter will not start executing until it has 
+        found all jobs defined in the paremter DEPS_FMW, OR until 
+        the maximum number or searches for dependencies has been 
+        exceeded.
+        
+        This method returns the wait time parameter.  This parameter
+        tells the query that is searching for completed jobs in fme
+        server how long to wait in between unsucessful queries. 
+        This parameter is always reported in seconds.
+        
+        If this parameter is not populated then the framework will 
+        use the default amount which is identified in the framework
+        config file in the section [dependencies] under timewindow.        
+        '''
+        self.logger.debug(self.debugMethodMessage.format("getDependencyTimeWindow"))
+        depWaitTimeMacroKey = self.const.FMWParams_Deps_waitTime
+        if not self.existsMacroKey(depWaitTimeMacroKey):
+            waitTime = self.paramObj.getDependencyWaitTime()
+        else:
+            waitTimeMacroKey = self.getMacroKeyForPosition(depWaitTimeMacroKey)
+            waitTime = self.getFMEMacroValue(waitTimeMacroKey)
+        try:
+            waitTime = int(waitTime)
+        except ValueError:
+            msg = 'The value for the parameter {0} is {1}. This value ' + \
+                  'cannot be converted to a numeric type'
+            msg = msg.format('wait time', waitTime )
+            self.logger.error(msg)
+            raise ValueError, msg
+        return waitTime
         
     def getFailedFeaturesFile(self, failedFeatsFileName=None):
         self.logger.debug(self.debugMethodMessage.format("getFailedFeaturesFile"))
@@ -3317,3 +3617,5 @@ class DWMWriter(object ):
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(self.fme.totalFeaturesWritten)
         
+class DependenciesNotMet(Exception):
+    pass

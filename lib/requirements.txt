@@ -2,11 +2,16 @@ requests==2.14.2
 cx_Oracle
 pytz==2016.10
 psutil==5.2.2
-git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=PMP&subdirectory=PMP
-git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=Misc&subdirectory=Misc
-git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=DB&subdirectory=DB
-git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=BCDCUtil&subdirectory=BCDCUtil
-git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=Secrets&subdirectory=Secrets
-
-
+#git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=PMP&subdirectory=PMP
+#git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=Misc&subdirectory=Misc
+#git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=DB&subdirectory=DB
+#git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=BCDCUtil&subdirectory=BCDCUtil
+#git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=Secrets&subdirectory=Secrets
+#git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=FMEUtil&subdirectory=FMEUtil
+git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@v1.0.2#egg=PMP&subdirectory=PMP
+git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@v1.0.2#egg=Misc&subdirectory=Misc
+git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@v1.0.2#egg=DB&subdirectory=DB
+git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@v1.0.2#egg=BCDCUtil&subdirectory=BCDCUtil
+git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@v1.0.2#egg=Secrets&subdirectory=Secrets
+git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@v1.0.2#egg=FMEUtil&subdirectory=FMEUtil
 

@@ -33,6 +33,9 @@ this document into appendices in the User Documentation.
 
 https://docs.google.com/document/d/1U31K0jl9dTwqbNZJuajbLf-dhmNlrCzpXZBrfxKlgJY/edit?usp=sharing
 
+Much of this documentation is getting merged with the user docs
+referenced above
+
 ## Template Development Project Plan
 Project plan re-iterating in more detail the goals of the the 
 new template:
@@ -43,8 +46,7 @@ Description of the published and private parameters necessary for
 the an FMW to implement the template is included in the 'Parameter 
 Standard' section of the user documentation
 
-(old path to parameter spec)
-http://test.apps.bcgov/guide/intdocs/fme-template-v2-draft-parameter-spec/
+Inlcluded in the user documentation now.
 
 ## Template Implementation Plan
 Oveview of steps to be taken to implement the fme template on our 

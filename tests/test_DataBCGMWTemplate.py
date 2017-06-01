@@ -330,6 +330,133 @@ class Test_CalcParams(unittest.TestCase):
         sqlServrPasswd = calcParams.getSrcSqlServerPassword(6)
         self.assertIsNotNone(sqlServrPasswd, msg)
 
+    def test_getDependencyParams(self):
+        # tests to write here:
+        # - get the DEP_FMW parameter, when its populated
+        # - test the exists method for this parameter
+        # - test the defaults that should get parameter from 
+        #   config file for timewindow, max times, wait time
+        #   DEP_TIMEWINDOW, DEP_WAITTIME, DEP_MAXRETRIES
+        # - test getting these from pub params
+        # - test sanity checking of these parameters
+        
+        #----------------------------------------
+        # -     DEP_FMW TESTS
+        #----------------------------------------
+        self.logger.debug("starting the test: test_getDependencyParams")
+        fmeMacroValues = self.fmeMacroValues_DBSrc
+        fmeMacroValues['DEP_FMW'] = 'job1.fmw, job2.fmw'
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues)
+        calcParams.logger = self.logger
+        calcParams.plugin.logger = self.logger
+        deps = calcParams.getDependentFMWs()
+        self.logger.debug("deps: {0}".format(deps))
+        msg = 'expected {0} in the depedency list, instead got {1}'
+        msg = msg.format('job1.fmw', deps)
+        self.assertIn('job1.fmw', deps)
+        
+        depsExist = calcParams.existsDependentFMWSs()
+        msg = 'dependencies should exist but exists method returns FALSE'
+        self.assertTrue(depsExist, msg)
+        
+        #----------------------------------------
+        # -     DEP_TIMEWINDOW TESTS
+        #----------------------------------------
+        expectDepWindow = 5400
+        depWindow = calcParams.getDependencyTimeWindow()
+        msg = 'The dependency window expected is {0} but got {1}, check ' + \
+              'the value in the config file, and see that it matches the ' + \
+              'the expected value, or change the expected value to match'
+        msg = msg.format(expectDepWindow,depWindow )
+        self.assertEqual(expectDepWindow, depWindow, msg)
+        
+        # now set the default time window
+        fmeMacroValues = self.fmeMacroValues_DBSrc
+        expectedValue = '7777'
+        fmeMacroValues['DEP_TIMEWINDOW'] = expectedValue
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues)
+        calcParams.logger = self.logger
+        calcParams.plugin.logger = self.logger
+        depWindow = calcParams.getDependencyTimeWindow()
+        msg = 'dependency window is set in the parameter {0} as ' +\
+              ' {1}, but the method getDependencyTimeWindow returned ' + \
+              '{2}'
+        msg = msg.format('DEP_TIMEWINDOW', expectedValue, depWindow)
+        
+        #----------------------------------------
+        # -     DEP_WAITTIME TESTS
+        #----------------------------------------        
+        waitTimeExpected = 900
+        waitTimeReturned = calcParams.getDependencyWaitTime()
+        msg = 'The wait time expected is {0} but got {1}, check ' + \
+              'the value in the config file, and see that it matches the ' + \
+              'the expected value, or change the expected value to match'
+        msg = msg.format(waitTimeExpected,waitTimeReturned )
+        self.assertEqual(waitTimeExpected, waitTimeReturned, msg)
+        
+        fmeMacroValues = self.fmeMacroValues_DBSrc
+        expectedValue = 22
+        # macro values can only be stored as strings
+        fmeMacroValues['DEP_WAITTIME'] = str(expectedValue)
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues)
+        calcParams.logger = self.logger
+        calcParams.plugin.logger = self.logger
+        depWaitTime = calcParams.getDependencyWaitTime()
+        msg = 'wait time is set in the parameter {0} as ' +\
+              ' {1}, but the method getDependencyWaitTime returned ' + \
+              '{2}'
+        msg = msg.format('DEP_WAITTIME', expectedValue, depWaitTime)
+        self.assertEqual(depWaitTime, expectedValue, msg)
+        
+        fmeMacroValues = self.fmeMacroValues_DBSrc
+        expectedValue = '22abc'
+        fmeMacroValues['DEP_WAITTIME'] = expectedValue
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues)
+        calcParams.logger = self.logger
+        calcParams.plugin.logger = self.logger
+        msg = 'set the wait time to a non numeric value.  The method ' + \
+              'getDependencyWaitTime, should raise an error when this ' + \
+              'occurs however it did not.'
+        msg = msg.format('DEP_WAITTIME', expectedValue, depWaitTime)
+        self.assertRaises(ValueError, lambda: calcParams.getDependencyWaitTime())
+        
+        #----------------------------------------
+        # -     DEP_MAXRETRIES TESTS
+        #----------------------------------------        
+        maxRetryExpected = 5
+        maxRetryReturned = calcParams.getDependencyMaxRetries()
+        msg = 'The max retries expected is {0} but got {1}, check ' + \
+              'the value in the config file, and see that it matches the ' + \
+              'the expected value, or change the expected value to match'
+        msg = msg.format(maxRetryExpected,maxRetryReturned )
+        self.assertEqual(maxRetryExpected, maxRetryReturned, msg)
+        
+        fmeMacroValues = self.fmeMacroValues_DBSrc
+        expectedValue = 22
+        # macro values can only be stored as strings
+        fmeMacroValues['DEP_MAXRETRIES'] = expectedValue
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues)
+        calcParams.logger = self.logger
+        calcParams.plugin.logger = self.logger
+        returnValue = calcParams.getDependencyMaxRetries()
+        msg = 'max retries is set in the parameter {0} as ' +\
+              ' {1}, but the method getDependencyWaitTime returned ' + \
+              '{2}'
+        msg = msg.format('DEP_MAXRETRIES', expectedValue, returnValue)
+        self.assertEqual(returnValue, expectedValue, msg)
+        
+        fmeMacroValues = self.fmeMacroValues_DBSrc
+        expectedValue = '22abc'
+        fmeMacroValues['DEP_MAXRETRIES'] = expectedValue
+        calcParams = DataBCFMWTemplate.CalcParams(fmeMacroValues)
+        calcParams.logger = self.logger
+        calcParams.plugin.logger = self.logger
+        msg = 'set the max retries to a non numeric value.  The method ' + \
+              'getDependencyWaitTime, should raise an error when this ' + \
+              'occurs however it did not.'
+        msg = msg.format('DEP_MAXRETRIES', expectedValue, depWaitTime)
+        self.assertRaises(ValueError, lambda: calcParams.getDependencyMaxRetries())
+
 class Test_CalcParamsDevel(unittest.TestCase):
     def setUp(self):
         self.logger = logging.getLogger()
@@ -790,8 +917,9 @@ if __name__ == "__main__":
     #sys.argv = ['','Test_TemplateConfigFileReader.test_shutdown']
     #sys.argv = ['','Test_CalcParams.test_getSQLServerSchemaForPasswordRetrieval']
     #sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlServerPassword']
-    sys.argv = ['','Test_CalcParams.test_getSrcSqlServerPassword']
+    #sys.argv = ['','Test_CalcParams.test_getSrcSqlServerPassword']
     #sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlConnectStr']
+    sys.argv = ['', 'Test_CalcParams.test_getDependencyParams']
 
     # 'Test_CalcParams.test_getFailedFeaturesFile',
     # 
