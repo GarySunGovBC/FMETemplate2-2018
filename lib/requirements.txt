@@ -2,6 +2,7 @@ requests==2.14.2
 cx_Oracle
 pytz==2016.10
 psutil==5.2.2
+ipaddress=1.0.18
 #git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=PMP&subdirectory=PMP
 #git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=Misc&subdirectory=Misc
 #git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@packagedVersion#egg=DB&subdirectory=DB

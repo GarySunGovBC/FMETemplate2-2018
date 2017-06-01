@@ -400,10 +400,11 @@ class Start(object):
         # Extract the custom script directory from config file
         #customScriptDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
         # Assemble the name of a the custom script
-        justScript = (os.path.splitext(fmwName))[0]
+        justScript = (os.path.splitext(fmwName))[0] + '.py'
+        
 
-        customScriptFullPath = os.path.join(customScriptDir, justScript + '.py')
-        customScriptLocal = os.path.join(self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory], justScript + '.py')
+        customScriptFullPath = os.path.join(customScriptDir, justScript)
+        customScriptLocal = os.path.join(self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory], justScript)
         
         # test to see if the custom script exists, if it does import it, and 
         # set the plugin parameter = to the Start() object.

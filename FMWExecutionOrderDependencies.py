@@ -11,7 +11,6 @@ import pprint
 import datetime
 
 
-
 class ExecutionOrderConstants(object):
     # make sure the statuses are in upper case
     successStatus = ['SUCCESS']
