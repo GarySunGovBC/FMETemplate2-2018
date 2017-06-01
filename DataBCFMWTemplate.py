@@ -457,9 +457,6 @@ class DefaultStart(object):
         envKey = params.getDestDatabaseEnvKey()
         config = TemplateConfigFileReader(envKey)
         const = TemplateConstants()
-
-        # Need to think about best way to handle this, only really want to 
-        # do a dep search if running on fme server.s
         
         # possible statuses:
         #  - SUCCESS - most common
@@ -473,44 +470,47 @@ class DefaultStart(object):
         #  - DELETED
         #  - ABORTED
         #  - PULLED
-        
-        # TODO: need another if statement as dependency code should only be run if being 
-        # run on fme server.
-        print 'here, about to deal with the dependencies'
         if params.existsDependentFMWSs():
-            # retrieve the parameters to create the dependencies
-            depFMWs = params.getDependentFMWs()
-            depTimeWindow = params.getDependencyTimeWindow()
-            depMaxRetries = params.getDependencyMaxRetries()
-            depWaitTime = params.getDependencyWaitTime()
+            msg = 'The script has dependencies defined.'
+            self.logger.info(msg)
+            # only proceed if executing on fme server
+            if config.isDataBCFMEServerNode():
+                msg = 'The script is being run on an FME Server node. Initiating ' + \
+                      'the fmw '
             
-            fmeSrvHost =  config.getFMEServerHost()
-            fmeSrvDir = config.getFMEServerRootDir()
-            fmeSrvToken = config.getFMEServerToken()
-                        
-            execOrder = FMWExecutionOrderDependencies.ExecutionOrder(depFMWs, depTimeWindow, depMaxRetries, depWaitTime, fmeSrvHost, fmeSrvToken)
-            retries = 0
-            
-            complete = execOrder.isParentsComplete()
-            if not complete:
-                while not complete:
-                    if retries >= depMaxRetries:
-                        msg = 'The dependent FMW jobs: {0} described in the parameter ' + \
-                              '{1} have not been run.  FME Server has been probed {2} ' + \
-                              'times.  This FMW will not proceed.'
-                        msg = msg.format(depFMWs, const.FMWParams_Deps_fmwList, retries)
-                        self.logger.error(msg)
-                        raise DependenciesNotMet, msg
-                    else:
-                        msg = "The dependencies: {0} described in the parameter {1} have " + \
-                              "not been found to have run yet, or they are currently still " + \
-                              "in process. Currently on retry {2} of a maximum of {3}"
-                        msg = msg.format(depFMWs, const.FMWParams_Deps_fmwList, retries, depMaxRetries)
-                        self.logger.info(msg)
-                        self.logger.info("waiting for {0} seconds".format(depWaitTime))
-                        time.sleep(depWaitTime)
-                    complete = execOrder.isParentsComplete()
-                    retries += 1
+                # retrieve the parameters to create the dependencies
+                depFMWs = params.getDependentFMWs()
+                depTimeWindow = params.getDependencyTimeWindow()
+                depMaxRetries = params.getDependencyMaxRetries()
+                depWaitTime = params.getDependencyWaitTime()
+                
+                fmeSrvHost =  config.getFMEServerHost()
+                fmeSrvDir = config.getFMEServerRootDir()
+                fmeSrvToken = config.getFMEServerToken()
+                            
+                execOrder = FMWExecutionOrderDependencies.ExecutionOrder(depFMWs, depTimeWindow, depMaxRetries, depWaitTime, fmeSrvHost, fmeSrvToken)
+                retries = 0
+                
+                complete = execOrder.isParentsComplete()
+                if not complete:
+                    while not complete:
+                        if retries >= depMaxRetries:
+                            msg = 'The dependent FMW jobs: {0} described in the parameter ' + \
+                                  '{1} have not been run.  FME Server has been probed {2} ' + \
+                                  'times.  This FMW will not proceed.'
+                            msg = msg.format(depFMWs, const.FMWParams_Deps_fmwList, retries)
+                            self.logger.error(msg)
+                            raise DependenciesNotMet, msg
+                        else:
+                            msg = "The dependencies: {0} described in the parameter {1} have " + \
+                                  "not been found to have run yet, or they are currently still " + \
+                                  "in process. Currently on retry {2} of a maximum of {3}"
+                            msg = msg.format(depFMWs, const.FMWParams_Deps_fmwList, retries, depMaxRetries)
+                            self.logger.info(msg)
+                            self.logger.info("waiting for {0} seconds".format(depWaitTime))
+                            time.sleep(depWaitTime)
+                        complete = execOrder.isParentsComplete()
+                        retries += 1
         
 class Shutdown(object):
     
@@ -519,7 +519,9 @@ class Shutdown(object):
         self.fme = fme
         self.const = TemplateConstants()
         
-        self.params = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
+        self.params = CalcParamsBase(self.fme.macroValues)
+
+        self.config = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
         
         fmwDir = self.params.getFMWDirectory()
         fmwName = self.params.getFMWFile()
@@ -533,7 +535,7 @@ class Shutdown(object):
         self.logger.debug("log file name: {0}".format(self.fme.logFileName))
         
         # looking for custom script for shutdown
-        customScriptDir = self.params.getCustomScriptDirectory()
+        customScriptDir = self.config.getCustomScriptDirectory()
         
         justScript = os.path.splitext(fmwName)[0]
         customScriptFullPath = os.path.join(customScriptDir, justScript + '.py')
@@ -979,8 +981,23 @@ class TemplateConfigFileReader(object):
             retVal = True
         return retVal
                 
+    def isDataBCFMEServerNode(self):
+        '''
+        identifies if the server that is running the script is a data
+        bc fme server engine.
+        '''
+        nodeList = self.getDataBCFmeServerNodes()
+        retVal = self.isNodeInList(nodeList)
+        self.logger.debug("isDataBCFMEServerNode return val: {0}".format(retVal))
+        return retVal
+            
     def isDataBCNode(self):
         nodeList = self.getDataBCNodes()
+        retVal = self.isNodeInList(nodeList)
+        self.logger.debug("isDataBCNode return val: {0}".format(retVal))
+        return retVal
+    
+    def isNodeInList(self, nodeList):
         for indx in range(0, len(nodeList)):
             nodeList[indx] = nodeList[indx].lower()
             nodeList[indx] = nodeList[indx].strip()
@@ -995,7 +1012,8 @@ class TemplateConfigFileReader(object):
         self.logger.debug(msg)
         if curMachine in nodeList:
             retVal = True
-        self.logger.debug("isDataBCNode return val: {0}".format(retVal))
+        msg = "machine is in this nodelist {0} - {1}"
+        self.logger.debug(msg.format(nodeList, retVal))
         return retVal
     
     def isFMEServerNode(self):
@@ -1326,6 +1344,13 @@ class GetPublishedParams(object):
         macroKey = self.const.FMWParams_Deps_fmwList
         if not self.existsMacroKey(macroKey):
             retVal = False
+        else:
+            # now need to get the contents as if there is nothing inside it 
+            # should return false.
+            deps = self.getDependentFMWs()
+            self.logger.debug("dependencies: {0}".format(deps))
+            if not deps:
+                retVal = False        
         return retVal
     
     def existsDestinationSchema(self, position):

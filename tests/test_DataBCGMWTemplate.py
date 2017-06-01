@@ -5,14 +5,14 @@ Created on Dec 11, 2015
 '''
 import os
 import sys
+import platform
+#pathList = os.environ['PATH'].split(';')
+#pathList.insert(0, r'E:\sw_nt\FME2015')
+#sys.path.insert(0, r'E:\sw_nt\FME2015\fmeobjects\python27')
+#sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
+#sys.path.insert(0, r'\\data.bcgov\work\Workspace\kjnether\proj\FMETemplateRevisions_Python')
 
-pathList = os.environ['PATH'].split(';')
-pathList.insert(0, r'E:\sw_nt\FME2015')
-sys.path.insert(0, r'E:\sw_nt\FME2015\fmeobjects\python27')
-sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
-sys.path.insert(0, r'\\data.bcgov\work\Workspace\kjnether\proj\FMETemplateRevisions_Python')
-
-os.environ['PATH'] = ';'.join(pathList)
+#os.environ['PATH'] = ';'.join(pathList)
 
 import unittest
 import site
@@ -766,6 +766,15 @@ class Test_TemplateConfigFileReader(unittest.TestCase):
         self.confFileReader.validateKey('deliv')
         #self.confFileReader.validateKey('dlvv')
     
+    def test_getFMEServerNode(self):
+        isdatabcFMEServer = self.confFileReader.isDataBCFMEServerNode()
+        node = platform.node()
+        print 'is a fme server node: {0}'.format(isdatabcFMEServer)
+        
+    def test_isDataBCNode(self):
+        isdatabc = self.confFileReader.isDataBCNode()
+        node = platform.node()
+        print 'is a fme server node: {0}'.format(isdatabc)
 
 class Test_Startup(unittest.TestCase):
     def setUp(self):
@@ -919,7 +928,7 @@ if __name__ == "__main__":
     #sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlServerPassword']
     #sys.argv = ['','Test_CalcParams.test_getSrcSqlServerPassword']
     #sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlConnectStr']
-    sys.argv = ['', 'Test_CalcParams.test_getDependencyParams']
+    sys.argv = ['', 'Test_TemplateConfigFileReader.test_isDataBCNode', 'Test_TemplateConfigFileReader.test_getFMEServerNode']
 
     # 'Test_CalcParams.test_getFailedFeaturesFile',
     # 
