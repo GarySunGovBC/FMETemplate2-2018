@@ -400,11 +400,11 @@ class Start(object):
         # Extract the custom script directory from config file
         #customScriptDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
         # Assemble the name of a the custom script
-        justScript = (os.path.splitext(fmwName))[0] + '.py'
+        justScript = (os.path.splitext(fmwName))[0]
         
 
-        customScriptFullPath = os.path.join(customScriptDir, justScript)
-        customScriptLocal = os.path.join(self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory], justScript)
+        customScriptFullPath = os.path.join(customScriptDir, justScript + '.py')
+        customScriptLocal = os.path.join(self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory], justScript + '.py')
         
         # test to see if the custom script exists, if it does import it, and 
         # set the plugin parameter = to the Start() object.
@@ -422,7 +422,7 @@ class Start(object):
             self.logger.debug("python path has been appended successfully")
             self.logger.debug("trying to load the module {0}".format(justScript))
             startupModule = importlib.import_module(justScript)
-            
+            self.logger.debug("module is now imporated: {0}".format(justScript))
             # is there a start class defined in the startup module
             if Util.isClassInModule(startupModule, 'Start'):
                 self.logger.debug("{0} module loaded successfully".format(justScript))
