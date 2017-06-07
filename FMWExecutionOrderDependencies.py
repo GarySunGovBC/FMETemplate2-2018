@@ -15,7 +15,6 @@ class ExecutionOrderConstants(object):
     # make sure the statuses are in upper case
     successStatus = ['SUCCESS']
 
-
 class ExecutionOrder(object):
     '''
     This class was created to support the dependency functionality 
@@ -28,7 +27,6 @@ class ExecutionOrder(object):
     default configs.  All information required to run is sent to this 
     class in the constructor    
     '''
-    
     
     def __init__(self, dependencyList, depTimeWindow, depMaxRetries, depWaitTime, fmeBaseUrl, fmeToken):
         '''

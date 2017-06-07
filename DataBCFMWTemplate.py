@@ -2118,6 +2118,50 @@ class CalcParamsBase( GetPublishedParams ):
                     retVal = True
                     return retVal
         return retVal
+    
+    def getSourceDestDBKey(self, position=None):
+        '''
+        if the source data set has been determined to be a BCGW source, then 
+        the passwords need to be retrieved from a different pmp resource.  By
+        default things are set up to retrieve passwords from the external database
+        resource.  This resource does not include bcgw passwords.  
+        
+        When source is bcgw need to use the same resources as are used for 
+        the destination.
+        
+        This method will analyze the source database parameters and return a 
+        dest db env key that corresponds with those parameters.
+        '''
+        self.logger.debug(self.debugMethodMessage.format("getSourceDestDBKey"))
+        msg = 'retrieving the source oracle service name parameter for position {0}'
+        msg = msg.format(position)
+        self.logger.info(msg)
+        sourceOraServName = self.getSourceOracleServiceName(position)
+        self.logger.debug("Oracle source service name: {0} position {1}".format(sourceOraServName, position))
+
+        retVal = None
+        destKeys = self.paramObj.parser.items(self.const.ConfFileSection_destKeywords)
+        for destKeyItems in destKeys:
+            destKey = destKeyItems[0]
+            #print 'destKey', destKey
+            servName = self.paramObj.parser.get(destKey, self.const.ConfFileSection_serviceNameKey)
+            servNameAliases = self.paramObj.parser.get(destKey, self.const.ConfFileSection_instanceAliasesKey)
+            instances = servNameAliases.split(',')
+            instances.append(servName)
+            for curInstName in instances:
+                self.logger.debug("comparing {0} and {1}".format(curInstName, sourceOraServName))
+                if Util.isEqualIgnoreDomain(curInstName, sourceOraServName):
+                    retVal = destKey
+                    msg = "found the BCGW environment ((0)) for the source database {1}"
+                    msg = msg.format(destKey, sourceOraServName)
+                    self.logger.info(msg)
+                    break
+            if retVal:
+                break
+        if not retVal:
+            msg = 'Unable to find a database environment key for the source service name: {0}'
+            self.logger.error(msg.format(sourceOraServName))
+        return retVal        
         
 class CalcParamsDevelopment(object):
     
@@ -2792,16 +2836,20 @@ class CalcParamsDataBC(object):
 
         # Need to detect if the source instance is bcgw.  If it is then
         # get the password from there.
-        srcDestKey = self.parent.isSourceBCGW(position)
-        if srcDestKey:
+        isSrcBCGW = self.parent.isSourceBCGW(position)
+        if isSrcBCGW:
+            #destKey = self.parent.getDestDatabaseEnvKey()
+            # need to figure out what the destination is now based on 
+            # 
+            destKey = self.parent.getSourceDestDBKey(position)
             msg = 'Source has been detected to be from the ' + \
                   'bcgw.  Retrieving the password for the ' + \
                   'source database using the destination ' + \
                   'keyword {0}'
-            msg = msg.format(srcDestKey)
+            msg = msg.format(destKey)
             self.logger.info(msg)
 
-            pswd = self.getDestinationPassword(destKey=srcDestKey, schema=srcOraSchema)
+            pswd = self.getDestinationPassword(destKey=destKey, schema=srcOraSchema)
         else:
             msg = 'retrieving source password from pmp for schema: ({0}), service name: ({1})'
             msg = msg.format(srcOraSchema, srcOraServName)
