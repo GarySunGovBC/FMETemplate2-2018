@@ -82,6 +82,7 @@ class TemplateConstants(object):
     ConfFileSection_global_failedFeaturesDir = 'failedFeaturesDir'
     ConfFileSection_global_failedFeaturesFile = 'failedFeaturesFile'
     ConfFileSection_global_directConnectClientString = 'directconnect_clientstring'
+    ConfFileSection_global_directConnectSSClientString = 'directconnect_ss_clientstring'
 
     ConfFileSection_destKeywords = 'dest_param_keywords'
     
@@ -863,7 +864,11 @@ class TemplateConfigFileReader(object):
     def getOracleDirectConnectClientString(self):
         clientStr = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_directConnectClientString)
         return clientStr
-            
+    
+    def getSSDirectConnectClientString(self):
+        clientStr = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_directConnectSSClientString)
+        return clientStr
+        
     def getOutputsDirectory(self):
         ouptutsDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_outDir)
         return ouptutsDir
@@ -1332,6 +1337,15 @@ class GetPublishedParams(object):
             retVal = False
         return retVal
     
+    def existsSrcSSDatabaseName(self, position):
+        retVal = True
+        macroKey = self.const.FMWParams_SrcSSDbName
+        macroKey = self.getMacroKeyForPosition(macroKey, position )
+        srcPort = None
+        if not self.existsMacroKey(macroKey):
+            retVal = False
+        return retVal
+    
     def existsSrcSDEDirectConnectClientString(self, position):
         retVal = True
         macroKey = self.const.FMWParams_SrcSDEDirectConnectClientStr
@@ -1612,9 +1626,9 @@ class GetPublishedParams(object):
         # TODO: THIS IS WHERE I AM
         macroKey = self.const.FMWParams_SrcSSDbName
         macroKey = self.getMacroKeyForPosition(macroKey, position )
-        
         self.logger.debug('schemaMacroKey: {0}'.format(macroKey))
-        srcSqlServerDbName = self.getFMEMacroValue(macroKey)
+        if self.existsSrcSSDatabaseName(position):
+            srcSqlServerDbName = self.getFMEMacroValue(macroKey)
         if noDomain:
             srcSqlServerDbName = Util.removeDomain(srcSqlServerDbName)
         return srcSqlServerDbName
@@ -2081,6 +2095,37 @@ class CalcParamsBase( GetPublishedParams ):
         else:
             retStr = host
         return retStr
+    
+    def getSrcSQLServerSDEDirectConnectString(self, position=None):
+        host = self.getSrcHost(position)
+        port = self.getSrcPort(position)
+        dbName = None
+        if self.existsSrcSSDatabaseName(position):
+            dbName = self.getSrcSqlServerDatabaseName(position)
+        SSClientString = self.paramObj.getSSDirectConnectClientString()
+        if not SSClientString:
+            msg = 'unable to retrieve the Sql Server Client string from the framework ' + \
+                  'config file.  Add the parameter: {0} to the global section in the ' +\
+                  'config file.'
+            msg = msg.format(self.const.ConfFileSection_global_directConnectClientString)
+            self.logger.error(msg)
+            raise ValueError, msg
+        if not host:
+            msg = 'To define a sql server direct connect string you must define ' + \
+                  'the source host in a published parameter called: {0}.  This parameter ' + \
+                  'is not currently defined'
+            self.logger.error(msg.format(self.const.FMWParams_SrcHost))
+            raise ValueError, msg.format(self.const.FMWParams_SrcHost)
+        if port and dbName:
+            retStr = u'sde:{0}:{1}\{2},{3}'.format(SSClientString, host, dbName, port)
+        elif dbName:
+            retStr = u'sde:{0}:{1}\{2}'.format(SSClientString, host, dbName)
+        else:
+            retStr = u'sde:{0}:{1}'.format(SSClientString, host)
+        return retStr
+
+            
+            
         
     def isSourceBCGW(self, position=None):
         '''
