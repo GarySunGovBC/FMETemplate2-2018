@@ -10,6 +10,11 @@ Goals of the template are:
 3. Provide FME source and destination transparency, through
    the implementation of a new strict parameter standard.
    
+# Deployment history:
+v1.0.6 - Deployed during entire state of emergency 2017.  
+v1.0.13 - Deployed 10.2.2017 - contains many of the updates that were developed
+          prior to, and up to the state of emergency declared this summer.
+   
 # About
 
 ## FME Template - User Documentation
