@@ -928,7 +928,7 @@ if __name__ == "__main__":
     #sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlServerPassword']
     #sys.argv = ['','Test_CalcParams.test_getSrcSqlServerPassword']
     #sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlConnectStr']
-    sys.argv = ['', 'Test_TemplateConfigFileReader.test_isDataBCNode', 'Test_TemplateConfigFileReader.test_getFMEServerNode']
+    #sys.argv = ['', 'Test_TemplateConfigFileReader.test_isDataBCNode', 'Test_TemplateConfigFileReader.test_getFMEServerNode']
 
     # 'Test_CalcParams.test_getFailedFeaturesFile',
     # 

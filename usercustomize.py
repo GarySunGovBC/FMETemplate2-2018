@@ -9,7 +9,6 @@ import os.path
 import sys
 import getpass
 import json
-
 # notify that usercustomize is being run
 print 'RUNNING USERCUSTOMIZE {0}'.format(__file__)
 
