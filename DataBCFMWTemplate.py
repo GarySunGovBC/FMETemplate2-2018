@@ -53,7 +53,8 @@ import DB.DbLib
 import FMWExecutionOrderDependencies
 import PMP.PMPRestConnect
 import requests
-
+import Emailer
+from pyfme import FMEMacroRouter
 
 class TemplateConstants(object):
     # no need for a logger in this class as its just
@@ -139,6 +140,11 @@ class TemplateConstants(object):
     sqlserverSection = 'sqlserver'
     sqlserver_param_port = 'defaultport'
     sqlserver_param_pmpidentifier = 'pmpidentifier'
+    # email parameters
+    emailerSection = 'notifications'
+    emailer_smtpServer = 'smtpserver'
+    emailer_smtpPort = 'smtpport'
+    emailer_fromAddress = 'emailfrom'
 
     # When creating a connection file the framework will initiate a jenkins job
     # it will then wait for this amount of time before testing to see if the
@@ -194,10 +200,19 @@ class TemplateConstants(object):
     FMWParams_Deps_waitTime = 'DEP_WAITTIME'
     FMWParams_Deps_maxRetry = 'DEP_MAXRETRIES'
 
+    # email notification parameters
+    FMWParams_Notify_All = 'NOTIFY_ALL'
+    FMWParams_Notify_Fail = 'NOTIFY_FAILURE'
+    FMWParams_Notify_Success = 'NOTIFIY_SUCCESS'
+
     # The fmw macrovalue used to retrieve the directory
     # that the fmw is in.
     FMWMacroKey_FMWDirectory = 'FME_MF_DIR'
     FMWMacroKey_FMWName = 'FME_MF_NAME'
+    
+    # fme macro value that will contain the fme server job id
+    FMEMacroKey_JobId = 'FME_JOB_ID'
+    FMEMacroKey_LogFileName = 'LOG_FILENAME'
 
     FMEServerSection = 'fmeserver'
     FMEServerSection_Host = 'host'
@@ -385,17 +400,16 @@ class Start(object):
         fmwDir = self.params.getFMWDirectory()
         fmwName = self.params.getFMWFile()
         destKey = self.params.getDestDatabaseEnvKey()
-        print '----- params calced in start'
 
         # fmwDir = fme.macroValues[self.const.FMWMacroKey_FMWDirectory]
         # fmwName = fme.macroValues[self.const.FMWMacroKey_FMWName]
         # destKey = fme.macroValues[self.const.FMWParams_DestKey]
         # set up logging
         ModuleLogConfig(fmwDir, fmwName, destKey)
-        modDotClass = '{0}'.format(__name__)
+        modDotClass = '{0}.{1}'.format(__name__, 'shutdown')
         self.logger = logging.getLogger(modDotClass)
 
-        self.logger.info('running the template startup')
+        self.logger.info('running the framework startup')
         # Reading the global paramater config file
 
         self.paramObj = TemplateConfigFileReader(destKey)
@@ -450,7 +464,7 @@ class Start(object):
 class DefaultStart(object):
     def __init__(self, fme):
         self.fme = fme
-        modDotClass = '{0}'.format(__name__)
+        modDotClass = '{0}.{1}'.format(__name__, 'shutdown')
         self.logger = logging.getLogger(modDotClass)
 
     def startup(self):
@@ -481,6 +495,7 @@ class DefaultStart(object):
             if config.isDataBCFMEServerNode():
                 msg = 'The script is being run on an FME Server node. Initiating ' + \
                       'the fmw '
+                self.logger.info(msg)
 
                 # retrieve the parameters to create the dependencies
                 depFMWs = params.getDependentFMWs()
@@ -489,10 +504,16 @@ class DefaultStart(object):
                 depWaitTime = params.getDependencyWaitTime()
 
                 fmeSrvHost = config.getFMEServerHost()
-                # fmeSrvDir = config.getFMEServerRootDir() # commenting out because its not used at this time
+                # commenting out because its not used at this time
+                # fmeSrvDir = config.getFMEServerRootDir()
                 fmeSrvToken = config.getFMEServerToken()
 
-                execOrder = FMWExecutionOrderDependencies.ExecutionOrder(depFMWs, depTimeWindow, depMaxRetries, depWaitTime, fmeSrvHost, fmeSrvToken)
+                execOrder = FMWExecutionOrderDependencies.ExecutionOrder(depFMWs,
+                                                                         depTimeWindow,
+                                                                         depMaxRetries,
+                                                                         depWaitTime,
+                                                                         fmeSrvHost,
+                                                                         fmeSrvToken)
                 retries = 0
 
                 complete = execOrder.isParentsComplete()
@@ -533,7 +554,7 @@ class Shutdown(object):
 
         # logging configuration
         ModuleLogConfig(fmwDir, fmwName, destKey)
-        modDotClass = '{0}'.format(__name__)
+        modDotClass = '{0}.{1}'.format(__name__, 'shutdown')
         self.logger = logging.getLogger(modDotClass)
         self.logger.debug("Shutdown has been called...")
         self.logger.debug("log file name: {0}".format(self.fme.logFileName))
@@ -576,26 +597,36 @@ class DefaultShutdown(object):
         self.fme = fme
         self.const = TemplateConstants()
         self.params = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
-
-        # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
-        modDotClass = '{0}'.format(__name__)
-        self.logger = logging.getLogger(modDotClass)
+        loggerName = '{0}.{1}'.format(__name__, 'shutdown')
+        self.logger = logging.getLogger(loggerName)
+        self.logger.info('destination key word in shutdown: %s',
+                         self.fme.macroValues[self.const.FMWParams_DestKey])
 
     def shutdown(self):
         destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
         if not self.params.isDataBCNode():
-            # either not being run on a databc computer, or is being run in development mode, either way
-            # should not be writing to to the DWM logger.
-            msg = "DWM record is not being writen as script is being run external to databc firewalls."
+            # either not being run on a databc computer, or is being run in
+            # development mode, either way should not be writing to to the
+            # DWM logger.
+            msg = "DWM record is not being writen as script is being run external" + \
+                  " to databc firewalls."
             self.logger.info(msg)
-        elif self.params.getDestinationDatabaseKey(destKey) == self.const.ConfFileDestKey_Devel:
-            msg = 'DWM record is not being written because the script is being run in development mode'
+        elif self.params.getDestinationDatabaseKey(destKey) == \
+             self.const.ConfFileDestKey_Devel:
+            msg = 'DWM record is not being written because the script is being ' + \
+                  'run in development mode'
             self.logger.info(msg)
         else:
             self.logger.info("DWM record is being created")
             dwmWriter = DWMWriter(self.fme)
             # dwmWriter.printParams()
             dwmWriter.writeRecord()
+        self.logger.info('destination key word in shutdown: %s',
+                         self.fme.macroValues[self.const.FMWParams_DestKey])
+
+        emailer = Emailer.EmailFrameworkBridge(self.fme)
+        emailer.sendNotifications()
+        self.logger.info("shutdown is now complete")
 
 class TemplateConfigFileReader(object):
 
@@ -609,14 +640,14 @@ class TemplateConfigFileReader(object):
         self.logger = logging.getLogger(modDotClass)
 
         self.confFile = confFile
-        self.logger.debug("Reading the config file: {0}".format(self.confFile))
+        self.logger.info("Reading the config file: %s", self.confFile)
         self.const = TemplateConstants()
         self.readConfigFile()
         self.setDestinationDatabaseEnvKey(key)
         msg = "Destination database environment key has been set to ({0}) " + \
               " the raw input key is ({1})"
         msg = msg.format(self.key, key)
-        self.logger.debug(msg)
+        self.logger.info(msg)
 
     def calcEnhancedLoggingFileOutputDirectory(self, fmwDir, fmwName):
         '''
@@ -685,7 +716,8 @@ class TemplateConfigFileReader(object):
         # if self.isDataBCNode():
         rootDir = self.getTemplateRootDirectory()
         outputs = self.getOutputsDirectory()
-        changeLogDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_changeLogDir)
+        changeLogDir = self.parser.get(self.const.ConfFileSection_global,
+                                       self.const.ConfFileSection_global_changeLogDir)
         changeLogFullPath = os.path.join(rootDir, outputs, changeLogDir)
         changeLogFullPath = os.path.realpath(changeLogFullPath)
         return changeLogFullPath
@@ -958,6 +990,15 @@ class TemplateConfigFileReader(object):
     def getSqlServerDefaultPort(self):
         return self.parser.get(self.const.sqlserverSection, self.const.sqlserver_param_port)
 
+    def getEmailSMTPServer(self):
+        return self.parser.get(self.const.emailerSection, self.const.emailer_smtpServer)
+
+    def getEmailSMTPPort(self):
+        return self.parser.get(self.const.emailerSection, self.const.emailer_smtpPort)
+
+    def getEmailFromAddress(self):
+        return self.parser.get(self.const.emailerSection, self.const.emailer_fromAddress)
+
     def getSqlServerPMPIdentifier(self):
         # retrieves the string used to identify sql server databases in
         # pmp
@@ -1046,7 +1087,6 @@ class TemplateConfigFileReader(object):
         return retVal
 
     def readConfigFile(self):
-        self.logger.debug("readConfigFile")
         if not self.confFile:
             self.confFile = os.path.dirname(__file__)
             self.confFile = os.path.join(self.confFile,
@@ -1057,14 +1097,17 @@ class TemplateConfigFileReader(object):
                 msg = msg.format(self.confFile)
                 self.logger.error(msg)
                 raise ValueError, msg
-            self.logger.debug("config file path that has been calculated is {0}".format(self.confFile))
+            self.logger.info("config file path that has been calculated is %s",
+                              self.confFile)
         if not self.parser:
             self.parser = ConfigParser.ConfigParser()
             self.parser.read(self.confFile)
-            self.logger.debug("sections in the config file are: {0}".format(self.parser.sections()))
+            self.logger.debug("sections in the config file are: %s",
+                              self.parser.sections())
 
     def setDestinationDatabaseEnvKey(self, key):
-        self.logger.info("dest db env key: {0}".format(key))
+        self.logger.info("Destination database environment keyword is set to: %s",
+                         key)
         self.validateKey(key)
         self.key = self.getDestinationDatabaseKey(key)
 
@@ -1318,8 +1361,7 @@ class GetPublishedParams(object):
         self.fmeMacroVals = fmeMacroVals
         self.const = TemplateConstants()
 
-        modDotClass = '{0}'.format(__name__)
-        self.logger = logging.getLogger(modDotClass)
+        self.logger = logging.getLogger(__name__)
 
     def existsMacroKey(self, macroKey):
         '''
@@ -1477,6 +1519,8 @@ class GetPublishedParams(object):
                 paramValue = Util.getParamValue(justParamName, self.fmeMacroVals)
                 print 'Value extracted from linked parameter {0}'.format(paramValue)
                 logger.debug('Value extracted from linked parameter {0}'.format(paramValue))
+                logger.info('parameter (%s) is a linked parameter with an ' + \
+                            'ultimate value of %s', paramName, paramValue)
         return paramValue
 
     def getMacroKeyForPosition(self, macroKey, position=None):
@@ -1680,10 +1724,7 @@ class CalcParamsBase(GetPublishedParams):
         ModuleLogConfig(fmwDir, fmwName, self.destKey)
 
         # ModuleLogConfig()
-        # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
-        modDotClass = '{0}'.format(__name__)
-        self.logger = logging.getLogger(modDotClass)
-        self.logger.debug("CalcParamsBase logger name {0}".format(modDotClass))
+        self.logger = logging.getLogger(__name__)
         self.paramObj = TemplateConfigFileReader(self.destKey)
         # self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
         self.debugMethodMessage = "method: {0}"
@@ -2227,11 +2268,8 @@ class CalcParamsDevelopment(object):
         ModuleLogConfig(fmwDir, fmwName, destKey)
 
         # ModuleLogConfig()
-        # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
-        modDotClass = '{0}'.format(__name__)
-        self.logger = logging.getLogger(modDotClass)
+        self.logger = logging.getLogger(__name__)
 
-        self.logger.debug("constructing a CalcParamsDevelopment object")
         # This is the base / example db creds file.
         self.credsFileFullPath = self.getDbCredsFile()
         self.logger.debug("Credentials file being used is: {0}".format(self.credsFileFullPath))
@@ -2658,9 +2696,7 @@ class CalcParamsDataBC(object):
 
         self.destKey = self.parent.getDestDatabaseEnvKey()
 
-        modDotClass = '{0}'.format(__name__)
-        self.logger = logging.getLogger(modDotClass)
-        self.logger.debug("CalcParamsDataBC logger name: {0}".format(modDotClass))
+        self.logger = logging.getLogger(__name__)
         self.fmeMacroVals = self.parent.fmeMacroVals
         self.currentPMPResource = None
 
@@ -2927,16 +2963,16 @@ class CalcParamsDataBC(object):
                     # accnts = pmp.getAccountsForResourceID(pmpResource)
                     for accntDict in accnts:
                         accntName = PMPSourceAccountParser(
-                            accntDict[self.const.PMPKey_AccountName], 
+                            accntDict[self.const.PMPKey_AccountName],
                             sqlServerIdentifier)
                         schema = accntName.getSchema()
                         # self.logger.debug("cur schema / search schema: {0} / {1}".format(schema, accntNameInFMW))
                         if schema.lower() == srcOraSchema.lower():
-                            self.logger.debug("schemas match %s", 
+                            self.logger.debug("schemas match %s",
                                               accntDict[self.const.PMPKey_AccountName])
                             serviceName = accntName.getServiceName()
                             self.logger.debug("cur service_name / search " + \
-                                              "serivce_name: %s, %s", 
+                                              "serivce_name: %s, %s",
                                               serviceName, srcOraServName)
                             if serviceName.lower() == srcOraServName.lower():
                                 # match return password for this account
@@ -2954,7 +2990,7 @@ class CalcParamsDataBC(object):
                           '%s in pmp for the resource %s using the token %s ' + \
                           ' from the machine %s'
                     self.logger.warning(msg, srcOraSchema, srcOraServName,
-                                     pmpResource, pmpHelper.pmpDict['token'], 
+                                     pmpResource, pmpHelper.pmpDict['token'],
                                      platform.node())
                     self.logger.info("trying a heuristic that ignores domain " + \
                                      "information to find a password for %s@%s",
@@ -3042,10 +3078,10 @@ class CalcParamsDataBC(object):
                     # found the srcSchema
                     # now check see if the instance matches
                     # print 'schemas {0} : {1}'.format(destSchema, self.fmeMacroVals[self.const.FMWParams_SrcSchema])
-                    self.logger.debug("schemas match {0} {1}".format(schema, 
+                    self.logger.debug("schemas match {0} {1}".format(schema,
                                                                      srcOraSchema))
                     servName = accntName.getServiceNameNoDomain()
-                    self.logger.debug("service name {0} {1}".format(servName, 
+                    self.logger.debug("service name {0} {1}".format(servName,
                                                                     srcOraServName))
                     if servName.lower().strip() == srcOraServName.lower().strip():
                         snList.append([accntDict[self.const.PMPKey_AccountName],
@@ -3182,9 +3218,7 @@ class CalcParams(CalcParamsBase):
 
         ModuleLogConfig(fmwDir, fmwName, destKey, customLogConfig)
 
-        # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
-        modDotClass = '{0}'.format(__name__)
-        self.logger = logging.getLogger(modDotClass)
+        self.logger = logging.getLogger(__name__)
 
         # self.logger.info("inheriting the CalcParamsBase class")
         CalcParamsBase.__init__(self, fmeMacroVals)
@@ -3229,7 +3263,6 @@ class ModuleLogConfig(object):
                 dirname = os.path.dirname(__file__)
                 logConfFileFullPath = os.path.join(dirname, configDir, logConfFileName)
 
-
             enhancedLoggingFileName = Util.calcEnhancedLoggingFileName(fmwName)
             enhancedLoggingDir = confFile.calcEnhancedLoggingFileOutputDirectory(fmwDir, fmwName)
             enhancedLoggingFullPath = os.path.join(enhancedLoggingDir, enhancedLoggingFileName)
@@ -3239,11 +3272,6 @@ class ModuleLogConfig(object):
                 fh = open(enhancedLoggingFullPath, 'w')
                 fh.close()
 
-            # print 'type(enhancedLoggingFullPath)', type(enhancedLoggingFullPath)
-            # print 'logConfFileFullPath', logConfFileFullPath
-            # print 'enhancedLoggingFullPath', enhancedLoggingFullPath
-            # print 'os.path.sep', os.path.sep
-
             logging.config.fileConfig(logConfFileFullPath, defaults={'logfilename': str(enhancedLoggingFullPath)})
             logger = logging.getLogger(__name__)
             # logger.debug("logger should be configured")
@@ -3251,7 +3279,6 @@ class ModuleLogConfig(object):
             logger.info("enhancedLoggingFullPath: {0}".format(enhancedLoggingFullPath))
         else:
             tmpLog.debug("log already configured")
-            pass
 
 class PMPHelper(object):
     '''
@@ -3283,9 +3310,9 @@ class PMPHelper(object):
         '''
         Creates and returns a PMP connection dictionary.  The dictionary contains
         the application token, pmp base url, and the directory path to the rest api
-        on the pmp server.  
-        
-        This dictionary is what is required by the python pmp wrapper to create 
+        on the pmp server.
+
+        This dictionary is what is required by the python pmp wrapper to create
         a PMP object.
         :param baseUrl: if the base url to the rest api is different from that
                         which is defined in the framework config file, you
@@ -3304,7 +3331,7 @@ class PMPHelper(object):
 
     def getDestinationPMPAccountPassword(self, schema):
         '''
-        Using the destination key to identify the pmp resource, extracts the 
+        Using the destination key to identify the pmp resource, extracts the
         password from pmp for the provided schema
         :param schema: the schema for which we want to retrieve a password for.
         :return: The password !
@@ -3321,12 +3348,12 @@ class PMPHelper(object):
 
     def attemptCommunication(self):
         '''
-        Sometimes PMP does go offline.  It seems that this usually happens 
+        Sometimes PMP does go offline.  It seems that this usually happens
         around 3am.  This method puts in place an attempt to monitor communication
         with pmp, and when pmp becomes unavailable, instead of simply crashing
         the current replication, the script instead goes into a retry loop, where
-        it pauses and then attempts to retry communication with PMP. 
-        
+        it pauses and then attempts to retry communication with PMP.
+
         Properties that influence this method and default values in brackets
          - failWaitTime = amount of time to wait in between attempts to communicate
                           with pmp. (5 minutes)
@@ -3418,10 +3445,10 @@ class PMPHelper(object):
          - IS_TICKETID_REQD_MANDATORY
          - PASSWDID
          - PASSWORD STATUS
-         
+
         see pmp rest api for more information.
 
-        :param resourceName: name of the resource who's acccounts we want to 
+        :param resourceName: name of the resource who's acccounts we want to
                              retrieve.
         :return: see description above
         :rtype: list(dict)
@@ -3439,9 +3466,9 @@ class PMPHelper(object):
         '''
         :param accountName: the account name (schema name) who's password it is
                             that you want to retrieve.
-        :param resourceName: the name of the resource in PMP that the script 
+        :param resourceName: the name of the resource in PMP that the script
                              should search for the account/password in.
-        :return: This method returns the password that matches the "accountName" 
+        :return: This method returns the password that matches the "accountName"
                  in the PMP "resourceName"
         '''
         passwrd = self.pmp.getAccountPassword(accountName, resourceName)
@@ -3543,11 +3570,11 @@ class DWMWriter(object):
 
     def getDatabaseConnection(self):
         '''
-        Using the information in the config file defined for the framework, 
-        retrieves the database connection information required to populate 
-        the DWM report, including communication with PMP to retrieve the 
+        Using the information in the config file defined for the framework,
+        retrieves the database connection information required to populate
+        the DWM report, including communication with PMP to retrieve the
         password.
-        
+
         Uses this information to create a database connection object that will
         be used by subsequent method to populate a record in the DWM reporting
         table.
@@ -3623,7 +3650,7 @@ class DWMWriter(object):
 
     def collectData(self):
         '''
-        This method calls various other methods to coallate all the information 
+        This method calls various other methods to coallate all the information
         about the run event for reporting in a new dwm record.
         :return: Returns a dictionary that describes the most recent run event.
                  keys in the dictionary include:
@@ -3743,7 +3770,7 @@ class DWMWriter(object):
 
     def getTotalFeaturesReadCount(self):
         '''
-        :return: the total number of feature read.  Extracted from the fme 
+        :return: the total number of feature read.  Extracted from the fme
                  object.
         '''
         return self.fme.totalFeaturesRead
