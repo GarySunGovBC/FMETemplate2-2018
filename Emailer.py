@@ -44,7 +44,6 @@ class EmailFrameworkBridge(object):
     '''
 
     def __init__(self, fmeObj):
-        print 'got here damn it!'
         self.fmeObj = fmeObj
         self.logger = logging.getLogger(__name__)
         self.logger.debug("constructing emailer object")
