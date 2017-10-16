@@ -110,7 +110,7 @@ class ParcelMapUpdater(object):
         self.logger.debug(u"destFullPath %s", destFullPath)
         # creating the parcel map object
         self.logger.debug(u"creating parcel map api object")
-        self.pm = ParcelMapLib.parcelMapAPI(restApiURL, restApiUser, restApiPswd, destDir)
+        self.pm = ParcelMapLib.ParcelMapAPI(restApiURL, restApiUser, restApiPswd, destDir)
 
         # if a status file exists it indicates that the process never completed
         # if self.pm.existsStatusFile():
