@@ -117,6 +117,7 @@ class TemplateConstants(object):
     ConfFile_dwm_dbserver = 'db_server'
     ConfFile_dwm_dbport = 'db_port'
     ConfFile_dwm_table = 'dwmtable'
+    ConfFile_dwm_valid_dest_keys = 'dwm_valid_keys'
 
     # dependency management related parameters
     ConfFile_deps = 'dependencies'
@@ -209,7 +210,7 @@ class TemplateConstants(object):
     # that the fmw is in.
     FMWMacroKey_FMWDirectory = 'FME_MF_DIR'
     FMWMacroKey_FMWName = 'FME_MF_NAME'
-    
+
     # fme macro value that will contain the fme server job id
     FMEMacroKey_JobId = 'FME_JOB_ID'
     FMEMacroKey_LogFileName = 'LOG_FILENAME'
@@ -617,10 +618,16 @@ class DefaultShutdown(object):
                   'run in development mode'
             self.logger.info(msg)
         else:
-            self.logger.info("DWM record is being created")
-            dwmWriter = DWMWriter(self.fme)
-            # dwmWriter.printParams()
-            dwmWriter.writeRecord()
+            dwmValidKeys = self.params.getDWMValidDestinationKeywords()
+            # if destKey.lower() in ['dlv', 'tst', 'prd']:
+            if destKey.lower() in dwmValidKeys:
+                self.logger.info("DWM record is being created")
+                dwmWriter = DWMWriter(self.fme)
+                # dwmWriter.printParams()
+                dwmWriter.writeRecord()
+            else:
+                self.logger.info("destination key is %s so no record is "
+                                 "being written to dwm", destKey)
         self.logger.info('destination key word in shutdown: %s',
                          self.fme.macroValues[self.const.FMWParams_DestKey])
 
@@ -868,6 +875,16 @@ class TemplateConfigFileReader(object):
     def getDWMTable(self):
         dwmTab = self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_table)
         return dwmTab
+
+    def getDWMValidDestinationKeywords(self):
+        '''
+        We only write records to dwm when the destination key is dlv,tst, or prd
+        '''
+        dwmTabStr = self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_valid_dest_keys)
+        dwmList = dwmTabStr.split(',')
+        for cntr in range(0, len(dwmList)):
+            dwmList[cntr] = dwmList[cntr].strip()
+        return dwmList
 
     def getFailedFeaturesDir(self):
         failedFeatsDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_failedFeaturesDir)
