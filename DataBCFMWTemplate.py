@@ -102,6 +102,7 @@ class TemplateConstants(object):
     ConfFileSection_sdePortKey = 'sdeport'
     ConfFileSection_serviceNameKey = 'servicename'
     ConfFileSection_instanceAliasesKey = 'instance_aliases'
+    ConfFileSection_dwmKey = 'dwmkey'
 
     ConfFileSection_pmpTokens = 'pmptokens'
 
@@ -847,6 +848,38 @@ class TemplateConfigFileReader(object):
         inst = self.parser.get(self.key, self.const.ConfFileSection_serviceNameKey)
         return inst
 
+    def getDWMDestinationKey(self, envKey):
+        '''
+        When a destination is defined in the global configs for the FME framework
+        you can define an optional parameter/property called: dwmkey.  See last
+        line in example below
+
+        Example:
+         [dbcdlv]
+            host: somehost.ca
+            sdeport: None
+            servicename: dbservname.ca
+            instance_aliases: sbsv.ca,svname,bill
+            oracleport: 2432
+            pmpresource: myResource
+            dwmkey: TheDWMKey
+
+        This method will return the env key provided in the args if no dwmkey
+        was defined.  If a dwmkey was defined then it will return that key.
+        '''
+        # validating the key
+        authoritativeKey = self.getDestinationDatabaseKey(envKey)
+        configKeyItems = self.parser.items(authoritativeKey)
+        dwmKey = envKey
+        for item in configKeyItems:
+            if item[0].lower() == self.const.ConfFileSection_dwmKey.lower():
+                self.logger.debug("found a dwm key in config %s", item[1])
+                dwmKey = item[1]
+                # now validate it
+                dwmKey = self.getDestinationDatabaseKey(dwmKey)
+                self.logger.debug("validated dwm key: %s", dwmKey)
+        return dwmKey
+
     def getDevelopmentModeCredentialsFileName(self):
         '''
         Returns the file name string of the .json credential file
@@ -1341,6 +1374,7 @@ class Util(object):
         '''
         logger = logging.getLogger(__name__)
         paramName = paramNameRaw.strip()
+        paramValue = None  # init return value
 
         # start by getting the parameter value
         if not paramName in fmwMacros:
@@ -1350,17 +1384,22 @@ class Util(object):
 
         paramValue = fmwMacros[paramName]
         if not isinstance(paramValue, basestring):
-            msg = 'The macro value for the key {0} is not a string type.  Its a {1}'
-            raise ValueError, msg.format(paramName, type(paramValue))
+            if paramName.upper() <> TemplateConstants.FMWParams_DestKey.upper():
+                msg = 'The macro value for the key {0} is not a string type.  Its a {1}'
+                raise ValueError, msg.format(paramName, type(paramValue))
+            else:
+                # just leave the value as is for dest env key
+                paramValue = fmwMacros[paramName]
+        else:
 
-        logger.debug('input param value/name: -{0}/{1}-'.format(paramName, paramValue))
-        isParamNameRegex = re.compile('^\$\((.*?)\)$')
-        if isParamNameRegex.match(paramValue):
-            justParamName = (isParamNameRegex.search(paramValue)).group(1)
-            logger.debug('detected parameter {0}'.format(paramValue))
-            paramValue = Util.getParamValue(justParamName, fmwMacros)
-            print 'Value extracted from linked parameter {0}'.format(paramValue)
-            logger.debug('Value extracted from linked parameter {0}'.format(paramValue))
+            logger.debug('input param value/name: -{0}/{1}-'.format(paramName, paramValue))
+            isParamNameRegex = re.compile('^\$\((.*?)\)$')
+            if isParamNameRegex.match(paramValue):
+                justParamName = (isParamNameRegex.search(paramValue)).group(1)
+                logger.debug('detected parameter {0}'.format(paramValue))
+                paramValue = Util.getParamValue(justParamName, fmwMacros)
+                print 'Value extracted from linked parameter {0}'.format(paramValue)
+                logger.debug('Value extracted from linked parameter {0}'.format(paramValue))
         return paramValue
 
 class GetPublishedParams(object):
@@ -2186,9 +2225,6 @@ class CalcParamsBase(GetPublishedParams):
             retStr = u'sde:{0}:{1}'.format(SSClientString, host)
         return retStr
 
-
-
-
     def isSourceBCGW(self, position=None):
         '''
         Reads the source oracle database instance from the
@@ -2203,7 +2239,7 @@ class CalcParamsBase(GetPublishedParams):
         :rtype: What is the return type
         '''
         self.logger.debug(self.debugMethodMessage.format("isSourceBCGW"))
-
+        print 'isSourceBCGW'
         msg = 'retrieving the source oracle service name parameter for position {0}'
         msg = msg.format(position)
         self.logger.info(msg)
@@ -2214,7 +2250,7 @@ class CalcParamsBase(GetPublishedParams):
         destKeys = self.paramObj.parser.items(self.const.ConfFileSection_destKeywords)
         for destKeyItems in destKeys:
             destKey = destKeyItems[0]
-            # print 'destKey', destKey
+            self.logger.debug("dest key: %s", destKey)
             servName = self.paramObj.parser.get(destKey, self.const.ConfFileSection_serviceNameKey)
             servNameAliases = self.paramObj.parser.get(destKey, self.const.ConfFileSection_instanceAliasesKey)
             instances = servNameAliases.split(',')
@@ -2939,6 +2975,8 @@ class CalcParamsDataBC(object):
         # Need to detect if the source instance is bcgw.  If it is then
         # get the password from there.
         isSrcBCGW = self.parent.isSourceBCGW(position)
+        # isSrcDBC = self.parent.isSourceDBC(position)
+
         if isSrcBCGW:
             # destKey = self.parent.getDestDatabaseEnvKey()
             # need to figure out what the destination is now based on
@@ -3009,9 +3047,10 @@ class CalcParamsDataBC(object):
                     self.logger.warning(msg, srcOraSchema, srcOraServName,
                                      pmpResource, pmpHelper.pmpDict['token'],
                                      platform.node())
-                    self.logger.info("trying a heuristic that ignores domain " + \
-                                     "information to find a password for %s@%s",
-                                     srcOraSchema, srcOraServName)
+                    msg = "trying a heuristic that ignores domain " + \
+                                     "information to find a password for {0}@{1}"
+                    msg = msg.format(srcOraSchema, srcOraServName)
+                    self.logger.info(msg)
                     # Going to do a search for accounts that might match the user
                     pswd = self.getSourcePasswordHeuristic(position)
                 if pswd:
@@ -3583,6 +3622,11 @@ class DWMWriter(object):
 
         self.destKey = self.params.getDestDatabaseEnvKey()
         self.config = TemplateConfigFileReader(self.destKey)
+
+        self.dwmKey = self.config.getDWMDestinationKey(self.destKey)
+        # incase the dwm key is
+        self.config = TemplateConfigFileReader(self.dwmKey)
+
         self.getDatabaseConnection()
 
     def getDatabaseConnection(self):
@@ -3600,7 +3644,8 @@ class DWMWriter(object):
         # pmpDict = {'token': self.config.getPmpToken(computerName),
         #           'baseurl': self.config.getPmpBaseUrl(),
         #           'restdir': self.config.getPmpRestDir()}
-        pmpHelper = PMPHelper(self.config, self.destKey)
+        # pmpHelper = PMPHelper(self.config, self.destKey)
+        pmpHelper = PMPHelper(self.config, self.dwmKey)
         # pmp = PMP.PMPRestConnect.PMP(pmpDict)
         accntName = self.config.getDWMDbUser()
         serviceName = self.config.getDestinationServiceName()
