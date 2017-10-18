@@ -73,6 +73,7 @@ import datetime
 import logging
 import os.path
 import pickle
+import re
 
 import FMEUtil.PyFMEServerV2  # @UnresolvedImport
 
@@ -529,8 +530,10 @@ class FMEServerInteraction(T1T2ConversionConstants):
                 self.logger.debug(msg)
             # try to run it
             pubParams = wrkspcs.getPublishedParams(fmwFile, reformat4JobReRun=True)
+            linkedVariableRegex = re.compile('^\$\(.*\)$', re.IGNORECASE)
             self.logger.debug("pubParams: %s", pubParams)
             # make sure the pub param is set to DLV
+            delKeys = []
             for param in pubParams:
                 if param == self.params.const.FMWParams_DestKey:
                     if pubParams[param] <> 'DLV' or pubParams[param] <> [u'DLV']:
@@ -538,12 +541,27 @@ class FMEServerInteraction(T1T2ConversionConstants):
                             pubParams[param] = [u'DLV']
                         else:
                             pubParams[param] = u'DLV'
+                
+                if isinstance(pubParams[param], basestring):
+                    self.logger.debug("%s = %s is string", param, pubParams[param])
+                    if linkedVariableRegex.match(pubParams[param]):
+                        msg = "removing the published parameter {0} with value {1}"
+                        msg = msg.format(param, pubParams[param])
+                        self.logger.info(msg)
+                        delKeys.append(param)
+                        # if its a linked variable retrieve the actual value
+                        #pubParams[param] = DataBCFMWTemplate.Util.getParamValue(param, pubParams)
+            if delKeys:
+                for delKey in delKeys:
+                    del pubParams[delKey]
+            
             self.logger.debug("pub params for %s are: %s", fmwFile, pubParams)
             jobs = self.fmeServer.getJobs()
             self.logger.debug("sending the job {0} to fme server".format(fmwFile))
             # get the pub parameters and makes sure the destenv key is set to DLV
             response = jobs.submitJob(self.FMWTestRepo, fmwFile,
-                                      params=pubParams, sync=True)
+                                       sync=True)
+            # params=pubParams,
             self.logger.debug("job has completed")
             # print 'response', response
             if response['status'].upper() <> 'SUCCESS':

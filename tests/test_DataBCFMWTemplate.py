@@ -136,10 +136,16 @@ class Test_CalcParams(unittest.TestCase):
                                     'SRC_HOST': 'apocalypse.idir.bcgov', 
                                     'SRC_PORT': 443
                                     }
+        
+        
         self.fmeMacroValues = self.fmeMacroValues_fileSrc
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
         
         self.logger = logging.getLogger()
+        
+        otherLogger = logging.getLogger('DataBCFMWTemplate')
+        otherLogger.setLevel(logging.DEBUG)
+        
         self.logger.setLevel(logging.DEBUG)
 
         ch = logging.StreamHandler()
@@ -148,6 +154,8 @@ class Test_CalcParams(unittest.TestCase):
         self.logger.addHandler(ch)
         self.logger = logging.getLogger()
         self.logger.debug("this is the the first log message")
+        
+        otherLogger.addHandler(ch)
 
     def tearDown(self):
         pass
@@ -198,6 +206,27 @@ class Test_CalcParams(unittest.TestCase):
             self.assertEqual(testVals[2], retVal, msg)
             
     def test_getSourcePassword(self):
+        msg = "unable to retrieve the password for schema {0} and " + \
+              'instance {1} using source password retrieval methods'
+              
+        # test get dbc passwords as source, requires that dbc get picked up as 
+        # a defined database.  Defined databases can be used as either sources
+        # OR destinations
+        
+        self.fmeMacroValues = self.fmeMacroValues_DBSrc
+        self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] =  'APP_CCF'
+        self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME'] = 'DBCPRD.BCGOV'
+        self.calcParams.fmeMacroVals['DEST_DB_ENV_KEY'] = 'DLV'
+        spass = self.calcParams.getSourcePassword()
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'], self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME']))
+        
+        self.fmeMacroValues = self.fmeMacroValues_DBSrc
+        self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'] =  'APP_CCF'
+        self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME'] = 'DBCTST.BCGOV'
+        self.calcParams.fmeMacroVals['DEST_DB_ENV_KEY'] = 'DLV'
+        spass = self.calcParams.getSourcePassword()
+        self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'], self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME']))
+        
         
         msg = "unable to retrieve the password for schema {0} and " + \
               'instance {1} using source password retrieval methods'
@@ -776,6 +805,10 @@ class Test_TemplateConfigFileReader(unittest.TestCase):
         node = platform.node()
         print 'is a fme server node: {0}'.format(isdatabc)
 
+    def test_getDWMDestinationKey(self):
+        dwmKey = self.confFileReader.getDWMDestinationKey('dbcdlv')
+        print 'dwmKey', dwmKey
+        
 class Test_Startup(unittest.TestCase):
     def setUp(self):
         
@@ -906,19 +939,46 @@ class Test_Shutdown(unittest.TestCase):
         self.fme.status = True
         self.fme.totalFeaturesRead = 1588L
         self.fme.totalFeaturesWritten = 0L
+        
+        self.logger = logging.getLogger()
+        
+        otherLogger = logging.getLogger('DataBCFMWTemplate')
+        otherLogger.setLevel(logging.DEBUG)
+        
+        self.logger.setLevel(logging.DEBUG)
+
+        ch = logging.StreamHandler()
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s')
+        ch.setFormatter(formatter)
+        self.logger.addHandler(ch)
+        self.logger = logging.getLogger()
+        self.logger.debug("this is the the first log message")
+        
+        otherLogger.addHandler(ch)
             
     def test_shutdown(self):
         print 'present!'
-        self.fme.logFileName = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\wrk\newTemplate\fmws\outputs\log\clab_indian_reserves_staging_fgdb_bcgwdlv_Development.log'
+        #self.fme.logFileName = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\wrk\newTemplate\fmws\outputs\log\clab_indian_reserves_staging_fgdb_bcgwdlv_Development.log'
+        #shutdown = DataBCFMWTemplate.Shutdown(self.fme)
+        #shutdown.shutdown()
+        
+        # now try with the dbcdlv key
+        self.fme.macroValues['DEST_DB_ENV_KEY'] = 'DBCDLV'
         shutdown = DataBCFMWTemplate.Shutdown(self.fme)
         shutdown.shutdown()
         
     def test_dbConn(self):
         shutdown = DataBCFMWTemplate.Shutdown(self.fme)
         dwmWriter = DataBCFMWTemplate.DWMWriter(self.fme)
- 
+        self.fme.macroValues['DEST_DB_ENV_KEY'] = 'DBCDLV'
+        dwmWriter = DataBCFMWTemplate.DWMWriter(self.fme)
+        
 if __name__ == "__main__":
     import sys
+    
+    
+    
+    
     #sys.argv = ['', 'Test_TemplateConfigFileReader.test_getDestinationDatabaseKey', 
     #                       'Test_TemplateConfigFileReader.test_validateKey']
     #sys.argv = ['', 'Test_Shutdown.test_dbConn']
@@ -926,7 +986,11 @@ if __name__ == "__main__":
     #sys.argv = ['','Test_TemplateConfigFileReader.test_shutdown']
     #sys.argv = ['','Test_CalcParams.test_getSQLServerSchemaForPasswordRetrieval']
     #sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlServerPassword']
-    #sys.argv = ['','Test_CalcParams.test_getSrcSqlServerPassword']
+    
+    #sys.argv = ['','Test_TemplateConfigFileReader.test_getDWMDestinationKey']
+    sys.argv = ['','Test_Shutdown.test_shutdown']
+    
+    
     #sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlConnectStr']
     #sys.argv = ['', 'Test_TemplateConfigFileReader.test_isDataBCNode', 'Test_TemplateConfigFileReader.test_getFMEServerNode']
 
