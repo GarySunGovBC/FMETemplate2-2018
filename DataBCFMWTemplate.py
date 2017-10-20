@@ -68,6 +68,9 @@ class TemplateConstants(object):
     AppConfigSdeConnFileExtension = '.sde'
     AppConfigLogDir = 'log'
     AppConfigAppLogFileName = 'applogconfigfilename'
+    
+    # when a script requires the 
+    #sshTempFile = 
 
     # parameters relating to template sections
     ConfFileSection_global = 'global'
@@ -735,6 +738,11 @@ class TemplateConfigFileReader(object):
         return changeLogFile
 
     def getConfigDirName(self):
+        '''
+        Reads from the config file the name of the directory that any configuration
+        files should be locted in.  Returns just the name of the directory, no 
+        path information is included.  To get the root directory call 
+        '''
         confDirName = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_configDirName)
         return confDirName
 
@@ -3343,6 +3351,10 @@ class PMPHelper(object):
     and also enables all time we need pmp communication
     that it use the failover address if initial
     communication attempts fail.
+    
+    :ivar paramObj: contains a instance of the TemplateConfigFileReader class.
+    :ivar destKey: the destination database key.  Comes from the published
+                   parameter of the fmw, (DEST_DB_ENV_KEY)
     '''
 
     def __init__(self, paramObj, destKey):
@@ -3361,6 +3373,8 @@ class PMPHelper(object):
         self.failWaitTime = 60 * 5
         self.maxWaitIntervals = 5
         self.currentRetry = 0
+        
+        self.sshKeyFile = 'SSH.ppk'
 
     def getPMPConnectionDictionary(self, baseUrl=None):
         '''
@@ -3535,6 +3549,36 @@ class PMPHelper(object):
         pswd = self.pmp.getAccountPasswordWithAccountId(accountId, resId)
         return pswd
 
+    def getSSHKey(self, sshKeyFilePath=None):
+        '''
+        This method will use the properties described in the app default config
+        file to retrieve the ssh key from pmp and locate it in the location 
+        specified!  If no location is specified it gets located in the config 
+        directory
+        '''
+        
+        res = self.pmp.getResources()
+        
+        if not sshKeyFilePath:
+            # get the destination path to the ssh key file
+            confDir = self.paramObj.getConfigDirName()
+            rootDir = self.paramObj.getTemplateRootDirectory()
+            sshKeyFilePath = os.path.join(rootDir, confDir, self.sshKeyFile)
+            
+        if os.path.exists(sshKeyFilePath):
+            os.remove(sshKeyFilePath)
+        
+        
+        
+        #pswd = self.pmp.getAccountPassword('BIOT', 'SSH_KEYS')
+        keyFileContents = self.pmp.getPasswordFiles('BIOT', 'SSH_KEYS')
+        # next need to write the contents of the variable keyFileContents to 
+        # the destination file.
+        fh = open(sshKeyFilePath, 'w')
+        fh.write(keyFileContents)
+        fh.close()
+        return sshKeyFilePath
+        
 class DWMWriter(object):
     '''
     Things that were logged by the other logger:
