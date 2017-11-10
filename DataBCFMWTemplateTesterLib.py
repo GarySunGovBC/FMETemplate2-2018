@@ -227,6 +227,17 @@ class ParameterTester(object):
         #srcInst = self.params
         #schemaMacroKey, instanceMacroKey = self.params.getSchemaForPasswordRetrieval()
         schemaMacroKey, serviceNameMacroKey = self.params.getSchemaAndServiceNameForPasswordRetrieval()
+        
+        if self.params.parent.existsSourceOracleProxySchema():
+            srcSchema = self.params.parent.getSourceOracleProxySchema()
+        else:
+            srcSchema = self.params.parent.getSourceOracleSchema()
+
+        srcServiceName = self.params.parent.getSourceOracleServiceName()
+        srcServiceName = DataBCFMWTemplate.Util.removeDomain(srcServiceName)
+
+        
+        
         if serviceNameMacroKey not in self.params.fmeMacroVals:
             msg = 'The service name {0} does not exist in the fmw published parameters'
             raise ValueError, msg.format(serviceNameMacroKey)
