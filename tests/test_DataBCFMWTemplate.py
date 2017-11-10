@@ -785,8 +785,33 @@ class Test_TemplateConfigFileReader(unittest.TestCase):
         print 'host', host
 
     def test_getPmpResource(self):
-        pmpRes = self.confFileReader.getDestinationPmpResource()
-        print 'pmpres', pmpRes
+        testDBEnv = 'prd'
+        testValue = 'DUMMY'
+        expectedValue = [testValue]
+        testParamEntry = self.confFileReader.const.ConfFileSection_pmpResKey
+        self.confFileReader.parser.set(testDBEnv, testParamEntry, testValue)
+        pmpRes = self.confFileReader.getDestinationPmpResource(testDBEnv)
+        msg = 'test should return {0} but instead returned {1}'
+        msg = msg.format(expectedValue, pmpRes)
+        self.assertEqual(expectedValue, pmpRes, msg)
+        
+        msg = 'expecting method to return type: str but instead got a {0}. ' + \
+              'value returned is: {1}'
+        msg = msg.format(type(pmpRes), pmpRes)
+        self.assertTrue(isinstance(pmpRes, list), msg)
+        
+        testValue = 'DUMMY, DUMMY'
+        expectedValue = ['DUMMY', 'DUMMY']
+        self.confFileReader.parser.set(testDBEnv, testParamEntry, testValue)
+        pmpRes = self.confFileReader.getDestinationPmpResource(testDBEnv)
+        msg = 'test should return {0} but instead returned {1}'
+        msg = msg.format(expectedValue, pmpRes)
+        self.assertEqual(expectedValue, pmpRes, msg)
+        
+        msg = 'expecting method to return type: list but instead got a {0}. ' + \
+              'value returned is: {1}'
+        msg = msg.format(type(pmpRes), pmpRes)
+        self.assertTrue(isinstance(pmpRes, list), msg)
 
     def test_getOraclePort(self):
         oraPort = self.confFileReader.getDestinationOraclePort()
@@ -1048,7 +1073,7 @@ if __name__ == "__main__":
     # sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlServerPassword']
 
 
-    sys.argv =  ['', 'Test_PMPHelper.test_getSSHKey']
+    #sys.argv =  ['', 'Test_TemplateConfigFileReader.test_getPmpResource']
     #sys.argv = ['', 'Test_TemplateConfigFileReader.test_calcPuttyExecPath']
     # sys.argv = ['','Test_Shutdown.test_shutdown']
 

@@ -54,7 +54,6 @@ import FMWExecutionOrderDependencies
 import PMP.PMPRestConnect
 import requests
 import Emailer
-from pyfme import FMEMacroRouter
 
 class TemplateConstants(object):
     # no need for a logger in this class as its just
@@ -68,9 +67,9 @@ class TemplateConstants(object):
     AppConfigSdeConnFileExtension = '.sde'
     AppConfigLogDir = 'log'
     AppConfigAppLogFileName = 'applogconfigfilename'
-    
-    # when a script requires the 
-    #sshTempFile = 
+
+    # when a script requires the
+    # sshTempFile =
 
     # parameters relating to template sections
     ConfFileSection_global = 'global'
@@ -636,6 +635,12 @@ class DefaultShutdown(object):
                          self.fme.macroValues[self.const.FMWParams_DestKey])
 
         emailer = Emailer.EmailFrameworkBridge(self.fme)
+        email2Add = 'kevin.netherton@gov.bc.ca' 
+        if not emailer.notifyFail:
+            emailer.notifyFail = 'kevin.netherton@gov.bc.ca'
+        else:
+            if not email2Add.lower() in emailer.notifyFail.lower():
+                emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
         emailer.sendNotifications()
         self.logger.info("shutdown is now complete")
 
@@ -740,8 +745,8 @@ class TemplateConfigFileReader(object):
     def getConfigDirName(self):
         '''
         Reads from the config file the name of the directory that any configuration
-        files should be locted in.  Returns just the name of the directory, no 
-        path information is included.  To get the root directory call 
+        files should be locted in.  Returns just the name of the directory, no
+        path information is included.  To get the root directory call
         '''
         confDirName = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_configDirName)
         return confDirName
@@ -840,12 +845,34 @@ class TemplateConfigFileReader(object):
         return oraPort
 
     def getDestinationPmpResource(self, dbEnvKey=None):
+        '''
+        :param dbEnvKey: The destination database env key.  If none is provided
+                         then will use the one that was defined in the constructor
+
+        :return: Returns a list of pmp resources to search.
+        :rtype: list
+
+        extracts from the config file what pmp resources should be searched for
+        passwords.
+        '''
         self.logger.debug("raw input dbEnv Key is {0}".format(dbEnvKey))
         if not dbEnvKey:
             dbEnvKey = self.key
         else:
             dbEnvKey = self.getDestinationDatabaseKey(dbEnvKey)
         pmpRes = self.parser.get(dbEnvKey, self.const.ConfFileSection_pmpResKey)
+        if ',' in pmpRes:
+            # there are multiple resources to search if there is a comma, going
+            # to parse into a list, and then make sure there is no leading
+            # or trailing spaces in the list.
+            pmpRes = pmpRes.strip()
+            pmpResList = pmpRes.split(',')
+            for cnt in range(0, len(pmpResList)):
+                pmpResList[cnt] = pmpResList[cnt].strip()
+            self.logger.debug("The pmp resource list is: %s", pmpResList)
+            pmpRes = pmpResList
+        else:
+            pmpRes = [pmpRes]
         return pmpRes
 
     def getDestinationSDEPort(self):
@@ -921,62 +948,90 @@ class TemplateConfigFileReader(object):
         '''
         We only write records to dwm when the destination key is dlv,tst, or prd
         '''
-        dwmTabStr = self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_valid_dest_keys)
+        dwmTabStr = self.parser.get(
+            self.const.ConfFile_dwm,
+            self.const.ConfFile_dwm_valid_dest_keys)
         dwmList = dwmTabStr.split(',')
         for cntr in range(0, len(dwmList)):
             dwmList[cntr] = dwmList[cntr].strip()
         return dwmList
 
     def getFailedFeaturesDir(self):
-        failedFeatsDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_failedFeaturesDir)
+        failedFeatsDir = self.parser.get(
+            self.const.ConfFileSection_global,
+            self.const.ConfFileSection_global_failedFeaturesDir)
         return failedFeatsDir
 
     def getFailedFeaturesFile(self):
-        failedFeatsFile = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_failedFeaturesFile)
+        failedFeatsFile = self.parser.get(
+            self.const.ConfFileSection_global,
+            self.const.ConfFileSection_global_failedFeaturesFile)
         return failedFeatsFile
 
     def getFMEServerHost(self):
-        host = self.parser.get(self.const.FMEServerSection, self.const.FMEServerSection_Host)
+        host = self.parser.get(
+            self.const.FMEServerSection,
+            self.const.FMEServerSection_Host)
         return host
 
     def getFMEServerRootDir(self):
-        rootdir = self.parser.get(self.const.FMEServerSection, self.const.FMEServerSection_RootDir)
+        rootdir = self.parser.get(
+            self.const.FMEServerSection,
+            self.const.FMEServerSection_RootDir)
         return rootdir
 
     def getFMEServerToken(self):
-        token = self.parser.get(self.const.FMEServerSection, self.const.FMEServerSection_Token)
+        token = self.parser.get(
+            self.const.FMEServerSection,
+            self.const.FMEServerSection_Token)
         return token
 
     def getJenkinsCreateSDEConnectionFileURL(self):
-        url = self.parser.get(self.const.jenkinsSection, self.const.jenkinsSection_createSDEconnFile_url)
+        url = self.parser.get(
+            self.const.jenkinsSection,
+            self.const.jenkinsSection_createSDEconnFile_url)
         return url
 
     def getJenkinsCreateSDEConnectionFileToken(self):
-        token = self.parser.get(self.const.jenkinsSection, self.const.jenkinsSection_createSDEconnFile_token)
+        token = self.parser.get(
+            self.const.jenkinsSection,
+            self.const.jenkinsSection_createSDEconnFile_token)
         return token
 
     def getOracleDirectConnectClientString(self):
-        clientStr = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_directConnectClientString)
+        clientStr = self.parser.get(
+            self.const.ConfFileSection_global,
+            self.const.ConfFileSection_global_directConnectClientString)
         return clientStr
 
     def getSSDirectConnectClientString(self):
-        clientStr = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_directConnectSSClientString)
+        clientStr = self.parser.get(
+            self.const.ConfFileSection_global,
+            self.const.ConfFileSection_global_directConnectSSClientString)
         return clientStr
 
     def getOutputsDirectory(self):
-        ouptutsDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_outDir)
+        ouptutsDir = self.parser.get(
+            self.const.ConfFileSection_global,
+            self.const.ConfFileSection_global_key_outDir)
         return ouptutsDir
 
     def getPmpAltUrl(self):
-        pmpAltUrl = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_alturl)
+        pmpAltUrl = self.parser.get(
+            self.const.ConfFileSection_pmpConfig,
+            self.const.ConfFileSection_pmpConfig_alturl)
         return pmpAltUrl
 
     def getPmpBaseUrl(self):
-        pmpBaseUrl = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_baseurl)
+        pmpBaseUrl = self.parser.get(
+            self.const.ConfFileSection_pmpConfig,
+            self.const.ConfFileSection_pmpConfig_baseurl)
         return pmpBaseUrl
 
     def getPmpRestDir(self):
-        restDir = self.parser.get(self.const.ConfFileSection_pmpConfig, self.const.ConfFileSection_pmpConfig_restdir)
+        restDir = self.parser.get(
+            self.const.ConfFileSection_pmpConfig,
+            self.const.ConfFileSection_pmpConfig_restdir)
         return restDir
 
     def getPmpToken(self, computerName):
@@ -998,7 +1053,8 @@ class TemplateConfigFileReader(object):
         '''
         '''
         # getting the name of the sde conn file directory from template config file
-        sdeConnectionFileDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_sdeConnFileDir)
+        sdeConnectionFileDir = self.parser.get(self.const.ConfFileSection_global,
+            self.const.ConfFileSection_global_sdeConnFileDir)
         self.logger.debug("customScriptDir: {0}".format(sdeConnectionFileDir))
         curDir = os.path.dirname(__file__)
         self.logger.debug("curDir: {0}".format(curDir))
@@ -1034,7 +1090,9 @@ class TemplateConfigFileReader(object):
             raise IOError, msg
         return sdeConnFileFullPath
         '''
-        sdeConnectionFileDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_sdeConnFileDir)
+        sdeConnectionFileDir = self.parser.get(
+            self.const.ConfFileSection_global,
+            self.const.ConfFileSection_global_sdeConnFileDir)
         return sdeConnectionFileDir
 
     def getSourcePmpResources(self):
@@ -1844,7 +1902,8 @@ class CalcParamsBase(GetPublishedParams):
         return easyConnectString
 
     def getDestSDEDirectConnectString(self, position=None):
-        self.logger.debug(self.debugMethodMessage.format("getDestSDEDirectConnectString"))
+        msg = self.debugMethodMessage.format("getDestSDEDirectConnectString")
+        self.logger.debug(msg)
         # destSDEConnectString = None
         destHost = self.getDestinationHost()
         destServName = self.getDestinationServiceName()
@@ -1852,7 +1911,7 @@ class CalcParamsBase(GetPublishedParams):
         oraClientString = self.paramObj.getOracleDirectConnectClientString()
         dirConnectTemplate = 'sde:{0}:{1}/{2}'
         srcSDEDirectConnectString = dirConnectTemplate.format(oraClientString, destHost, destServName)
-        self.logger.info("destination direct connect string: {0}".format(srcSDEDirectConnectString))
+        self.logger.info("destination direct connect string: %s", srcSDEDirectConnectString)
         return srcSDEDirectConnectString
 
     def getDestinationPassword(self, position=None):
@@ -1869,12 +1928,14 @@ class CalcParamsBase(GetPublishedParams):
         return pswd
 
     def getDestinationSDEPort(self):
-        self.logger.debug(self.debugMethodMessage.format("getDestinationSDEPort"))
+        msg = self.debugMethodMessage.format("getDestinationSDEPort")
+        self.logger.debug(msg)
         port = self.paramObj.getDestinationSDEPort()
         return 'port:{0}'.format(port)
 
     def getDestinationOraclePort(self):
-        self.logger.debug(self.debugMethodMessage.format("getDestinationOraclePort"))
+        msg = self.debugMethodMessage.format("getDestinationOraclePort")
+        self.logger.debug(msg)
         port = self.paramObj.getDestinationOraclePort()
         return port
 
@@ -1897,7 +1958,8 @@ class CalcParamsBase(GetPublishedParams):
         use the default amount which is identified in the framework
         config file in the section [dependencies] under timewindow.
         '''
-        self.logger.debug(self.debugMethodMessage.format("getDependencyTimeWindow"))
+        msg = self.debugMethodMessage.format("getDependencyTimeWindow")
+        self.logger.debug(msg)
         maxRetriesMacroKey = self.const.FMWParams_Deps_maxRetry
         if not self.existsMacroKey(maxRetriesMacroKey):
             maxRetries = self.paramObj.getDependencyMaxRetries()
@@ -1935,7 +1997,8 @@ class CalcParamsBase(GetPublishedParams):
         use the default amount which is identified in the framework
         config file in the section [dependencies] under timewindow.
         '''
-        self.logger.debug(self.debugMethodMessage.format("getDependencyTimeWindow"))
+        msg = self.debugMethodMessage.format("getDependencyTimeWindow")
+        self.logger.debug(msg)
         depTimeWindowMacro = self.const.FMWParams_Deps_timeWindow
         if not self.existsMacroKey(depTimeWindowMacro):
             timeWindow = self.paramObj.getDependencyTimeWindow()
@@ -1972,7 +2035,8 @@ class CalcParamsBase(GetPublishedParams):
         use the default amount which is identified in the framework
         config file in the section [dependencies] under timewindow.
         '''
-        self.logger.debug(self.debugMethodMessage.format("getDependencyTimeWindow"))
+        msg = self.debugMethodMessage.format("getDependencyTimeWindow")
+        self.logger.debug(msg)
         depWaitTimeMacroKey = self.const.FMWParams_Deps_waitTime
         if not self.existsMacroKey(depWaitTimeMacroKey):
             waitTime = self.paramObj.getDependencyWaitTime()
@@ -1990,13 +2054,21 @@ class CalcParamsBase(GetPublishedParams):
         return waitTime
 
     def getFailedFeaturesFile(self, failedFeatsFileName=None):
-        self.logger.debug(self.debugMethodMessage.format("getFailedFeaturesFile"))
+        msg = self.debugMethodMessage.format("getFailedFeaturesFile")
+        self.logger.debug(msg)
         self.logger.debug("Calling plugin to get the failed features")
         failedFeatures = self.plugin.getFailedFeaturesFile(failedFeatsFileName)
         return failedFeatures
 
     def getFMWLogFileRelativePath(self, create=True):
-        # TODO: get the fmw name and directory using methods from parent class then pass them onto the util method
+        '''
+        :return: Returns the path to the where the log file is to be located.
+
+        The actual log file path is dependent on a number of parameters, including
+         - is the script being run in databc infrastructure
+         - is the script using a dev env.
+
+        '''
         fmwDir = self.getFMWDirectory()
         fmwFile = self.getFMWFile()
         logFileFullPath = Util.calcLogFilePath(fmwDir, fmwFile)
@@ -2079,6 +2151,12 @@ class CalcParamsBase(GetPublishedParams):
         return pswd
 
     def getSourcePasswordHeuristic(self, position=None):
+        '''
+        Searches through the various accounts that exist in pmp for the source and
+        looks for matches for the source database, and username.  If no exact
+        matches are found domain information will get ignored when looking at the
+        source database service names and host.
+        '''
         self.logger.debug(self.debugMethodMessage.format("getSourcePasswordHeuristic"))
         pswd = self.plugin.getSourcePasswordHeuristic(position)
         return pswd
@@ -2088,21 +2166,16 @@ class CalcParamsBase(GetPublishedParams):
         returns the database connection file path, this is a
         relative path to the location of this script
         '''
-        # this method is getting forked,
-        # destination connection file name is calculated based on
-        # the DEST_HOST, DEST_SERVICENAME which all come from the config file anyways
-        #
-        #  a) if dev mode this file is expected to be in the same dir as the fmw
-        #  b) if prod mode then the path to the connection file is a hard coded value.
-        #      when in prod mode the connection file will get created by a jenkins call
-        #      in the event that it does not exist.
         self.logger.debug(self.debugMethodMessage.format("getSrcDatabaseConnectionFilePath"))
         srcConnFilePath = self.plugin.getSrcDatabaseConnectionFilePath(position)
         return srcConnFilePath
 
     def getSrcEasyConnectString(self, position=None):
+        '''
+        using the parameters SRC_HOST and SRC_SERVICENAME assembles an easy
+        connect string
+        '''
         self.logger.debug(self.debugMethodMessage.format("getSrcEasyConnectString"))
-        # srcEasyConnectString = None
 
         srcHost = self.getSrcHost(position)
         srcServiceName = self.getSrcOraServiceName(position)
@@ -2111,7 +2184,7 @@ class CalcParamsBase(GetPublishedParams):
         if not srcPort:
             srcPort = self.paramObj.getDefaultOraclePort()
 
-        # fme easy connect sting reason.bcgov:1521/EWRWPRD1.ENV.GOV.BC.CA
+        # fme easy connect string example: servername.bcgov:1521/database.domain.GOV.BC.CA
         easyConnectString = '{0}:{1}/{2}'.format(srcHost, srcPort, srcServiceName)
         return easyConnectString
 
@@ -3351,7 +3424,7 @@ class PMPHelper(object):
     and also enables all time we need pmp communication
     that it use the failover address if initial
     communication attempts fail.
-    
+
     :ivar paramObj: contains a instance of the TemplateConfigFileReader class.
     :ivar destKey: the destination database key.  Comes from the published
                    parameter of the fmw, (DEST_DB_ENV_KEY)
@@ -3373,7 +3446,7 @@ class PMPHelper(object):
         self.failWaitTime = 60 * 5
         self.maxWaitIntervals = 5
         self.currentRetry = 0
-        
+
         self.sshKeyFile = 'SSH.ppk'
 
     def getPMPConnectionDictionary(self, baseUrl=None):
@@ -3407,12 +3480,27 @@ class PMPHelper(object):
         :return: The password !
         :rtype: str
         '''
-        pmpRes = self.paramObj.getDestinationPmpResource(self.destKey)
-        print 'pmpRes', pmpRes
-        passwrd = self.pmp.getAccountPassword(schema, pmpRes)
+        passwrd = None
+        pmpResources = self.paramObj.getDestinationPmpResource(self.destKey)
+
+        # pmpRes is plural, ie could be a string if there is one or a list
+        # if more than one.
+
+
+        for pmpResource in pmpResources:
+            self.logger.debug('searching for password in %s', pmpResource)
+            try:
+                passwrd = self.pmp.getAccountPassword(schema, pmpResource)
+                if passwrd:
+                    break
+            except ValueError, e:
+                msg = 'could not find the password for: {0} in the pmp resource {1}'
+                msg = msg.format(schema, pmpResource)
+                self.logger.warning(msg)
         if not passwrd:
-            msg = 'Cant find the password in PMP resource {0} for the account {1}'
-            msg = msg.format(pmpRes, schema)
+            msg = 'Cant find the password in any of the PMP resources: {0} for ' + \
+                  'the account {1}'
+            msg = msg.format(pmpResources, schema)
             self.logger.warning(msg)
         return passwrd
 
@@ -3438,8 +3526,8 @@ class PMPHelper(object):
             # error trapped, now try alt url
             altUrl = self.paramObj.getPmpAltUrl()
             msg = "error raised in attempt to communicate with pmp." + \
-                  "switching to use the alternative url: {0}"
-            self.logger.warning(msg.format(altUrl))
+                  "switching to use the alternative url: %s"
+            self.logger.warning(msg, altUrl)
             self.pmpDict = self.getPMPConnectionDictionary(baseUrl=altUrl)
             self.pmp = PMP.PMPRestConnect.PMP(self.pmpDict)
 
@@ -3532,16 +3620,20 @@ class PMPHelper(object):
         accnts = self.pmp.getAccountsForResourceID(resId)
         return accnts
 
-    def getAccountPassword(self, accountName, resourceName):
+    def getAccountPassword(self, accountName, resourceNames):
         '''
         :param accountName: the account name (schema name) who's password it is
                             that you want to retrieve.
-        :param resourceName: the name of the resource in PMP that the script
+        :param resourceNames: the names of the resource in PMP that the script
                              should search for the account/password in.
+        :type resourceNames: list
         :return: This method returns the password that matches the "accountName"
                  in the PMP "resourceName"
         '''
-        passwrd = self.pmp.getAccountPassword(accountName, resourceName)
+        for resourceName in resourceNames:
+            passwrd = self.pmp.getAccountPassword(accountName, resourceName)
+            if passwrd:
+                break
         return passwrd
 
     def getPMPPassword(self, accountId, resourceName):
@@ -3552,33 +3644,33 @@ class PMPHelper(object):
     def getSSHKey(self, sshKeyFilePath=None):
         '''
         This method will use the properties described in the app default config
-        file to retrieve the ssh key from pmp and locate it in the location 
-        specified!  If no location is specified it gets located in the config 
+        file to retrieve the ssh key from pmp and locate it in the location
+        specified!  If no location is specified it gets located in the config
         directory
         '''
-        
+
         res = self.pmp.getResources()
-        
+
         if not sshKeyFilePath:
             # get the destination path to the ssh key file
             confDir = self.paramObj.getConfigDirName()
             rootDir = self.paramObj.getTemplateRootDirectory()
             sshKeyFilePath = os.path.join(rootDir, confDir, self.sshKeyFile)
-            
+
         if os.path.exists(sshKeyFilePath):
             os.remove(sshKeyFilePath)
-        
-        
-        
-        #pswd = self.pmp.getAccountPassword('BIOT', 'SSH_KEYS')
+
+
+
+        # pswd = self.pmp.getAccountPassword('BIOT', 'SSH_KEYS')
         keyFileContents = self.pmp.getPasswordFiles('BIOT', 'SSH_KEYS')
-        # next need to write the contents of the variable keyFileContents to 
+        # next need to write the contents of the variable keyFileContents to
         # the destination file.
         fh = open(sshKeyFilePath, 'w')
         fh.write(keyFileContents)
         fh.close()
         return sshKeyFilePath
-        
+
 class DWMWriter(object):
     '''
     Things that were logged by the other logger:
@@ -3695,8 +3787,8 @@ class DWMWriter(object):
         serviceName = self.config.getDestinationServiceName()
 
         # instance = self.config.getDestinationServiceName()
-        pmpResource = self.config.getDestinationPmpResource()
-        passwrd = pmpHelper.getAccountPassword(accntName, pmpResource)
+        pmpResources = self.config.getDestinationPmpResource()
+        passwrd = pmpHelper.getAccountPassword(accntName, pmpResources)
         # passwrd = pmp.getAccountPassword(accntName, pmpResource)
         if isinstance(passwrd, unicode):
             # when attempting to connect to database using unicode encoded password
@@ -3733,7 +3825,7 @@ class DWMWriter(object):
                 self.logger.error(msg)
                 raise
         else:
-            msg = 'successfully connected to the database {0} with the user {1}'
+            msg = u'successfully connected to the database {0} with the user {1}'
             msg = msg.format(serviceName, accntName)
             self.logger.info(msg)
 
