@@ -57,7 +57,7 @@ class EmailFrameworkBridge(object):
         self.notifyAll = None
         self.notifyFail = None
         self.notifySuccess = None
-
+        
         self.getNotificationEmails()
 
     def printMacros(self):

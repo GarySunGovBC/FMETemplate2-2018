@@ -144,9 +144,15 @@ class ParameterTester(object):
                 msg = msg.format(self.params.plugin.__class__.__name__ )
                 raise ValueError, msg
             self.logger.debug(self.params.plugin.__class__.__name__)
+            
             self.test_getDestConnFile_Dev()
-
             self.test_getDbCredsFile()
+            # point to the dbcreds file to be uese for testing
+            # by setting this parameter self.const.FMWMacroKey_FMWDirectory
+            # to the directory for the creds file we want to use
+            
+
+            
             self.test_getPasswordsDevMode()
             self.test_getFMWLogFileRelativePath()
             self.test_getDestinationServiceName()
@@ -205,6 +211,10 @@ class ParameterTester(object):
             raise ValueError, msg
         
     def __setupDbCredsFile(self):
+        '''
+        creates a dbcreds file that can be used for testing the development mode 
+        of the framework.
+        '''
         const = DataBCFMWTemplate.TemplateConstants()
         
         # first determine the path to the dbCreds file
@@ -226,7 +236,21 @@ class ParameterTester(object):
         srcPass = self.dummySrcPassword
         #srcInst = self.params
         #schemaMacroKey, instanceMacroKey = self.params.getSchemaForPasswordRetrieval()
-        schemaMacroKey, serviceNameMacroKey = self.params.getSchemaAndServiceNameForPasswordRetrieval()
+        #schemaMacroKey, serviceNameMacroKey = self.params.getSchemaAndServiceNameForPasswordRetrieval()
+        
+#         macroKeyProxy = const.FMWParams_SrcProxySchema
+#         macroKeyProxy = self.getMacroKeyForPosition(macroKeyProxy)
+#         macroKeyData = const.FMWParams_SrcSchema
+#         macroKeyData = self.getMacroKeyForPosition(macroKeyData)
+         
+        srcOraSchema = self.params.getSourceOracleSchema()
+
+        srcServiceName = self.params.getSourceOracleServiceName()
+        srcServiceName = DataBCFMWTemplate.Util.removeDomain(srcServiceName)
+        
+        serviceNameMacroKey = const.FMWParams_SrcServiceName
+        schemaMacroKey = const.FMWParams_SrcProxySchema
+        
         if serviceNameMacroKey not in self.params.fmeMacroVals:
             msg = 'The service name {0} does not exist in the fmw published parameters'
             raise ValueError, msg.format(serviceNameMacroKey)
@@ -449,7 +473,17 @@ class ParameterTester(object):
 
         self.logger.debug("second password is {0}".format(pswd))
         
+        destSchema = 'APP_UTILITY'
+        destServName = self.params.getDestinationServiceName()
         self.params.fmeMacroVals = self.origMacros.copy()
+        self.params.fmeMacroVals[self.params.const.FMWParams_DestSchema] = destSchema
+        self.params.plugin.fmeMacroVals[self.params.const.FMWParams_DestSchema] = destSchema
+
+        if not pswd:
+            msg = 'unable to get the password for the schema {0} and ' + \
+                  'the instance {1}, this is likely either a pmp access issue or ' + \
+                  'the correct resources havent been added to the config'
+            raise ValueError, msg.format(destSchema, destServName)        
         
     def test_getDestinationOraclePort(self):
         self.logger.debug("test_getDestinationOraclePort")
@@ -502,7 +536,6 @@ class ParameterTester(object):
         msg = 'easy connect string retrieved is {0}'
         self.logger.debug(msg.format(easyConnectString))
         
-    
 class StartupTester():
     '''
     This class attempts to test and verify that the various
