@@ -641,10 +641,10 @@ class DefaultShutdown(object):
         self.logger.info('destination key word in shutdown: %s',
                          self.fme.macroValues[self.const.FMWParams_DestKey])
 
-        emailer = Emailer.EmailFrameworkBridge(self.fme)
+        emailer = Emailer.EmailFrameworkBridge(self.fme, self.const, self.params)
         email2Add = 'kevin.netherton@gov.bc.ca'
         if not emailer.notifyFail:
-            emailer.notifyFail = 'kevin.netherton@gov.bc.ca'
+            emailer.notifyFail = email2Add
         else:
             if not email2Add.lower() in emailer.notifyFail.lower():
                 emailer.notifyFail = emailer.notifyFail + '\n' + email2Add

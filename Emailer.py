@@ -21,7 +21,7 @@ import os.path
 import re
 import smtplib
 
-import DataBCFMWTemplate
+#import DataBCFMWTemplate
 
 
 class EmailFrameworkBridge(object):
@@ -43,13 +43,15 @@ class EmailFrameworkBridge(object):
                         the job fails.
     '''
 
-    def __init__(self, fmeObj):
+    def __init__(self, fmeObj, const, params):
         self.fmeObj = fmeObj
         self.logger = logging.getLogger(__name__)
         self.logger.debug("constructing emailer object")
-        self.const = DataBCFMWTemplate.TemplateConstants()
-        self.params = DataBCFMWTemplate.TemplateConfigFileReader(
-            self.fmeObj.macroValues[self.const.FMWParams_DestKey])
+        self.const = const
+        self.params = params
+        #self.const = DataBCFMWTemplate.TemplateConstants()
+        #self.params = DataBCFMWTemplate.TemplateConfigFileReader(
+        #    self.fmeObj.macroValues[self.const.FMWParams_DestKey])
         self.email = None
 
         # print the macroValues
@@ -295,10 +297,10 @@ class EmailFrameworkBridge(object):
         destTmplt = 'schema: {0} host: {1} service name: {2}'
 
         if self.const.FMWParams_DestKey in self.fmeObj.macroValues:
-            params = DataBCFMWTemplate.CalcParams(self.fmeObj.macroValues)
-            host = params.getDestinationHost()
-            servName = params.getDestinationServiceName()
-            destSchema = params.getDestinationSchema()
+            #params = DataBCFMWTemplate.CalcParams(self.fmeObj.macroValues)
+            host = self.params.getDestinationHost()
+            servName = self.params.getDestinationServiceName()
+            destSchema = self.params.getDestinationSchema()
             retStr = destTmplt.format(destSchema, host, servName)
         self.logger.debug("dest string: %s", retStr)
         return retStr

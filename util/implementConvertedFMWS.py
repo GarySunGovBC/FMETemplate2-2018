@@ -764,7 +764,8 @@ if __name__ == '__main__':
     # sourceDir = 'Z:\Projects\FYE2018\DWACT-630_FMWConversions\Completed\grp6'
     # sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2018\04_staging'
     sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateTransition\04_staging'
-    currentFMEServerRepo = 'BCGW_REP_SCHEDULED'
+    #currentFMEServerRepo = 'BCGW_REP_SCHEDULED'
+    currentFMEServerRepo = 'BCGW_SCHEDULED'
     destinationFMEServerRepo = 'BCGW_SCHEDULED'
     # no action associated with the constructor below, just sets  up
     # params to be run.
