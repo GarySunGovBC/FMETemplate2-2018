@@ -479,7 +479,7 @@ class Start(object):
 
 class DefaultStart(object):
     '''
-    The default startup method.  This is the code that is run by default for 
+    The default startup method.  This is the code that is run by default for
     startups.  The functionality can be overridden by creating a python file
     with the same name as the fmw that is being run.  Examples exist!
     '''
@@ -564,11 +564,11 @@ class DefaultStart(object):
 
 class Shutdown(object):
     '''
-    The base Shutdown class, all other shutdowns will inherit 
+    The base Shutdown class, all other shutdowns will inherit
     from this class.  Typically scrips will run the default shutdown unless
     there is a custom shutdown process defined specifically for an FMW.
     '''
-    
+
     def __init__(self, fme):
         # This method will always be called regardless of any customizations.
         self.fme = fme
@@ -669,7 +669,7 @@ class DefaultShutdown(object):
                 emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
         emailer.sendNotifications()
         self.logger.info("shutdown is now complete")
-        
+
 
 class TemplateConfigFileReader(object):
 
@@ -722,7 +722,8 @@ class TemplateConfigFileReader(object):
         # justFmwName, fmwSuffix = os.path.splitext(fmwName)
         justFmwName = os.path.splitext(fmwName)[0]
 
-        pidDirName = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_pidDir)
+        pidDirName = self.parser.get(self.const.ConfFileSection_global,
+                                     self.const.ConfFileSection_global_key_pidDir)
         outputsDir = self.getOutputsDirectory()
 
         if not self.isDataBCNode():
@@ -740,8 +741,10 @@ class TemplateConfigFileReader(object):
         return fullPath
 
     def calcPuttyExecPath(self):
-        puttyDir = self.parser.get(self.const.ConfFileSection_putty, self.const.ConfFileSection_puttyDir)
-        puttyFile = self.parser.get(self.const.ConfFileSection_putty, self.const.ConfFileSection_puttyFile)
+        puttyDir = self.parser.get(self.const.ConfFileSection_putty,
+                                   self.const.ConfFileSection_puttyDir)
+        puttyFile = self.parser.get(self.const.ConfFileSection_putty,
+                                    self.const.ConfFileSection_puttyFile)
 
         outputDir = self.getTemplateRootDirectory()
         fullPath = os.path.join(outputDir, puttyDir, puttyFile)
@@ -752,7 +755,8 @@ class TemplateConfigFileReader(object):
         return fullPath
 
     def getApplicationLogFileName(self):
-        logConfFileName = self.parser.get(self.const.ConfFileSection_global, self.const.AppConfigAppLogFileName)
+        logConfFileName = self.parser.get(self.const.ConfFileSection_global,
+                                          self.const.AppConfigAppLogFileName)
         return logConfFileName
 
     def getChangeLogsDirFullPath(self):
@@ -766,7 +770,8 @@ class TemplateConfigFileReader(object):
         return changeLogFullPath
 
     def getChangeLogFile(self):
-        changeLogFile = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_changeLogFileName)
+        changeLogFile = self.parser.get(self.const.ConfFileSection_global,
+                                        self.const.ConfFileSection_global_changeLogFileName)
         return changeLogFile
 
     def getConfigDirName(self):
@@ -775,15 +780,18 @@ class TemplateConfigFileReader(object):
         files should be locted in.  Returns just the name of the directory, no
         path information is included.  To get the root directory call
         '''
-        confDirName = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_configDirName)
+        confDirName = self.parser.get(self.const.ConfFileSection_global,
+                                      self.const.ConfFileSection_global_configDirName)
         return confDirName
 
     def getCustomScriptDirectory(self):
-        customScriptDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
+        customScriptDir = self.parser.get(self.const.ConfFileSection_global,
+                                          self.const.ConfFileSection_global_customScriptDir)
         return customScriptDir
 
     def getDataBCFmeServerNodes(self):
-        nodeString = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_govFmeServer)
+        nodeString = self.parser.get(self.const.ConfFileSection_global,
+                                     self.const.ConfFileSection_global_key_govFmeServer)
         nodeList = nodeString.split(',')
         return nodeList
 
@@ -801,12 +809,14 @@ class TemplateConfigFileReader(object):
                   databc firewall and have access to pmp.
         :rtype: list(str)
         '''
-        nodeString = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_govComputers)
+        nodeString = self.parser.get(self.const.ConfFileSection_global,
+                                     self.const.ConfFileSection_global_key_govComputers)
         nodeList = nodeString.split(',')
         return nodeList
 
     def getDefaultOraclePort(self):
-        srcDefaultOraPort = self.parser.get(self.const.ConfFileSection_pmpSrc, self.const.ConfFileSection_pmpSrc_defaultOraPort)
+        srcDefaultOraPort = self.parser.get(self.const.ConfFileSection_pmpSrc,
+                                            self.const.ConfFileSection_pmpSrc_defaultOraPort)
         return srcDefaultOraPort
 
     def getDependencyTimeWindow(self):
@@ -816,7 +826,8 @@ class TemplateConfigFileReader(object):
 
         '''
         self.logger.debug("getDependencyTimeWindow")
-        depTimeWindow = self.parser.get(self.const.ConfFile_deps, self.const.ConfFile_deps_timewindow)
+        depTimeWindow = self.parser.get(self.const.ConfFile_deps,
+                                        self.const.ConfFile_deps_timewindow)
         return depTimeWindow
 
     def getDependencyMaxRetries(self):
@@ -952,7 +963,8 @@ class TemplateConfigFileReader(object):
                   credentials when the script is being developed.
         :rtype: string
         '''
-        credsFileName = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_devCredsFile)
+        credsFileName = self.parser.get(self.const.ConfFileSection_global,
+                                        self.const.ConfFileSection_global_devCredsFile)
         return credsFileName
 
     def getDWMDbPort(self):
@@ -1178,7 +1190,8 @@ class TemplateConfigFileReader(object):
                  can be more than one
         :rtype: list
         '''
-        srcPmpResources = self.parser.get(self.const.ConfFileSection_pmpSrc, self.const.ConfFileSection_pmpSrc_resources)
+        srcPmpResources = self.parser.get(self.const.ConfFileSection_pmpSrc,
+                                          self.const.ConfFileSection_pmpSrc_resources)
         srcPmpResourcesList = srcPmpResources.split(',')
         # getting rid of leading/trailing spaces on each element in the list
         for cnter in range(0, len(srcPmpResourcesList)):
@@ -1215,14 +1228,16 @@ class TemplateConfigFileReader(object):
         :return: retrieves the string used to identify sql server databases in
                  pmp
         '''
-        return self.parser.get(self.const.sqlserverSection, self.const.sqlserver_param_pmpidentifier)
+        return self.parser.get(self.const.sqlserverSection,
+                               self.const.sqlserver_param_pmpidentifier)
 
     def getTemplateRootDirectory(self):
         '''
         :return: the template root directory, ie the directory where the '
                  framework/template is installed.
         '''
-        rootDir = self.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_key_rootDir)
+        rootDir = self.parser.get(self.const.ConfFileSection_global,
+                                  self.const.ConfFileSection_global_key_rootDir)
         return rootDir
 
     def getValidKeys(self):
@@ -1336,8 +1351,8 @@ class TemplateConfigFileReader(object):
                 msg = msg.format(self.confFile)
                 self.logger.error(msg)
                 raise ValueError, msg
-            self.logger.info("config file path that has been calculated is %s",
-                              self.confFile)
+            self.logger.info("config file path that has been calculated is %s", \
+                             self.confFile)
         if not self.parser:
             self.parser = ConfigParser.ConfigParser()
             self.parser.read(self.confFile)
@@ -1535,7 +1550,7 @@ class Util(object):
 
     @staticmethod
     def calcLogFilePath(fmwDir, fmwName):
-        '''  #pylint: disable=anomalous-backslash-in-string
+        '''  pylint: disable=anomalous-backslash-in-string
         This method will recieve the full path to where the current
         fmw that is being processed is located, and the name of the fmw
         that is being processed.  It will then calculate:
@@ -1599,7 +1614,7 @@ class Util(object):
         return retVal
 
     @staticmethod
-    def isEqualIgnoreDomain(param1 , param2):
+    def isEqualIgnoreDomain(param1, param2):
         '''
         :param param1: the first parameter with a domain
         :param param2: the second parameter with a domain
@@ -1672,8 +1687,8 @@ class Util(object):
                 # just leave the value as is for dest env key
                 paramValue = fmwMacros[paramName]
         else:
-            logger.debug('input param value/name: -%s/%s-', paramName, paramValue)
-            isParamNameRegex = re.compile('^\$\((.*?)\)$')
+            logger.debug(r'input param value/name: -%s/%s-', paramName, paramValue)
+            isParamNameRegex = re.compile(r'^\$\((.*?)\)$')
             if isParamNameRegex.match(paramValue):
                 justParamName = (isParamNameRegex.search(paramValue)).group(1)
                 logger.debug('detected parameter %s', paramValue)
@@ -1920,7 +1935,7 @@ class GetPublishedParams(object):
             self.logger.warning(msg)
         else:
             # checking to see if the parameter is a linked variable
-            isParamNameRegex = re.compile('^\$\((.*?)\)$')
+            isParamNameRegex = re.compile(r'^\$\((.*?)\)$')
             if isParamNameRegex.match(paramValue):
                 justParamName = (isParamNameRegex.search(paramValue)).group(1)
                 logger.debug('detected parameter %s', paramValue)
@@ -1967,8 +1982,8 @@ class GetPublishedParams(object):
         else:
             # if type(position) is not int:
             if not isinstance(position, int):
-                msg = 'the arg passwordPosition you provided is {0} which has a type of {1}.  This ' + \
-                      'arg must have a type of int.'
+                msg = 'the arg passwordPosition you provided is {0} which has ' + \
+                      'a type of {1}.  This arg must have a type of int.'
                 self.logger.error(msg)
                 raise ValueError, msg
 
@@ -2208,7 +2223,8 @@ class CalcParamsBase(GetPublishedParams):
             self.plugin = CalcParamsDevelopment(self)
         elif self.paramObj.isDataBCNode():
             self.logger.debug("Template is operating in Production mode.")
-            # TODO: Should implement an abstract class to ensure that all plugins impement the required methods.
+            # TODO: Should implement an abstract class to ensure that all
+            #       plugins impement the required methods.
             self.plugin = CalcParamsDataBC(self)
         else:
             self.logger.debug("Template is operating in Development mode.")
@@ -2287,7 +2303,8 @@ class CalcParamsBase(GetPublishedParams):
         # don't need port currently
         oraClientString = self.paramObj.getOracleDirectConnectClientString()
         dirConnectTemplate = 'sde:{0}:{1}/{2}'
-        srcSDEDirectConnectString = dirConnectTemplate.format(oraClientString, destHost, destServName)
+        srcSDEDirectConnectString = dirConnectTemplate.\
+            format(oraClientString, destHost, destServName)
         self.logger.info("destination direct connect string: %s", srcSDEDirectConnectString)
         return srcSDEDirectConnectString
 
@@ -2641,7 +2658,8 @@ class CalcParamsBase(GetPublishedParams):
         # now construct the direct connect string
         # - sde:oracle11g:host/service_name
         dirConnectTemplate = 'sde:{0}:{1}/{2}'
-        srcSDEDirectConnectString = dirConnectTemplate.format(oraClientString, srcHost, srcServiceName)
+        srcSDEDirectConnectString = dirConnectTemplate.\
+            format(oraClientString, srcHost, srcServiceName)
         self.logger.info("source direct connect string: %s", srcSDEDirectConnectString)
         return srcSDEDirectConnectString
 
@@ -2658,11 +2676,6 @@ class CalcParamsBase(GetPublishedParams):
         schema = self.getSourceSqlServerConnectionSchema(position)
         self.logger.info("schema being used to retrieve sql server password: %s", schema)
 
-        # sqlServerProxySchema = self.getMacroKeyForPosition(self.const.FMWParams_SrcProxySSSchema, position)
-        # if sqlServerProxySchema in self.fmeMacroVals:
-        #    schema = self.getSrcSqlServerProxySchema(position)
-        # else:
-        #    schema = self.getSrcSQLServerSchema(position)
         msg = 'retrieving the sql server password for the schema: {0}, ' + \
               'dbname: {1}, host: {2}'
         ssDbName = self.getSrcSqlServerDatabaseName(position)
@@ -2726,9 +2739,9 @@ class CalcParamsBase(GetPublishedParams):
             self.logger.error(msg)
             raise ValueError, msg.format(self.const.FMWParams_SrcHost)
         if port and dbName:
-            retStr = u'sde:{0}:{1}\{2},{3}'.format(SSClientString, host, dbName, port)
+            retStr = r'sde:{0}:{1}\{2},{3}'.format(SSClientString, host, dbName, port)
         elif dbName:
-            retStr = u'sde:{0}:{1}\{2}'.format(SSClientString, host, dbName)
+            retStr = r'sde:{0}:{1}\{2}'.format(SSClientString, host, dbName)
         else:
             retStr = u'sde:{0}:{1}'.format(SSClientString, host)
         return retStr
@@ -2753,7 +2766,8 @@ class CalcParamsBase(GetPublishedParams):
         msg = msg.format(position)
         self.logger.info(msg)
         sourceOraServName = self.getSourceOracleServiceName(position)
-        self.logger.debug("Oracle source service name: {0} position {1}".format(sourceOraServName, position))
+        self.logger.debug("Oracle source service name: {0} position {1}".\
+                          format(sourceOraServName, position))
 
         retVal = False
         destKeys = self.paramObj.parser.items(self.const.ConfFileSection_destKeywords)
@@ -3140,14 +3154,18 @@ class CalcParamsDevelopment(object):
                    dbHost.lower().strip() == ssHost.lower().strip() and \
                    dbUser.lower().strip() == schema.lower().strip():
                     retVal = dbPass
-                    msg = 'Found a password entry for host: {0},  db name: {2}, schema {1}'.format(ssHost, schema, ssHost)
+                    msg = 'Found a password entry for host: {0},  db name: {2}' + \
+                          ', schema {1}'
+                    msg = msg.format(ssHost, schema, ssHost)
                     self.logger.debug(msg)
                     break
         if not retVal:
-            msg = 'Running in DevMod.  This means that the template is attempting ' + \
-                  'to retrieve the password from the json credential file {0} Was unable to ' + \
-                  'retrieve the password for a SQL server database entry in this file with the values ' + \
-                  'the username: {1}, the source host {2}, and source dbname {3} in the section {3}'
+            msg = 'Running in DevMod.  This means that the template is ' + \
+                  'attempting to retrieve the password from the json ' + \
+                  'credential file {0} Was unable to retrieve the password ' + \
+                  'for a SQL server database entry in this file with the ' + \
+                  'values the username: {1}, the source host {2}, and source ' + \
+                  'dbname {3} in the section {3}'
             msg = msg.format(self.credsFileFullPath, schema, ssHost, ssDbName,
                              self.const.DevelopmentDatabaseCredentialsFile_SourceCreds)
             raise ValueError, msg
@@ -4247,7 +4265,7 @@ class PMPHelper(object):
         return sshKeyFilePath
 
 class DWMWriter(object):
-    '''
+    '''  #pylint: disable=anomalous-backslash-in-string
     Things that were logged by the other logger:
       a) mappingFileID
       b) startTime -  reads the log file and strips out
