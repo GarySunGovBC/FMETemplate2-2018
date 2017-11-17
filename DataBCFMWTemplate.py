@@ -400,7 +400,9 @@ class TemplateConstants(object):
         return retVal
 
 class Start(object):
-
+    '''
+    The base start class. Any other startup methods should inherit this class.
+    '''
     def __init__(self, fme):
 
         # getting the app constants
@@ -463,6 +465,9 @@ class Start(object):
             self.startupObj = DefaultStart(self.fme)
 
     def startup(self):
+        '''
+        base startup method
+        '''
         # default startup routine
         # self.fme.macroValues[self.const.FMWParams_DestKey]
         # debugging / develeopment - printing the macrovalues.
@@ -473,12 +478,21 @@ class Start(object):
         self.startupObj.startup()
 
 class DefaultStart(object):
+    '''
+    The default startup method.  This is the code that is run by default for 
+    startups.  The functionality can be overridden by creating a python file
+    with the same name as the fmw that is being run.  Examples exist!
+    '''
     def __init__(self, fme):
         self.fme = fme
         modDotClass = '{0}.{1}'.format(__name__, 'shutdown')
         self.logger = logging.getLogger(modDotClass)
 
     def startup(self):
+        '''
+        The actual default startup code.  This is the code that vanilla framework
+        scripts will execute.
+        '''
         # currently there is no default startup code.
         # if there was it would go here
         # params = GetPublishedParams(self.fme.macroValues)
@@ -549,7 +563,12 @@ class DefaultStart(object):
                         retries += 1
 
 class Shutdown(object):
-
+    '''
+    The base Shutdown class, all other shutdowns will inherit 
+    from this class.  Typically scrips will run the default shutdown unless
+    there is a custom shutdown process defined specifically for an FMW.
+    '''
+    
     def __init__(self, fme):
         # This method will always be called regardless of any customizations.
         self.fme = fme
@@ -588,7 +607,7 @@ class Shutdown(object):
             shutdownModule = importlib.import_module(justScript)
             if Util.isClassInModule(shutdownModule, 'Shutdown'):
                 # use the custom shutdown
-                self.logger.debug("{0} module loaded successfully".format(justScript))
+                self.logger.debug("%s module loaded successfully". justScript)
                 self.shutdownObj = shutdownModule.Shutdown(self.fme)
             else:
                 self.logger.debug('using the generic template shutdown')
@@ -650,6 +669,7 @@ class DefaultShutdown(object):
                 emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
         emailer.sendNotifications()
         self.logger.info("shutdown is now complete")
+        
 
 class TemplateConfigFileReader(object):
 
@@ -964,30 +984,47 @@ class TemplateConfigFileReader(object):
         return dwmList
 
     def getFailedFeaturesDir(self):
+        '''
+        :return: The name of the directory where failed features files should be
+                 stored
+        '''
         failedFeatsDir = self.parser.get(
             self.const.ConfFileSection_global,
             self.const.ConfFileSection_global_failedFeaturesDir)
         return failedFeatsDir
 
     def getFailedFeaturesFile(self):
+        '''
+        :return: the name of the file that should be used to store failed features
+        '''
         failedFeatsFile = self.parser.get(
             self.const.ConfFileSection_global,
             self.const.ConfFileSection_global_failedFeaturesFile)
         return failedFeatsFile
 
     def getFMEServerHost(self):
+        '''
+        :return: the fme server host name
+        '''
         host = self.parser.get(
             self.const.FMEServerSection,
             self.const.FMEServerSection_Host)
         return host
 
     def getFMEServerRootDir(self):
+        '''
+        :return: the fme server root directory.  Starting place for the rest
+                 api.
+        '''
         rootdir = self.parser.get(
             self.const.FMEServerSection,
             self.const.FMEServerSection_RootDir)
         return rootdir
 
     def getFMEServerToken(self):
+        '''
+        :return: the token to use to communicate with FME server
+        '''
         token = self.parser.get(
             self.const.FMEServerSection,
             self.const.FMEServerSection_Token)
@@ -1136,6 +1173,11 @@ class TemplateConfigFileReader(object):
         return sdeConnectionFileDir
 
     def getSourcePmpResources(self):
+        '''
+        :return: a 'cleaned' list of the pmp resources to search for credentials
+                 can be more than one
+        :rtype: list
+        '''
         srcPmpResources = self.parser.get(self.const.ConfFileSection_pmpSrc, self.const.ConfFileSection_pmpSrc_resources)
         srcPmpResourcesList = srcPmpResources.split(',')
         # getting rid of leading/trailing spaces on each element in the list
@@ -1144,9 +1186,15 @@ class TemplateConfigFileReader(object):
         return srcPmpResourcesList
 
     def getSqlServerDefaultPort(self):
+        '''
+        :return: default connection port for SQL server databases (from config file)
+        '''
         return self.parser.get(self.const.sqlserverSection, self.const.sqlserver_param_port)
 
     def getEmailSMTPServer(self):
+        '''
+        :return: the smtp server as defined in the config file
+        '''
         return self.parser.get(self.const.emailerSection, self.const.emailer_smtpServer)
 
     def getEmailSMTPPort(self):
