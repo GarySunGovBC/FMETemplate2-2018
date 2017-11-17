@@ -26,10 +26,10 @@ class Test_CalcParams(unittest.TestCase):
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.DEBUG)
 
-        ch = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
+        #ch = logging.StreamHandler()
+        #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        #ch.setFormatter(formatter)
+        #self.logger.addHandler(ch)
 
         # dummy data used for testing.
         # these are for a file source
@@ -491,10 +491,10 @@ class Test_CalcParamsDevel(unittest.TestCase):
     def setUp(self):
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.DEBUG)
-        ch = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
+        #ch = logging.StreamHandler()
+        #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        #ch.setFormatter(formatter)
+        #self.logger.addHandler(ch)
 
         self.fmeMacroValues_DBSrc = {
                                     'DEST_DB_ENV_KEY': 'DEV',
@@ -741,20 +741,21 @@ class Test_TemplateConfigFileReader(unittest.TestCase):
         # self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
 
         self.logger = logging.getLogger()
-
-        otherLogger = logging.getLogger('DataBCFMWTemplate')
-        otherLogger.setLevel(logging.DEBUG)
-
         self.logger.setLevel(logging.DEBUG)
-
-        ch = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s')
-        ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
-        self.logger = logging.getLogger()
-        self.logger.debug("this is the the first log message")
-
-        otherLogger.addHandler(ch)
+# 
+#         otherLogger = logging.getLogger('DataBCFMWTemplate')
+#         otherLogger.setLevel(logging.DEBUG)
+# 
+#         self.logger.setLevel(logging.DEBUG)
+# 
+#         ch = logging.StreamHandler()
+#         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s')
+#         ch.setFormatter(formatter)
+#         self.logger.addHandler(ch)
+#         self.logger = logging.getLogger()
+#         self.logger.debug("this is the the first log message")
+# 
+#         otherLogger.addHandler(ch)
 
     def test_getDestinationDatabaseKey(self):
         testList = []
@@ -917,6 +918,8 @@ class Test_Startup(unittest.TestCase):
                                 'SRC_FEATURE_1': 'CLAB_INDIAN_RESERVES',
                                 'SRC_FILEGDB_1': '\\\\data.bcgov\\data_staging_ro\\BCGW\\administrative_boundaries\\Federal_IRs.gdb'}
         self.fme = fme()
+        self.logger = logging.getLogger()
+        self.logger.setLevel(logging.DEBUG)
 
     def test_Startup(self):
         print 'present!'
@@ -995,29 +998,15 @@ class Test_Shutdown(unittest.TestCase):
         self.fme.status = True
         self.fme.totalFeaturesRead = 1588L
         self.fme.totalFeaturesWritten = 0L
-
         self.logger = logging.getLogger()
-
-        otherLogger = logging.getLogger('DataBCFMWTemplate')
-        otherLogger.setLevel(logging.DEBUG)
-
         self.logger.setLevel(logging.DEBUG)
-
-        ch = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s')
-        ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
-        self.logger = logging.getLogger()
-        self.logger.debug("this is the the first log message")
-
-        otherLogger.addHandler(ch)
 
     def test_shutdown(self):
         print 'present!'
         # self.fme.logFileName = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\wrk\newTemplate\fmws\outputs\log\clab_indian_reserves_staging_fgdb_bcgwdlv_Development.log'
         # shutdown = DataBCFMWTemplate.Shutdown(self.fme)
         # shutdown.shutdown()
-
+        self.logger.info("running the test of shutdown")
         # now try with the dbcdlv key
         self.fme.macroValues['DEST_DB_ENV_KEY'] = 'DBCDLV'
         shutdown = DataBCFMWTemplate.Shutdown(self.fme)
@@ -1055,12 +1044,24 @@ class Test_PMPHelper(unittest.TestCase):
         msg = msg.format(sshKeyFile)
         self.assertTrue(keyExists, msg)
 
-        
-
-
 if __name__ == "__main__":
     import sys
+    
+    # logging config
+    logger = logging.getLogger()
 
+    #otherLogger = logging.getLogger('DataBCFMWTemplate')
+    #otherLogger.setLevel(logging.DEBUG)
+
+    logger.setLevel(logging.DEBUG)
+
+    ch = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+    logger.debug("this is the the first log message")
+
+    #otherLogger.addHandler(ch)
 
 
 
