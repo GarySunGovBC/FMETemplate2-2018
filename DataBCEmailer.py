@@ -48,10 +48,10 @@ class EmailFrameworkBridge(object):
         self.logger = logging.getLogger(__name__)
         self.logger.debug("constructing emailer object")
         
-        self.const = const #templateconstants
+        self.const = const #TemplateConstants
         self.params = params #calcparamsbase
         self.config = config # templateconfigfile
-        
+                
         #self.const = DataBCFMWTemplate.TemplateConstants()
         #self.params = DataBCFMWTemplate.TemplateConfigFileReader(
         #    self.fmeObj.macroValues[self.const.FMWParams_DestKey])
