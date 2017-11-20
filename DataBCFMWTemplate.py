@@ -338,10 +338,6 @@ class TemplateConstants(object):
     #                 u'timeStarted': u'2017-05-29T10:00:04',
     FMEServer_DatetimeFormat = '%Y-%m-%dT%H:%M:%S'
 
-    # records in PMP will have this string as their
-    # sql server identifier format is account@SQLSERVER:<dbname>:<host>:<port>
-    # SqlServerPMPIdentifier = 'SQLSERVER' # commented out as this value should come from the config file method exists to retrieve this
-
     def getSrcInstanceParam(self, position):
         val = self.calcNumVal(self.FMWParams_SrcInstance, position)
         return val
@@ -399,10 +395,12 @@ class TemplateConstants(object):
         retVal = retValtemplate.format(val, position)
         return retVal
 
+
 class Start(object):
     '''
     The base start class. Any other startup methods should inherit this class.
     '''
+
     def __init__(self, fme):
 
         # getting the app constants
@@ -431,7 +429,6 @@ class Start(object):
         # customScriptDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
         # Assemble the name of a the custom script
         justScript = (os.path.splitext(fmwName))[0]
-
 
         customScriptFullPath = os.path.join(customScriptDir, justScript + '.py')
         customScriptLocal = os.path.join(self.fme.macroValues[self.const.FMWMacroKey_FMWDirectory], justScript + '.py')
@@ -477,12 +474,14 @@ class Start(object):
         self.logger.debug("calling the startup method...")
         self.startupObj.startup()
 
+
 class DefaultStart(object):
     '''
     The default startup method.  This is the code that is run by default for
     startups.  The functionality can be overridden by creating a python file
     with the same name as the fmw that is being run.  Examples exist!
     '''
+
     def __init__(self, fme):
         self.fme = fme
         modDotClass = '{0}.{1}'.format(__name__, 'shutdown')
@@ -562,6 +561,7 @@ class DefaultStart(object):
                         complete = execOrder.isParentsComplete()
                         retries += 1
 
+
 class Shutdown(object):
     '''
     The base Shutdown class, all other shutdowns will inherit
@@ -619,35 +619,38 @@ class Shutdown(object):
     def shutdown(self):
         self.shutdownObj.shutdown()
 
-# TODO: should define abstract classes that all shutdown and startup classes should inherit from.
 
 class DefaultShutdown(object):
 
     def __init__(self, fme):
         self.fme = fme
         self.const = TemplateConstants()
-        self.params = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
+        self.config = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
+        self.params = CalcParamsBase(self.fme.macroValues)
+
         loggerName = '{0}.{1}'.format(__name__, 'shutdown')
         self.logger = logging.getLogger(loggerName)
         self.logger.info('destination key word in shutdown: %s',
                          self.fme.macroValues[self.const.FMWParams_DestKey])
 
     def shutdown(self):
-        destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
-        if not self.params.isDataBCNode():
+        # getDestDatabaseEnvKey
+        destKey = self.params.getDestDatabaseEnvKey()
+        # destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
+        if not self.config.isDataBCNode():
             # either not being run on a databc computer, or is being run in
             # development mode, either way should not be writing to to the
             # DWM logger.
             msg = "DWM record is not being writen as script is being run external" + \
                   " to databc firewalls."
             self.logger.info(msg)
-        elif self.params.getDestinationDatabaseKey(destKey) == \
+        elif destKey == \
              self.const.ConfFileDestKey_Devel:
             msg = 'DWM record is not being written because the script is being ' + \
                   'run in development mode'
             self.logger.info(msg)
         else:
-            dwmValidKeys = self.params.getDWMValidDestinationKeywords()
+            dwmValidKeys = self.config.getDWMValidDestinationKeywords()
             # if destKey.lower() in ['dlv', 'tst', 'prd']:
             if destKey.lower() in dwmValidKeys:
                 self.logger.info("DWM record is being created")
@@ -660,21 +663,20 @@ class DefaultShutdown(object):
         self.logger.info('destination key word in shutdown: %s',
                          self.fme.macroValues[self.const.FMWParams_DestKey])
 
-        emailer = Emailer.EmailFrameworkBridge(self.fme, self.const, self.params)
+        emailer = Emailer.EmailFrameworkBridge(self.fme, self.const, self.params, self.config )
         email2Add = 'kevin.netherton@gov.bc.ca'
         if not emailer.notifyFail:
             emailer.notifyFail = email2Add
+            self.logger.debug("adding email address to fails")
         else:
             if not email2Add.lower() in emailer.notifyFail.lower():
                 emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
+        self.logger.debug("getting ready to send notification")
         emailer.sendNotifications()
         self.logger.info("shutdown is now complete")
 
 
 class TemplateConfigFileReader(object):
-
-    parser = None
-    key = None
 
     def __init__(self, key, confFile=None):
         # ModuleLogConfig()
@@ -682,9 +684,14 @@ class TemplateConfigFileReader(object):
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
 
+        self.parser = None
+        self.key = None
+
         self.confFile = confFile
         self.logger.info("Reading the config file: %s", self.confFile)
         self.const = TemplateConstants()
+
+        # This should populate self.parser
         self.readConfigFile()
         self.setDestinationDatabaseEnvKey(key)
         msg = "Destination database environment key has been set to ({0}) " + \
@@ -873,8 +880,8 @@ class TemplateConfigFileReader(object):
         return retVal
 
     def getDestinationHost(self):
-        self.logger.debug("key: {0}".format(self.key))
-        self.logger.debug("host key: {0}".format(self.const.ConfFileSection_hostKey))
+        self.logger.debug("key: %s", self.key)
+        self.logger.debug("host key: %s", self.const.ConfFileSection_hostKey)
         host = self.parser.get(self.key, self.const.ConfFileSection_hostKey)
         return host
 
@@ -1391,6 +1398,7 @@ class TemplateConfigFileReader(object):
             self.logger.error(msg)
             raise ValueError, msg
 
+
 class PMPSourceAccountParser(object):
 
     '''
@@ -1520,11 +1528,13 @@ class PMPSourceAccountParser(object):
                 retVal = Util.removeDomain(retVal)
         return retVal
 
+
 class Util(object):
     '''
     a bunch of utility / static methods that are used by various aspects of the
     framework.
     '''
+
     @staticmethod
     def getComputerName():
         '''
@@ -1696,6 +1706,7 @@ class Util(object):
                 # print 'Value extracted from linked parameter %s', paramValue
                 logger.info('Value extracted from linked parameter %s', paramValue)
         return paramValue
+
 
 class GetPublishedParams(object):
     '''
@@ -2169,6 +2180,7 @@ class GetPublishedParams(object):
         srcSchema = self.getFMEMacroValue(macroKey)
         return srcSchema
 
+
 class CalcParamsBase(GetPublishedParams):
     '''
     This method contains the base functionality which
@@ -2183,6 +2195,7 @@ class CalcParamsBase(GetPublishedParams):
         - PMP is unavailable therefor passwords
           will be retrieved from a hardcoded json file
     '''
+
     def __init__(self, fmeMacroVals):
 
         GetPublishedParams.__init__(self, fmeMacroVals)
@@ -2835,6 +2848,7 @@ class CalcParamsBase(GetPublishedParams):
             self.logger.error(msg)
         return retVal
 
+
 class CalcParamsDevelopment(object):
 
     '''
@@ -3330,6 +3344,7 @@ class CalcParamsDevelopment(object):
             self.logger.debug("SDE connection file %s exists", connectionFileFullPath)
         return connectionFileFullPath
 
+
 class CalcParamsDataBC(object):
 
     '''
@@ -3532,7 +3547,6 @@ class CalcParamsDataBC(object):
         #    srcSchemaInFMW = self.parent.getSrcSqlServerProxySchema(position)
         # else:
         #    srcSchemaInFMW = self.parent.getSrcSQLServerSchema(position)
-
 
         ssDbNameInFMW = self.parent.getSrcSqlServerDatabaseName(position, ignoreDomain)
         ssHostInFMW = self.parent.getSrcHost(position, ignoreDomain)
@@ -3778,7 +3792,7 @@ class CalcParamsDataBC(object):
             accounts = pmpHelper.getAccountDictionary(pmpResource)
             snList = []
             msg = 'iterating through the accounts in resource name {0}'
-            msg.format(pmpResource)
+            msg = msg.format(pmpResource)
             self.logger.debug(msg)
             # source instance, and the source instance less the domain portion
             for accntDict in accounts:
@@ -3880,6 +3894,7 @@ class CalcParamsDataBC(object):
         self.logger.debug(msg)
         return ffFullPathFile
 
+
 class CalcParams(CalcParamsBase):
     '''
     This class exists to populate scripted parameters
@@ -3936,6 +3951,7 @@ class CalcParams(CalcParamsBase):
         CalcParamsBase.__init__(self, fmeMacroVals)
         # self.logger.debug("adding plugin functionality")
         self.addPlugin(forceDevelMode)
+
 
 class ModuleLogConfig(object):
     '''
@@ -4003,11 +4019,13 @@ class ModuleLogConfig(object):
         else:
             tmpLog.debug("log already configured")
 
+
 class PMPHelper(object):
     '''
     This class has been created to ensure that every time
     we need a pmp object it is created in a consistent manner
     and also enables all time we need pmp communication
+
     that it use the failover address if initial
     communication attempts fail.
 
@@ -4071,8 +4089,6 @@ class PMPHelper(object):
 
         # pmpRes is plural, ie could be a string if there is one or a list
         # if more than one.
-
-
         for pmpResource in pmpResources:
             self.logger.debug('searching for password in %s', pmpResource)
             try:
@@ -4253,8 +4269,6 @@ class PMPHelper(object):
         if os.path.exists(sshKeyFilePath):
             os.remove(sshKeyFilePath)
 
-
-
         # pswd = self.pmp.getAccountPassword('BIOT', 'SSH_KEYS')
         keyFileContents = self.pmp.getPasswordFiles('BIOT', 'SSH_KEYS')
         # next need to write the contents of the variable keyFileContents to
@@ -4263,6 +4277,7 @@ class PMPHelper(object):
         fh.write(keyFileContents)
         fh.close()
         return sshKeyFilePath
+
 
 class DWMWriter(object):
     '''  #pylint: disable=anomalous-backslash-in-string
@@ -4337,6 +4352,7 @@ class DWMWriter(object):
     - logger writes features to IDWPROD APP_UTILITY
 
     '''
+
     # TemplateConfigFileReader
     def __init__(self, fme, const=None):
         self.const = const
@@ -4746,6 +4762,7 @@ class DWMWriter(object):
         print titleLine.format('totalFeaturesWritten')
         pp = pprint.PrettyPrinter(indent=4)
         pp.pprint(self.fme.totalFeaturesWritten)
+
 
 class DependenciesNotMet(Exception):
     '''

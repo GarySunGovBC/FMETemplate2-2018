@@ -43,12 +43,15 @@ class EmailFrameworkBridge(object):
                         the job fails.
     '''
 
-    def __init__(self, fmeObj, const, params):
+    def __init__(self, fmeObj, const, params, config):
         self.fmeObj = fmeObj
         self.logger = logging.getLogger(__name__)
         self.logger.debug("constructing emailer object")
-        self.const = const
-        self.params = params
+        
+        self.const = const #templateconstants
+        self.params = params #calcparamsbase
+        self.config = config # templateconfigfile
+        
         #self.const = DataBCFMWTemplate.TemplateConstants()
         #self.params = DataBCFMWTemplate.TemplateConfigFileReader(
         #    self.fmeObj.macroValues[self.const.FMWParams_DestKey])
@@ -145,7 +148,7 @@ class EmailFrameworkBridge(object):
         if self.areNotificationsDefined():
             self.logger.debug("There are parameters in the FMW for notifications")
 
-            fromAddress = self.params.getEmailFromAddress()
+            fromAddress = self.config.getEmailFromAddress()
             # toAddress are a list
             toAddress = self.getEmailAddresses()
             if toAddress:
@@ -161,7 +164,7 @@ class EmailFrameworkBridge(object):
                 logFile = self.fmeObj.logFileName
                 emailMessage.addAttachement(logFile)
 
-                emailServer = EmailServer(self.params)
+                emailServer = EmailServer(self.config)
 
                 sender = SendEmail(emailServer, emailMessage)
                 sender.setup()
@@ -298,8 +301,8 @@ class EmailFrameworkBridge(object):
 
         if self.const.FMWParams_DestKey in self.fmeObj.macroValues:
             #params = DataBCFMWTemplate.CalcParams(self.fmeObj.macroValues)
-            host = self.params.getDestinationHost()
-            servName = self.params.getDestinationServiceName()
+            host = self.config.getDestinationHost()
+            servName = self.config.getDestinationServiceName()
             destSchema = self.params.getDestinationSchema()
             retStr = destTmplt.format(destSchema, host, servName)
         self.logger.debug("dest string: %s", retStr)
@@ -373,8 +376,8 @@ class EmailServer(object):
     :ivar smtpServer: the smtp server name
     :ivar smtpPort: the smtp port
     '''
-    def __init__(self, param):
-        self.param = param
+    def __init__(self, config):
+        self.config = config
         self.smtpServer = None
         self.smtpPort = None
         self.parseParams()
@@ -384,8 +387,8 @@ class EmailServer(object):
         retrieves the email smtp server and port from the fme framework config
         file.
         '''
-        self.smtpServer = self.param.getEmailSMTPServer()
-        self.smtpPort = self.param.getEmailSMTPPort()
+        self.smtpServer = self.config.getEmailSMTPServer()
+        self.smtpPort = self.config.getEmailSMTPPort()
 
     def getSMTPPort(self):
         '''
