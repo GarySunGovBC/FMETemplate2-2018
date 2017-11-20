@@ -52,7 +52,7 @@ import time
 import PMP.PMPRestConnect
 
 import DB.DbLib
-import Emailer
+import DataBCEmailer as Emailer
 import FMWExecutionOrderDependencies
 import requests
 
@@ -407,7 +407,7 @@ class Start(object):
         self.const = TemplateConstants()
         self.fme = fme
         self.params = CalcParamsBase(self.fme.macroValues)
-
+        self.params.addPlugin()
         fmwDir = self.params.getFMWDirectory()
         fmwName = self.params.getFMWFile()
         destKey = self.params.getDestDatabaseEnvKey()
@@ -423,8 +423,9 @@ class Start(object):
         self.logger.info('running the framework startup')
         # Reading the global paramater config file
 
-        self.paramObj = TemplateConfigFileReader(destKey)
-        customScriptDir = self.paramObj.getCustomScriptDirectory()
+        #self.paramObj = TemplateConfigFileReader(destKey)
+        self.config = TemplateConfigFileReader(destKey)
+        customScriptDir = self.config.getCustomScriptDirectory()
         # Extract the custom script directory from config file
         # customScriptDir = self.paramObj.parser.get(self.const.ConfFileSection_global, self.const.ConfFileSection_global_customScriptDir)
         # Assemble the name of a the custom script
@@ -2280,7 +2281,6 @@ class CalcParamsBase(GetPublishedParams):
         msg = self.debugMethodMessage.format("getDestDatabaseConnectionFilePath")
         self.logger.debug(msg)
         destConnFilePath = self.plugin.getDestDatabaseConnectionFilePath(position)
-        # customScriptDir = self.paramObj.getSdeConnFilePath()
         return destConnFilePath
 
     def getDestEasyConnectString(self, position=None):

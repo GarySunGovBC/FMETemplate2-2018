@@ -147,15 +147,21 @@ class Test_CalcParams(unittest.TestCase):
         otherLogger.setLevel(logging.DEBUG)
 
         self.logger.setLevel(logging.DEBUG)
-
-        ch = logging.StreamHandler()
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s')
-        ch.setFormatter(formatter)
-        self.logger.addHandler(ch)
+        
+        print 'getting the handlers, '
+        hasStream = False
+        for handler in self.logger.handlers:
+            if isinstance(handler, logging.StreamHandler):
+                hasStream = True
+            #print handler
+        if not hasStream:
+            ch = logging.StreamHandler()
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s')
+            ch.setFormatter(formatter)
+            self.logger.addHandler(ch)
+            otherLogger.addHandler(ch)
         self.logger = logging.getLogger()
         self.logger.debug("this is the the first log message")
-
-        otherLogger.addHandler(ch)
 
     def tearDown(self):
         pass

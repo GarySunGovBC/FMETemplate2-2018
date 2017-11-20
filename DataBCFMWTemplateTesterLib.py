@@ -558,6 +558,7 @@ class StartupTester():
         start = DataBCFMWTemplate.Start(self.fme)
         start.startup()
         
+        
         # now report to the log what parameters were calculated 
         # by the startup
         self.logger.debug('------------------------------------')
@@ -566,29 +567,30 @@ class StartupTester():
 
         msg = '{0} : {1}'
         self.logger.debug(msg.format('DataBCFMWTemplate module path', DataBCFMWTemplate.__file__))
-        changeLogPath = start.paramObj.getChangeLogsDirFullPath()
+        changeLogPath = start.config.getChangeLogsDirFullPath()
         self.logger.debug(msg.format('change log path', changeLogPath))
         
-        changeFile = start.paramObj.getChangeLogFile()
-        self.logger.debug(msg.format('Dest db key', start.paramObj.getDestinationDatabaseKey(start.paramObj.key)))
-        self.logger.debug(msg.format('destination cross reference', start.paramObj.key))
+        changeFile = start.config.getChangeLogFile()
+        self.logger.debug(msg.format('Dest db key', start.config.getDestinationDatabaseKey(start.config.key)))
+        self.logger.debug(msg.format('destination cross reference', start.config.key))
 
-        self.logger.debug(msg.format('dev mode credentials file name', start.paramObj.getDevelopmentModeCredentialsFileName()))
+        self.logger.debug(msg.format('dev mode credentials file name', start.config.getDevelopmentModeCredentialsFileName()))
         self.logger.debug(msg.format('change file', changeFile))
-        self.logger.debug(msg.format('config directory', start.paramObj.getConfigDirName()))
-        self.logger.debug(msg.format('template root dir', start.paramObj.getTemplateRootDirectory()))
-        self.logger.debug(msg.format('failed features dir', start.paramObj.getFailedFeaturesDir()))
-        self.logger.debug(msg.format('failed features file', start.paramObj.getFailedFeaturesFile()))
-        self.logger.debug(msg.format('outputs directory', start.paramObj.getOutputsDirectory()))
-        self.logger.debug(msg.format('destination server', start.paramObj.getDestinationServer()))
-        self.logger.debug(msg.format('destination sde port', start.paramObj.getDestinationSDEPort()))
-        self.logger.debug(msg.format('sde connection file', start.paramObj.getSdeConnFilePath()))
-        self.logger.debug(msg.format('is dest prod', start.paramObj.isDestProd()))
-        self.logger.debug(msg.format('is run on databc node', start.paramObj.isDataBCNode()))
-        self.logger.debug(msg.format('destination oracle port', start.paramObj.getDestinationOraclePort()))
-        self.logger.debug(msg.format('destination oracle instance', start.paramObj.getDestinationInstance()))
-        self.logger.debug(msg.format('pmp source resource', start.paramObj.getSourcePmpResources()))
-        self.logger.debug(msg.format('pmp destination resource', start.paramObj.getDestinationPmpResource()))
+        self.logger.debug(msg.format('config directory', start.config.getConfigDirName()))
+        self.logger.debug(msg.format('template root dir', start.config.getTemplateRootDirectory()))
+        self.logger.debug(msg.format('failed features dir', start.config.getFailedFeaturesDir()))
+        self.logger.debug(msg.format('failed features file', start.config.getFailedFeaturesFile()))
+        self.logger.debug(msg.format('outputs directory', start.config.getOutputsDirectory()))
+        self.logger.debug(msg.format('destination server', start.config.getDestinationHost()))
+        self.logger.debug(msg.format('destination sde port', start.config.getDestinationSDEPort()))
+        self.logger.debug(msg.format('sde connection file', start.params.getDestDatabaseConnectionFilePath()))
+        self.logger.debug(msg.format('is dest prod', start.config.isDestProd()))
+        self.logger.debug(msg.format('is run on databc node', start.config.isDataBCNode()))
+        self.logger.debug(msg.format('destination oracle port', start.config.getDestinationOraclePort()))
+        # no longer a valid method, use getservicename instead.
+        #self.logger.debug(msg.format('destination oracle instance', start.config.getDestinationInstance()))
+        self.logger.debug(msg.format('pmp source resource', start.config.getSourcePmpResources()))
+        self.logger.debug(msg.format('pmp destination resource', start.config.getDestinationPmpResource()))
         self.logger.debug('--------------- END ----------------')
 
         
