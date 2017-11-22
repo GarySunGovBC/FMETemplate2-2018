@@ -205,6 +205,7 @@ class ChangeDetect(object):
         for srcData in self.sourceDataCollection.sourceDataList:
             self.logger.debug('srcData: %s', srcData)
             changeDate = srcData.getUTCTimeStamp()
+            #self.logger.debug('')
             wasChanged = srcData.getWasChanged()
             newRecord = srcData.getChangeLogRecord(fmwName, wasChanged, changeDate)
             self.logger.debug("record 2 write %s", newRecord)
@@ -825,6 +826,7 @@ class SourceBCDC(SourceFileData):
         bcdc = BCDCUtil.BCDCRestQuery.BCDCRestQuery('PROD')
         resourceNameJustFile = os.path.basename(resourceName)
         resourceDict = bcdc.getResource('url', resourceNameJustFile)
+        self.logger.debug("resource Dict: %s", resourceDict)
         if len(resourceDict['result']['results']) > 1:
             msg = 'When searching BCDC for a resource that contains the ' + \
                   'file {0} found {1} records.  Should only have found ' + \
@@ -832,13 +834,20 @@ class SourceBCDC(SourceFileData):
             msg = msg.format(resourceName, len(resourceDict['result']['results']))
             # TODO: Define appropriate error
             raise ValueError, msg
-        elif resourceDict['result']['results']:
+        elif not resourceDict['result']['results']:
             msg = 'Did not find any resource records in BCDC that are ' + \
                   'associated with the file: {0} url: {1}'
             msg = msg.format(resourceNameJustFile, resourceName)
             raise ValueError, msg
         revision_id = resourceDict['result']['results'][0]['revision_id']
+        self.logger.debug("revision id: %s", revision_id)
         revision = bcdc.getRevision(revision_id)
+        self.logger.debug("revision: %s", revision)
+        # 11-22-2017 looks like the timestamp no longer gets returned
+        # by the query above, and instead we need to extract the revision
+        # id and make a separate query to get the timestamp
+        # just in case timestamp is already there...
+        #if 'timestamp' in  revision['result']
         revisionDate = revision['result']['timestamp']
         # example format: u'2015-07-24T19:57:35.259549'},
         # Convert to datetime and return the datetime object.

@@ -3366,6 +3366,12 @@ class CalcParamsDataBC(object):
         self.logger = logging.getLogger(__name__)
         self.fmeMacroVals = self.parent.fmeMacroVals
         self.currentPMPResource = None
+        
+        # adding code to report on the pythonpath, helps us know definitively 
+        # what the import order is for fmeserver
+        user_paths = os.environ['PYTHONPATH'].split(os.pathsep)
+        self.logger.debug("os paths: %s", user_paths)
+        self.logger.debug("sys paths: %s", sys.path)        
 
     def getSrcDatabaseConnectionFilePath(self, position=None):
         '''
