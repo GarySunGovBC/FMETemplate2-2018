@@ -56,7 +56,6 @@ import DataBCEmailer as Emailer
 import FMWExecutionOrderDependencies
 import requests
 
-
 class TemplateConstants(object):
     '''
     Constants used by multiple classes / modules that make up the framework.
@@ -3638,9 +3637,21 @@ class CalcParamsDataBC(object):
         # pmp = self.__getPMPObj()
         self.logger.debug("params: getSourcePassword")
         pmpHelper = PMPHelper(self.paramObj, self.destKey)
+        # Below is going to test to see if the proxy schema parameter
+        # is set.  In order to do so if the position paramter is set then need
+        # to calculate what the key is according to the position in order to 
+        # test to see whether its there or not.
+        if position:
+            proxySchemaMacroKey = self.parent.getMacroKeyForPosition(
+                self.const.FMWParams_SrcProxySchema, position)
+        else:
+            proxySchemaMacroKey = self.const.FMWParams_SrcProxySchema
+        msg = 'Searching for a proxy schema published parameter in the macro %s'
+        self.logger.info(msg, proxySchemaMacroKey)
+
 
         # get the source schema
-        if self.parent.existsMacroKey(self.const.FMWParams_SrcProxySchema):
+        if self.parent.existsMacroKey(proxySchemaMacroKey):
             srcOraSchema = self.parent.getSourceOracleProxySchema(position)
         else:
             srcOraSchema = self.parent.getSourceOracleSchema(position)
