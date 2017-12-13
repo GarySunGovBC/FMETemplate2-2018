@@ -70,6 +70,7 @@ class DataBCDbMethods(object):
                             port)
             self.logger.debug("created a connection")
             args = [destinationSchema, destinationTable]
+            self.logger.debug("args going to analyze are: %s", args)
             cur = db.executeProcedure('dbms_stats.gather_table_stats', args)
             db.commit()
             cur.close()

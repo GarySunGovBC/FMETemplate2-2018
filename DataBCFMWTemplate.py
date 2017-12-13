@@ -4072,9 +4072,13 @@ class ModuleLogConfig(object):
         if not destKey:
             destKey = 'DEV'
         logFileFullPath = Util.calcLogFilePath(fmwDir, fmwName)
+        
         # get the tmpLog to test to see if the logger has been
         # initialized yet or not
         tmpLog = logging.getLogger(__name__)
+        tmpLog.debug("name of current logger: %s", __name__)
+        tmpLog.debug("logFileFullPath: %s", logFileFullPath)
+        
         if not tmpLog.handlers:
             logging.logFileName = logFileFullPath
             const = TemplateConstants()
@@ -4089,7 +4093,8 @@ class ModuleLogConfig(object):
                 # Get the log config file name from the app config file
                 logConfFileName = confFile.getApplicationLogFileName()
 
-                # get the name of the conf dir
+                # get the name of the conf dir.  The output is always relative to 
+                # this module.  the output log is 
                 configDir = const.AppConfigConfigDir
                 dirname = os.path.dirname(__file__)
                 logConfFileFullPath = os.path.join(dirname, configDir, logConfFileName)
