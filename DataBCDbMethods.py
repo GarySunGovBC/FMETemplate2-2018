@@ -60,6 +60,7 @@ class DataBCDbMethods(object):
             self.logger.debug(msg)
             
             db = DB.DbLib.DbMethods()
+            self.logger.debug("created  a db obj")
 
             #  user, pswd, instance, server, port=1521):
             db.connectNoDSN(destinationSchema,
@@ -67,6 +68,7 @@ class DataBCDbMethods(object):
                             serviceName,
                             host,
                             port)
+            self.logger.debug("created a connection")
             args = [destinationSchema, destinationTable]
             cur = db.executeProcedure('dbms_stats.gather_table_stats', args)
             db.commit()
