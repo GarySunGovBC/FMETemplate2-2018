@@ -11,4 +11,3 @@ git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@v2.1.10#egg=DB&subdirector
 git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@v2.1.10#egg=BCDCUtil&subdirectory=BCDCUtil
 git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@v2.1.10#egg=Secrets&subdirectory=Secrets
 git+https://gogs.data.gov.bc.ca/daops/DataBCPyLib.git@v2.1.10#egg=FMEUtil&subdirectory=FMEUtil
-
