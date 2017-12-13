@@ -1063,7 +1063,7 @@ class Test_Shutdown(unittest.TestCase):
         # shutdown.shutdown()
         self.logger.info("running the test of shutdown")
         # now try with the dbcdlv key
-        self.fme.macroValues['DEST_DB_ENV_KEY'] = 'DBCDLV'
+        self.fme.macroValues['DEST_DB_ENV_KEY'] = 'DLV'
         shutdown = DataBCFMWTemplate.Shutdown(self.fme)
         shutdown.shutdown()
 
@@ -1134,11 +1134,11 @@ if __name__ == "__main__":
     # sys.argv = ['','Test_Shutdown.test_shutdown']
 
 
-    sys.argv = ['','Test_CalcParams.test_getDestinationTables']
     # sys.argv = ['', 'Test_TemplateConfigFileReader.test_isDataBCNode', 'Test_TemplateConfigFileReader.test_getFMEServerNode']
 
     # 'Test_CalcParams.test_getFailedFeaturesFile',
     #
+    
     unittest.main()
 
     # suite = unittest.TestSuite()
