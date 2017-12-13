@@ -53,8 +53,10 @@ import PMP.PMPRestConnect
 
 import DB.DbLib
 import DataBCEmailer as Emailer
+import DataBCDbMethods
 import FMWExecutionOrderDependencies
 import requests
+
 
 class TemplateConstants(object):
     '''
@@ -422,7 +424,7 @@ class Start(object):
         self.logger.info('running the framework startup')
         # Reading the global paramater config file
 
-        #self.paramObj = TemplateConfigFileReader(destKey)
+        # self.paramObj = TemplateConfigFileReader(destKey)
         self.config = TemplateConfigFileReader(destKey)
         customScriptDir = self.config.getCustomScriptDirectory()
         # Extract the custom script directory from config file
@@ -627,6 +629,7 @@ class DefaultShutdown(object):
         self.const = TemplateConstants()
         self.config = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
         self.params = CalcParamsBase(self.fme.macroValues)
+        self.params.addPlugin()
 
         loggerName = '{0}.{1}'.format(__name__, 'shutdown')
         self.logger = logging.getLogger(loggerName)
@@ -662,8 +665,13 @@ class DefaultShutdown(object):
                                  "being written to dwm", destKey)
         self.logger.info('destination key word in shutdown: %s',
                          self.fme.macroValues[self.const.FMWParams_DestKey])
+        # analyze destination tables
+        dbMeth = DataBCDbMethods.DataBCDbMethods(self.fme, self.const, self.params, self.config)
+        dbMeth.analyzeDestinationFeatures()
 
-        emailer = Emailer.EmailFrameworkBridge(self.fme, self.const, self.params, self.config )
+        # default notifications
+        self.logger.debug("starting to process notifications")
+        emailer = Emailer.EmailFrameworkBridge(self.fme, self.const, self.params, self.config)
         email2Add = 'kevin.netherton@gov.bc.ca'
         if not emailer.notifyFail:
             emailer.notifyFail = email2Add
@@ -673,6 +681,7 @@ class DefaultShutdown(object):
                 emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
         self.logger.debug("getting ready to send notification")
         emailer.sendNotifications()
+        self.logger.debug("notifications are complete")
         self.logger.info("shutdown is now complete")
 
 
@@ -880,7 +889,7 @@ class TemplateConfigFileReader(object):
         return retVal
 
     def getDestinationHost(self):
-        self.logger.debug("key: %s", self.key)
+        self.logger.debug("db env key: %s", self.key)
         self.logger.debug("host key: %s", self.const.ConfFileSection_hostKey)
         host = self.parser.get(self.key, self.const.ConfFileSection_hostKey)
         return host
@@ -1899,6 +1908,54 @@ class GetPublishedParams(object):
         destSchema = self.getFMEMacroValue(destSchemaKey)
         return destSchema
 
+    def getDestinationTables(self, includeSchemaPrefix=False):
+        '''
+        :param includeSchemaPrefix:  if set to true will append the destination
+                                     schema onto the end of the destination feature.
+                                     example instead of returning just "MYTABLE"
+                                     setting this param to true would result in
+                                     the method returning "SCHEMA.MYTABLE"
+        :return: a list of all the destination features in the fmw
+
+        Iterates through all the published parameters looking for any parameters
+        that fit the parameter standard for a destination feature,
+        currently defined as DEST_FEATURE_#.
+        '''
+        # again only captures the first feature class
+        destTable = None
+        matchExpr = '^{0}.*$'
+        destFeatures = []
+        matchExpr = matchExpr.format(self.const.FMWParams_DestFeatPrefix)
+        for macroKey in self.fmeMacroVals.keys():
+            if re.match(matchExpr, macroKey, re.IGNORECASE):
+                if includeSchemaPrefix:
+                    destFeat = self.fmeMacroVals[macroKey]
+                    # get number?  ie, DEST_FEATURE_1 would get 1
+                    destFeaturePostion = macroKey[len(self.const.FMWParams_DestFeatPrefix):]
+                    if not destFeaturePostion.isdigit():
+                        msg = 'Trying to extract the number from the published ' + \
+                              'parameter {0}.  Extracted the number {1} but it ' + \
+                              'is not a number'
+                        msg = msg.format(macroKey, destFeaturePostion)
+                        raise ValueError, msg
+                    # now get the schema for that number
+                    destFeaturePostion = int(destFeaturePostion)
+                    defaultSchema = self.getDestinationSchema()
+                    self.logger.debug("destination position is: {0}".format(destFeaturePostion))
+                    if self.existsDestinationSchema(destFeaturePostion):
+                        positionalSchema = self.getDestinationSchema(destFeaturePostion)
+                        destFeat = '{0}.{1}'.format(positionalSchema, destFeat)
+                    else:
+                        if not defaultSchema:
+                            msg = 'There does not appear to be a published parameter ' + \
+                                  'That defines the destination schema in this fmw.'
+                            raise ValueError, msg
+                        destFeat = '{0}.{1}'.format(defaultSchema, destFeat)
+                else:
+                    destFeat = self.fmeMacroVals[macroKey]
+                destFeatures.append(destFeat)
+        return destFeatures
+
     def getFMWDirectory(self):
         '''
         :return: the directory that the current fmw that is being run resides in
@@ -1995,6 +2052,7 @@ class GetPublishedParams(object):
             if not isinstance(position, int):
                 msg = 'the arg passwordPosition you provided is {0} which has ' + \
                       'a type of {1}.  This arg must have a type of int.'
+                msg = msg.format(position, type(position))
                 self.logger.error(msg)
                 raise ValueError, msg
 
@@ -2277,6 +2335,8 @@ class CalcParamsBase(GetPublishedParams):
         #  b) if prod mode then the path to the connection file is a hard coded value.
         #      when in prod mode the connection file will get created by a jenkins call
         #      in the event that it does not exist.
+        if not self.plugin:
+            self.addPlugin()
         msg = self.debugMethodMessage.format("getDestDatabaseConnectionFilePath")
         self.logger.debug(msg)
         destConnFilePath = self.plugin.getDestDatabaseConnectionFilePath(position)
@@ -2334,6 +2394,9 @@ class CalcParamsBase(GetPublishedParams):
                          DEST_SCHEMA_<position>
         :return: The password for the destination schema
         '''
+        if not self.plugin:
+            self.addPlugin()
+
         msg = self.debugMethodMessage.format("getDestinationPassword")
         self.logger.debug(msg)
         if not self.existsDestinationSchema(position):
@@ -2489,6 +2552,8 @@ class CalcParamsBase(GetPublishedParams):
         '''
         Sends back the FFS File associated with this job
         '''
+        if not self.plugin:
+            self.addPlugin()
         msg = self.debugMethodMessage.format("getFailedFeaturesFile")
         self.logger.debug(msg)
         self.logger.debug("Calling plugin to get the failed features")
@@ -2552,6 +2617,10 @@ class CalcParamsBase(GetPublishedParams):
         '''
         # making sure the schema is defined and sending error message if it
         # isn't
+
+        if not self.plugin:
+            self.addPlugin()
+
         msg = self.debugMethodMessage.format("getSourcePassword")
         self.logger.debug(msg)
         if not self.existsSourceOracleSchema(passwordPosition):
@@ -2596,6 +2665,8 @@ class CalcParamsBase(GetPublishedParams):
         matches are found domain information will get ignored when looking at the
         source database service names and host.
         '''
+        if not self.plugin:
+            self.addPlugin()
         msg = self.debugMethodMessage.format("getSourcePasswordHeuristic")
         self.logger.debug(msg)
         pswd = self.plugin.getSourcePasswordHeuristic(position)
@@ -2606,6 +2677,8 @@ class CalcParamsBase(GetPublishedParams):
         returns the database connection file path, this is a
         relative path to the location of this script
         '''
+        if not self.plugin:
+            self.addPlugin()
         msg = self.debugMethodMessage.format("getSrcDatabaseConnectionFilePath")
         self.logger.debug(msg)
         srcConnFilePath = self.plugin.getSrcDatabaseConnectionFilePath(position)
@@ -2680,6 +2753,8 @@ class CalcParamsBase(GetPublishedParams):
         :param position: see other methods for defintion of what position does
         :return: The password for the sql server source dataset.
         '''
+        if not self.plugin:
+            self.addPlugin()
         msg = self.debugMethodMessage.format("getSourceSqlServerPassword")
         self.logger.debug(msg)
 
@@ -3365,13 +3440,13 @@ class CalcParamsDataBC(object):
         self.logger = logging.getLogger(__name__)
         self.fmeMacroVals = self.parent.fmeMacroVals
         self.currentPMPResource = None
-        
-        # adding code to report on the pythonpath, helps us know definitively 
+
+        # adding code to report on the pythonpath, helps us know definitively
         # what the import order is for fmeserver
         if 'PYTHONPATH' in os.environ:
             user_paths = os.environ['PYTHONPATH'].split(os.pathsep)
             self.logger.debug("os paths: %s", user_paths)
-        self.logger.debug("sys paths: %s", sys.path)        
+        self.logger.debug("sys paths: %s", sys.path)
 
     def getSrcDatabaseConnectionFilePath(self, position=None):
         '''
@@ -3639,7 +3714,7 @@ class CalcParamsDataBC(object):
         pmpHelper = PMPHelper(self.paramObj, self.destKey)
         # Below is going to test to see if the proxy schema parameter
         # is set.  In order to do so if the position paramter is set then need
-        # to calculate what the key is according to the position in order to 
+        # to calculate what the key is according to the position in order to
         # test to see whether its there or not.
         if position:
             proxySchemaMacroKey = self.parent.getMacroKeyForPosition(
@@ -3648,7 +3723,6 @@ class CalcParamsDataBC(object):
             proxySchemaMacroKey = self.const.FMWParams_SrcProxySchema
         msg = 'Searching for a proxy schema published parameter in the macro %s'
         self.logger.info(msg, proxySchemaMacroKey)
-
 
         # get the source schema
         if self.parent.existsMacroKey(proxySchemaMacroKey):

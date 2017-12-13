@@ -169,6 +169,54 @@ class Test_CalcParams(unittest.TestCase):
     def test_getDestServer(self):
         host = self.calcParams.getDestinationHost()
         print 'host', host
+        
+    def test_getDestinationTables(self):
+        tabs = self.calcParams.getDestinationTables()
+        expect = ['CLAB_INDIAN_RESERVES']
+        msg = 'did not properly retrieve the destination tables, got {0}' + \
+              'expected {1}'
+        msg = msg.format(tabs, expect)
+        self.assertEqual(tabs, expect,  msg)
+        
+        tabs = self.calcParams.getDestinationTables(includeSchemaPrefix=True)
+        expect = ['WHSE_ADMIN_BOUNDARIES.CLAB_INDIAN_RESERVES']
+        msg = 'did not properly retrieve the destination tables, got {0}' + \
+              'expected {1}'
+        msg = msg.format(tabs, expect)
+        self.assertEqual(set(tabs), set(expect),  msg)
+        
+        self.calcParams.fmeMacroVals['DEST_FEATURE_2'] = 'TEST123'
+        self.calcParams.fmeMacroVals['DEST_SCHEMA_2'] = 'SCHEMATEST'
+        tabs = self.calcParams.getDestinationTables(includeSchemaPrefix=True)
+        expect = ['WHSE_ADMIN_BOUNDARIES.CLAB_INDIAN_RESERVES', 'SCHEMATEST.TEST123']
+        msg = 'did not properly retrieve the destination tables, got {0}' + \
+              'expected {1}'
+        msg = msg.format(tabs, expect)
+        self.assertEqual(set(tabs), set(expect),  msg)
+        
+        self.calcParams.fmeMacroVals['DEST_FEATURE_5'] = 'TEST5555'
+        self.calcParams.fmeMacroVals['DEST_SCHEMA_5'] = 'SCHEMATEST_5555'
+        tabs = self.calcParams.getDestinationTables(includeSchemaPrefix=True)
+        expect = ['WHSE_ADMIN_BOUNDARIES.CLAB_INDIAN_RESERVES', 'SCHEMATEST.TEST123', 'SCHEMATEST_5555.TEST5555']
+        msg = 'did not properly retrieve the destination tables, got {0}' + \
+              'expected {1}'
+        msg = msg.format(tabs, expect)
+        self.assertEqual(set(tabs), set(expect),  msg)
+        
+        self.calcParams.fmeMacroVals['DEST_FEATURE_6'] = 'TEST_NUM6'
+        tabs = self.calcParams.getDestinationTables(includeSchemaPrefix=True)
+        expect = ['WHSE_ADMIN_BOUNDARIES.CLAB_INDIAN_RESERVES', 'SCHEMATEST.TEST123', 'SCHEMATEST_5555.TEST5555', 'WHSE_ADMIN_BOUNDARIES.TEST_NUM6']
+        msg = 'did not properly retrieve the destination tables, got {0}' + \
+              'expected {1}'
+        msg = msg.format(tabs, expect)
+        self.assertEqual(set(tabs), set(expect),  msg)
+        
+        tabs = self.calcParams.getDestinationTables(includeSchemaPrefix=False)
+        expect = ['CLAB_INDIAN_RESERVES', 'TEST123', 'TEST5555', 'TEST_NUM6']
+        msg = 'did not properly retrieve the destination tables, got {0}' + \
+              'expected {1}'
+        msg = msg.format(tabs, expect)
+        self.assertEqual(set(tabs), set(expect),  msg)
 
     def test_getDestinationPassword(self):
         passw = self.calcParams.getDestinationPassword()
@@ -492,6 +540,7 @@ class Test_CalcParams(unittest.TestCase):
         msg = msg.format('DEP_MAXRETRIES', expectedValue, depWaitTime)
         self.assertRaises(ValueError, lambda: calcParams.getDependencyMaxRetries())
 
+        
 
 class Test_CalcParamsDevel(unittest.TestCase):
     def setUp(self):
@@ -1085,7 +1134,7 @@ if __name__ == "__main__":
     # sys.argv = ['','Test_Shutdown.test_shutdown']
 
 
-    # sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlConnectStr']
+    sys.argv = ['','Test_CalcParams.test_getDestinationTables']
     # sys.argv = ['', 'Test_TemplateConfigFileReader.test_isDataBCNode', 'Test_TemplateConfigFileReader.test_getFMEServerNode']
 
     # 'Test_CalcParams.test_getFailedFeaturesFile',

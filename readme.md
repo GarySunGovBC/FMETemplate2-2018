@@ -1,19 +1,17 @@
-# FME Template
+# DataBC FME Framework
 
-This is the root directory for the new FME Template.  The 
+This is the root directory for the DataBC FME Framework.  The 
 Goals of the template are:
 
-1. Update to use the most modern FME python libraries 
-2. Make template modular.  All code external to the actual
-   FMW's that use them, allowing for rapid bug fixing and
-   rapid addition of new features.
-3. Provide FME source and destination transparency, through
-   the implementation of a new strict parameter standard.
-   
-# Deployment history:
-v1.0.6 - Deployed during entire state of emergency 2017.  
-v1.0.13 - Deployed 10.2.2017 - contains many of the updates that were developed
-          prior to, and up to the state of emergency declared this summer.
+1. Promote Modularity:  Keep code embedded in FMWs to an extreme minimum.  All 
+    logic, etc is stored in external modules.  This approach allows us to very 
+    easily add new features or bug fixes to the framework without having to edit
+    a single FMW.
+2. Make FME source / destination features transparent.  Strict parameter standard
+    allows easy retrieval of sources and destinations without ever having to open
+    the actual FMW.
+3. Update to use the most current FME python libraries. 
+
    
 # About
 
@@ -25,7 +23,7 @@ to the template .
 
 https://docs.google.com/document/d/1WXUMN-2RDC_7u3OgtbG-NYFevKqZcZlxwF4PEB_lpu4/edit?usp=sharing
 
-## FME Template - Technical Documentation
+## FME Template - Technical Documentation (somewhat outdated)
 This is a more indepth description of how various pieces that make up the
 template function.  Where config files are located, how they are used, how 
 change detection works. etc...
@@ -73,7 +71,10 @@ Contains a wrapper that allows regular fme log messages to be forwarded
 to the fme log file.
 
 ### usercustomize.py
-When the template is run on Matar this module sets up the dependency path
+Development of the framework is completed using FME Workbench.  This module sets
+up paths used by the module.  The primary purpose of this module is to enable 
+development to take place on the same machine without effecting other peoples
+scripts on that machine.
 
 ### ChangeDetectLib.py
 The module with the code necessary for the custom file change detection 
