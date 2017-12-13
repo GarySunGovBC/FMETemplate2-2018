@@ -68,17 +68,25 @@ class DataBCDbMethods(object):
                             serviceName,
                             host,
                             port)
-            self.logger.debug("created a connection")
-            args = [destinationSchema, destinationTable]
-            self.logger.debug("args going to analyze are: %s", args)
-            cur = db.executeProcedure('dbms_stats.gather_table_stats', args)
-            db.commit()
-            cur.close()
-            # exec dbms_stats.gather_table_stats('schema', 'table')
-            # exec dbms_stats.gather_table_stats('WHSE_SAT','BILLTHECAT');
-            msg = 'Analyze is now complete on: {0}.{1}'.format(
-                destinationSchema, destinationTable)
-            self.logger.info(msg)
+            # schema, objType, objName, connObj=None):  #pylint: disable=too-many-branches
+
+            if db.objExists(destinationSchema, 'TABLE', destinationTable):
+                self.logger.debug("created a connection")
+                args = [destinationSchema, destinationTable]
+                self.logger.debug("args going to analyze are: %s", args)
+                cur = db.executeProcedure('dbms_stats.gather_table_stats', args)
+                db.commit()
+                cur.close()
+                # exec dbms_stats.gather_table_stats('schema', 'table')
+                # exec dbms_stats.gather_table_stats('WHSE_SAT','BILLTHECAT');
+                msg = 'Analyze is now complete on: {0}.{1}'.format(
+                    destinationSchema, destinationTable)
+                self.logger.info(msg)
+            else:
+                msg = 'Unable to analyze the dataset: %s.%s as the destination ' + \
+                      'is a View'
+                msg = msg.format(destinationSchema, destinationTable)
+                self.logger.warning(msg)
 
     def getDestinations(self):
         '''
