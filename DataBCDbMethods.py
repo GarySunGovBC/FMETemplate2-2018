@@ -43,9 +43,18 @@ class DataBCDbMethods(object):
             destinationSchema = destination.getDestinationSchema()
             destinationSchemaPosition = destination.getDestinationSchemaPosition()
             destinationPswd = self.params.getDestinationPassword(destinationSchemaPosition)
-
+            
+            
+            if not destinationPswd:
+                destKey = self.params.getDestDatabaseEnvKey()
+                msg = 'unable to retrieve a password for the schema: {0}' + \
+                      'and the destination key word: {1}'
+                msg = msg.format(destinationSchema, destKey)
+                self.logger.error(msg)
+                raise ValueError, msg
+            
             host = self.params.getDestinationHost()
-            sericeName = self.params.getDestinationServiceName()
+            serviceName = self.params.getDestinationServiceName()
             port = self.params.getDestinationOraclePort()
 
             db = DB.DbLib.DbMethods()
@@ -53,7 +62,7 @@ class DataBCDbMethods(object):
             #  user, pswd, instance, server, port=1521):
             db.connectNoDSN(destinationSchema,
                             destinationPswd,
-                            sericeName,
+                            serviceName,
                             host,
                             port)
             args = [destinationSchema, destinationTable]
