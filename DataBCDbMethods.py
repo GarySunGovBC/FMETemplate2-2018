@@ -57,7 +57,7 @@ class DataBCDbMethods(object):
             port = self.params.getDestinationOraclePort()
             msg = 'host: {0} sn: {1} port: {2}'
             msg = msg.format(host, serviceName, port)
-            self.logging.debug(msg)
+            self.logger.debug(msg)
             
             db = DB.DbLib.DbMethods()
 
