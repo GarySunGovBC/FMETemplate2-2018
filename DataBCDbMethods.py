@@ -83,7 +83,7 @@ class DataBCDbMethods(object):
                     destinationSchema, destinationTable)
                 self.logger.info(msg)
             else:
-                msg = 'Unable to analyze the dataset: %s.%s as the destination ' + \
+                msg = 'Unable to analyze the dataset: {0}.{1} as the destination ' + \
                       'is a View'
                 msg = msg.format(destinationSchema, destinationTable)
                 self.logger.warning(msg)
