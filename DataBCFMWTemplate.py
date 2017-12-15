@@ -120,6 +120,7 @@ class TemplateConstants(object):
     ConfFileDestKey_Test = 'test'
     ConfFileDestKey_Deliv = 'dlv'
     ConfFileDestKey_Devel = 'dev'
+    ConfFileDestKey_Other = 'other'
 
     ConfFile_dwm = 'dwm_config'
     ConfFile_dwm_pmpresource = 'pmp_resource'
@@ -556,7 +557,9 @@ class DefaultStart(object):
                             msg = "The dependencies: {0} described in the parameter {1} have " + \
                                   "not been found to have run yet, or they are currently still " + \
                                   "in process. Currently on retry {2} of a maximum of {3}"
-                            msg = msg.format(depFMWs, const.FMWParams_Deps_fmwList, retries, depMaxRetries)
+                            msg = msg.format(depFMWs, const.FMWParams_Deps_fmwList,
+                                             retries,
+                                             depMaxRetries)
                             self.logger.info(msg)
                             self.logger.info("waiting for {0} seconds".format(depWaitTime))
                             time.sleep(depWaitTime)
@@ -577,8 +580,9 @@ class Shutdown(object):
         self.const = TemplateConstants()
 
         self.params = CalcParamsBase(self.fme.macroValues)
-
-        self.config = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
+        destKey = self.params.getDestDatabaseEnvKey()
+        self.config = TemplateConfigFileReader(destKey)
+        #self.config = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
 
         fmwDir = self.params.getFMWDirectory()
         fmwName = self.params.getFMWFile()
@@ -627,14 +631,19 @@ class DefaultShutdown(object):
     def __init__(self, fme):
         self.fme = fme
         self.const = TemplateConstants()
-        self.config = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
         self.params = CalcParamsBase(self.fme.macroValues)
+        destKey = self.params.getDestDatabaseEnvKey()
+        self.config = TemplateConfigFileReader(destKey)
+        #self.config = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
+
         self.params.addPlugin()
 
         loggerName = '{0}.{1}'.format(__name__, 'shutdown')
         self.logger = logging.getLogger(loggerName)
+        #self.logger.info('destination key word in shutdown: %s',
+        #                 self.fme.macroValues[self.const.FMWParams_DestKey])
         self.logger.info('destination key word in shutdown: %s',
-                         self.fme.macroValues[self.const.FMWParams_DestKey])
+                         destKey)
 
     def shutdown(self):
         # getDestDatabaseEnvKey
@@ -663,26 +672,34 @@ class DefaultShutdown(object):
             else:
                 self.logger.info("destination key is %s so no record is "
                                  "being written to dwm", destKey)
-        self.logger.info('destination key word in shutdown: %s',
-                         self.fme.macroValues[self.const.FMWParams_DestKey])
-        # analyze destination tables
-        dbMeth = DataBCDbMethods.DataBCDbMethods(self.fme, self.const, self.params, self.config)
-        dbMeth.analyzeDestinationFeatures()
-
-        # default notifications
-        self.logger.debug("starting to process notifications")
-        emailer = Emailer.EmailFrameworkBridge(self.fme, self.const, self.params, self.config)
-        email2Add = 'kevin.netherton@gov.bc.ca'
-        if not emailer.notifyFail:
-            emailer.notifyFail = email2Add
-            self.logger.debug("adding email address to fails")
-        else:
-            if not email2Add.lower() in emailer.notifyFail.lower():
-                emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
-        self.logger.debug("getting ready to send notification")
-        emailer.sendNotifications()
-        self.logger.debug("notifications are complete")
-        self.logger.info("shutdown is now complete")
+        
+        # don't run analyze if the destination database key word is 'other'
+        # of if its being run on a non databc computer
+        if not self.config.isDestOther() and not self.config.isDataBCNode():
+            self.logger.info('Starting into analyze block, destination key word: %s',
+                             self.fme.macroValues[self.const.FMWParams_DestKey])
+            # analyze destination tables
+            dbMeth = DataBCDbMethods.DataBCDbMethods(self.fme, self.const, self.params, self.config)
+            dbMeth.analyzeDestinationFeatures()
+    
+            # default notifications
+            self.logger.debug("starting to process notifications")
+        
+        # emailer block
+        if not self.config.isDataBCNode():
+            self.logger.debug("starting into the notification block")
+            emailer = Emailer.EmailFrameworkBridge(self.fme, self.const, self.params, self.config)
+            email2Add = 'kevin.netherton@gov.bc.ca'
+            if not emailer.notifyFail:
+                emailer.notifyFail = email2Add
+                self.logger.debug("adding email address to fails")
+            else:
+                if not email2Add.lower() in emailer.notifyFail.lower():
+                    emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
+            self.logger.debug("getting ready to send notification")
+            emailer.sendNotifications()
+            self.logger.debug("notifications are complete")
+            self.logger.info("shutdown is now complete")
 
 
 class TemplateConfigFileReader(object):
@@ -702,6 +719,10 @@ class TemplateConfigFileReader(object):
 
         # This should populate self.parser
         self.readConfigFile()
+        # Setting the key to the authoritative key, looks at the key that was
+        # provided compares against aliases, and if found in the aliases then
+        # resets the key to the authoritative key, example would take something
+        # like Deliv and turn it into DLV
         self.setDestinationDatabaseEnvKey(key)
         msg = "Destination database environment key has been set to ({0}) " + \
               " the raw input key is ({1})"
@@ -1277,6 +1298,18 @@ class TemplateConfigFileReader(object):
         '''
         retVal = False
         if self.key == self.const.ConfFileDestKey_Prod:
+            retVal = True
+        return retVal
+    
+    def isDestOther(self):
+        '''
+        checks to see if the destination database environment key is set to 
+        'other', ie a non bcgw database destination
+        :return: is the destination database keyword set to 'other'
+        :rtype: boolean
+        '''
+        retVal = False
+        if self.key == self.const.ConfFileDestKey_Other:
             retVal = True
         return retVal
 
@@ -4072,13 +4105,13 @@ class ModuleLogConfig(object):
         if not destKey:
             destKey = 'DEV'
         logFileFullPath = Util.calcLogFilePath(fmwDir, fmwName)
-        
+
         # get the tmpLog to test to see if the logger has been
         # initialized yet or not
         tmpLog = logging.getLogger(__name__)
         tmpLog.debug("name of current logger: %s", __name__)
         tmpLog.debug("logFileFullPath: %s", logFileFullPath)
-        
+
         if not tmpLog.handlers:
             logging.logFileName = logFileFullPath
             const = TemplateConstants()
@@ -4093,8 +4126,8 @@ class ModuleLogConfig(object):
                 # Get the log config file name from the app config file
                 logConfFileName = confFile.getApplicationLogFileName()
 
-                # get the name of the conf dir.  The output is always relative to 
-                # this module.  the output log is 
+                # get the name of the conf dir.  The output is always relative to
+                # this module.  the output log is
                 configDir = const.AppConfigConfigDir
                 dirname = os.path.dirname(__file__)
                 logConfFileFullPath = os.path.join(dirname, configDir, logConfFileName)
