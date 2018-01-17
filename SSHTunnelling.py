@@ -132,6 +132,9 @@ class SSHTunnelHelper(object):
 
 
         self.const = DataBCFMWTemplate.TemplateConstants()
+        self.params = DataBCFMWTemplate.GetPublishedParams(self.fme.macroValues)
+        
+        
         self.dbEnvKey = self.getDestDBEnvKey()
         self.logger.debug("dest db env key is: {0}".format(self.dbEnvKey))
         self.conf = DataBCFMWTemplate.TemplateConfigFileReader(self.dbEnvKey)
@@ -162,27 +165,33 @@ class SSHTunnelHelper(object):
         self.ssh.killPid()
 
     def getDestDBEnvKey(self):
-        destdbEnvKey = self.getMacroParam(self.const.FMWParams_DestKey)
+        #destdbEnvKey = self.getMacroParam(self.const.FMWParams_DestKey)
+        destdbEnvKey = self.params.getDestDatabaseEnvKey()
         return destdbEnvKey
 
     def getFMWDir(self):
-        fmwDir = self.getMacroParam(self.const.FMWMacroKey_FMWDirectory)
+        #fmwDir = self.getMacroParam(self.const.FMWMacroKey_FMWDirectory)
+        fmwDir = self.params.getFMWDirectory()
         return fmwDir
 
     def getFMWFile(self):
-        fmwFile = self.getMacroParam(self.const.FMWMacroKey_FMWName)
+        #fmwFile = self.getMacroParam(self.const.FMWMacroKey_FMWName)
+        fmwFile = self.params.getFMWFile()
         return fmwFile
 
     def getSSHLocalPort(self):
-        localPort = self.getMacroParam(self.const.FMWParams_SSHTunnel_LocalPort)
+        localPort = self.params.getFMEMacroValue(self.const.FMWParams_SSHTunnel_LocalPort)
+        #localPort = self.getMacroParam(self.const.FMWParams_SSHTunnel_LocalPort)
         return localPort
 
     def getSSHDestinationHost(self):
-        destHost = self.getMacroParam(self.const.FMWParams_SSHTunnel_DestHost)
+        #destHost = self.getMacroParam(self.const.FMWParams_SSHTunnel_DestHost)
+        destHost = self.params.getFMEMacroValue(self.const.FMWParams_SSHTunnel_DestHost)
         return destHost
 
     def getSSHDestinationPort(self):
-        destPort = self.getMacroParam(self.const.FMWParams_SSHTunnel_DestPort)
+        #destPort = self.getMacroParam(self.const.FMWParams_SSHTunnel_DestPort)
+        destPort = self.params.getFMEMacroValue(self.const.FMWParams_SSHTunnel_DestPort)
         return destPort
 
     def getSSHKeyFile(self):
@@ -194,25 +203,37 @@ class SSHTunnelHelper(object):
         #rootDir = self.conf.getTemplateRootDirectory()
         #configDir = self.conf.getConfigDirName()
         #keyFileFullPath = os.path.join(rootDir, configDir, keyFile)
-        pmpHelper = DataBCFMWTemplate.PMPHelper(self.conf, self.dbEnvKey)
-        sshKey = pmpHelper.getSSHKey()
-        
-        if not os.path.exists(sshKey):
-            msg = 'the ssh key file specified: {0} does not exist. The file is  ' + \
-                  'retrieved from PMP.  If it doesn\'t exist its probably a ' + \
-                  'config file issue'
-            msg = msg.format(sshKey)
-            self.logger.error(msg)
-            raise KeyError, msg
+        # ---
+        # allow for hard coding of key file
+        keyFile = None
+        if self.params.existsMacroKey(self.const.FMWParams_SSHTunnel_KeyFile):
+            #keyFile = self.getMacroParam(self.const.FMWParams_SSHTunnel_KeyFile)
+            keyFile = self.params.getFMEMacroValue(self.const.FMWParams_SSHTunnel_KeyFile)
+        if  keyFile and os.path.exists(keyFile):
+            sshKey = keyFile
+            self.logger.info("using the keyfile provided: %s", sshKey)
+        else:
+            self.logger.info("getting the key file from PMP")
+            pmpHelper = DataBCFMWTemplate.PMPHelper(self.conf, self.dbEnvKey)
+            sshKey = pmpHelper.getSSHKey()
+            
+            if not os.path.exists(sshKey):
+                msg = 'the ssh key file specified: {0} does not exist. The file is  ' + \
+                      'retrieved from PMP.  If it doesn\'t exist its probably a ' + \
+                      'config file issue'
+                msg = msg.format(sshKey)
+                self.logger.error(msg)
+                raise KeyError, msg
         return sshKey
 
     def getSSHUserName(self):
-        userName = self.getMacroParam(self.const.FMWParams_SSHTunnel_HostUsername)
+        userName = self.params.getFMEMacroValue(self.const.FMWParams_SSHTunnel_HostUsername)
+        #userName = self.getMacroParam(self.const.FMWParams_SSHTunnel_HostUsername)
         return userName
 
-    def getMacroParam(self, key):
-        if key not in self.fme.macroValues:
-            msg = 'Cannot create a SSH tunnel until you create and populate the parameter {0}'
-            self.logger.error(msg.format(key))
-            raise KeyError, msg.format(key)
-        return self.fme.macroValues[key]
+#     def getMacroParam(self, key):
+#         if key not in self.fme.macroValues:
+#             msg = 'Cannot create a SSH tunnel until you create and populate the parameter {0}'
+#             self.logger.error(msg.format(key))
+#             raise KeyError, msg.format(key)
+#         return self.fme.macroValues[key]

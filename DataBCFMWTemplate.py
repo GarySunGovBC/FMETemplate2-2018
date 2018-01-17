@@ -597,7 +597,7 @@ class Shutdown(object):
 
         # looking for custom script for shutdown
         customScriptDir = self.config.getCustomScriptDirectory()
-
+        self.logger.debug("fmwName: %s", fmwName)
         justScript = os.path.splitext(fmwName)[0]
         customScriptFullPath = os.path.join(customScriptDir, justScript + '.py')
         customScriptLocal = os.path.join(fmwDir, justScript + '.py')
@@ -613,7 +613,7 @@ class Shutdown(object):
             shutdownModule = importlib.import_module(justScript)
             if Util.isClassInModule(shutdownModule, 'Shutdown'):
                 # use the custom shutdown
-                self.logger.debug("%s module loaded successfully". justScript)
+                self.logger.debug("%s module loaded successfully", justScript)
                 self.shutdownObj = shutdownModule.Shutdown(self.fme)
             else:
                 self.logger.debug('using the generic template shutdown')
@@ -686,7 +686,7 @@ class DefaultShutdown(object):
             self.logger.debug("starting to process notifications")
         
         # emailer block
-        if not self.config.isDataBCNode():
+        if self.config.isDataBCNode():
             self.logger.debug("starting into the notification block")
             emailer = Emailer.EmailFrameworkBridge(self.fme, self.const, self.params, self.config)
             email2Add = 'kevin.netherton@gov.bc.ca'
@@ -694,7 +694,7 @@ class DefaultShutdown(object):
                 emailer.notifyFail = email2Add
                 self.logger.debug("adding email address to fails")
             else:
-                if not email2Add.lower() in emailer.notifyFail.lower():
+                if email2Add.lower() not in emailer.notifyFail.lower():
                     emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
             self.logger.debug("getting ready to send notification")
             emailer.sendNotifications()
