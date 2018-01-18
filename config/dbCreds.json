@@ -10,11 +10,11 @@
  "             destination instance defined below for the credential retrieval  ", 
  "             to function correctly " ],   
  "destinationCreds" : [
-     { "servicename": "bcgwdlv.bcgov", 
+     { "servicename": "idwdlvr1.bcgov", 
        "username": "WHSE_MONTREAL_CANADIANS",
        "password": "thisIsNotThePassword"
      }, 
-     {"servicename": "bcgwdlv.bcgov", 
+     {"servicename": "idwdlvr1.bcgov", 
        "username": "WHSE_MONTREAL_CANADIANS_2",
        "password": "thisIsNotThePassword"
      }

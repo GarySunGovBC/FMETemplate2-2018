@@ -3834,7 +3834,7 @@ class CalcParamsDataBC(object):
                         raise ValueError, msg.format(srcOraSchema, srcOraServName)
                     # pswd = pmp.getAccountPassword(accntATInstance, pmpResource)
                 except ValueError:
-                    msg = 'There is no account for schema {0} / service name ' + \
+                    msg = 'There is no account for schema %s / service name ' + \
                           '%s in pmp for the resource %s using the token %s ' + \
                           ' from the machine %s'
                     self.logger.warning(msg, srcOraSchema, srcOraServName,
