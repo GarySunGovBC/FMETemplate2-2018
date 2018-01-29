@@ -582,11 +582,14 @@ class Shutdown(object):
         self.params = CalcParamsBase(self.fme.macroValues)
         destKey = self.params.getDestDatabaseEnvKey()
         self.config = TemplateConfigFileReader(destKey)
-        #self.config = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
+        # self.config = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
 
         fmwDir = self.params.getFMWDirectory()
         fmwName = self.params.getFMWFile()
         destKey = self.params.getDestDatabaseEnvKey()
+        # validating the key, translates loosly defined destination
+        # database environment keys into the authoritative keys
+        destKey = self.config.getDestinationDatabaseKey(destKey)
 
         # logging configuration
         ModuleLogConfig(fmwDir, fmwName, destKey)
@@ -634,72 +637,89 @@ class DefaultShutdown(object):
         self.params = CalcParamsBase(self.fme.macroValues)
         destKey = self.params.getDestDatabaseEnvKey()
         self.config = TemplateConfigFileReader(destKey)
-        #self.config = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
+        # self.config = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey])
 
         self.params.addPlugin()
 
         loggerName = '{0}.{1}'.format(__name__, 'shutdown')
         self.logger = logging.getLogger(loggerName)
-        #self.logger.info('destination key word in shutdown: %s',
+        # self.logger.info('destination key word in shutdown: %s',
         #                 self.fme.macroValues[self.const.FMWParams_DestKey])
         self.logger.info('destination key word in shutdown: %s',
                          destKey)
 
     def shutdown(self):
-        # getDestDatabaseEnvKey
-        destKey = self.params.getDestDatabaseEnvKey()
-        # destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
-        if not self.config.isDataBCNode():
-            # either not being run on a databc computer, or is being run in
-            # development mode, either way should not be writing to to the
-            # DWM logger.
-            msg = "DWM record is not being writen as script is being run external" + \
-                  " to databc firewalls."
-            self.logger.info(msg)
-        elif destKey == \
-             self.const.ConfFileDestKey_Devel:
-            msg = 'DWM record is not being written because the script is being ' + \
-                  'run in development mode'
-            self.logger.info(msg)
-        else:
-            dwmValidKeys = self.config.getDWMValidDestinationKeywords()
-            # if destKey.lower() in ['dlv', 'tst', 'prd']:
-            if destKey.lower() in dwmValidKeys:
-                self.logger.info("DWM record is being created")
-                dwmWriter = DWMWriter(self.fme)
-                # dwmWriter.printParams()
-                dwmWriter.writeRecord()
-            else:
-                self.logger.info("destination key is %s so no record is "
-                                 "being written to dwm", destKey)
-        
-        # don't run analyze if the destination database key word is 'other'
-        # of if its being run on a non databc computer
-        if not self.config.isDestOther() and not self.config.isDataBCNode():
-            self.logger.info('Starting into analyze block, destination key word: %s',
-                             self.fme.macroValues[self.const.FMWParams_DestKey])
-            # analyze destination tables
-            dbMeth = DataBCDbMethods.DataBCDbMethods(self.fme, self.const, self.params, self.config)
-            dbMeth.analyzeDestinationFeatures()
+        exceptionRaised = False
+        try:
+            # getDestDatabaseEnvKey, and then validate it retrieving the 
+            # validated version
+            destKey = self.params.getDestDatabaseEnvKey()
+            destKey = self.config.getDestinationDatabaseKey(destKey)
     
-            # default notifications
-            self.logger.debug("starting to process notifications")
-        
-        # emailer block
-        if self.config.isDataBCNode():
-            self.logger.debug("starting into the notification block")
-            emailer = Emailer.EmailFrameworkBridge(self.fme, self.const, self.params, self.config)
-            email2Add = 'kevin.netherton@gov.bc.ca'
-            if not emailer.notifyFail:
-                emailer.notifyFail = email2Add
-                self.logger.debug("adding email address to fails")
+            # destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
+            if not self.config.isDataBCNode():
+                # either not being run on a databc computer, or is being run in
+                # development mode, either way should not be writing to to the
+                # DWM logger.
+                msg = "DWM record is not being writen as script is being run external" + \
+                      " to databc firewalls."
+                self.logger.info(msg)
+            elif destKey in \
+                 [self.const.ConfFileDestKey_Devel, self.const.ConfFileDestKey_Other]:
+                msg = 'DWM record is not being written because the script is being ' + \
+                      'run in development mode'
+                self.logger.info(msg)
             else:
-                if email2Add.lower() not in emailer.notifyFail.lower():
-                    emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
-            self.logger.debug("getting ready to send notification")
-            emailer.sendNotifications()
-            self.logger.debug("notifications are complete")
-            self.logger.info("shutdown is now complete")
+                dwmValidKeys = self.config.getDWMValidDestinationKeywords()
+                # if destKey.lower() in ['dlv', 'tst', 'prd']:
+                if destKey.lower() in dwmValidKeys:
+                    self.logger.info("DWM record is being created")
+                    dwmWriter = DWMWriter(self.fme)
+                    # dwmWriter.printParams()
+                    dwmWriter.writeRecord()
+                else:
+                    self.logger.info("destination key is %s so no record is "
+                                     "being written to dwm", destKey)
+    
+            # don't run analyze if the destination database key word is 'other'
+            # of if its being run on a non databc computer
+            if not self.config.isDestOther() and not self.config.isDataBCNode():
+                self.logger.info('Starting into analyze block, destination key word: %s',
+                                 self.fme.macroValues[self.const.FMWParams_DestKey])
+                # analyze destination tables
+                dbMeth = DataBCDbMethods.DataBCDbMethods(self.fme, self.const, self.params, self.config)
+                dbMeth.analyzeDestinationFeatures()
+    
+                # default notifications
+                self.logger.debug("starting to process notifications")
+        except Exception, e:
+            self.logger.exception("Exception raised in Shutdown")
+            exceptionRaised = True
+        finally:
+            # emailer block
+            if self.config.isDataBCNode():
+                self.logger.debug("starting into the notification block")
+                emailer = Emailer.EmailFrameworkBridge(self.fme, self.const,
+                                                       self.params, self.config)
+                email2Add = 'kevin.netherton@gov.bc.ca'
+                # if an exception was raised in the shutdown then send out an email
+                # notifying of this situation even if the fmw completed successfully
+                if exceptionRaised:
+                    # the exception was in the shutdown not a problem with the actual
+                    # fmw so only email databc.  Currenlty in beta feature, so emailing
+                    # only myself (kevin.netherton@gov.bc.ca)
+                    emailer.notifyFail = email2Add
+                # add default email address for failures.
+                elif not emailer.notifyFail:
+                    emailer.notifyFail = email2Add
+                    self.logger.debug("adding email address to fails")
+                else:
+                    if email2Add.lower() not in emailer.notifyFail.lower():
+                        emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
+                self.logger.debug("getting ready to send notification")
+                emailer.sendNotifications()
+                self.logger.debug("notifications are complete")
+                self.logger.info("shutdown is now complete")
 
 
 class TemplateConfigFileReader(object):
@@ -887,10 +907,31 @@ class TemplateConfigFileReader(object):
 
     def getDestinationDatabaseKey(self, inkey):
         '''
-        receives a value that indicates the destination database and
-        returns the authoritative key for that destination.  The
-        authoritative key is necessary to retrieve the associated
-        parameters / values.
+        :param inkey: This is the destination database env key that you want
+                      to validate against defined keys from the config file.
+        :type inkey: str
+                      
+        For each destinantion key, there is a list in the framework config file
+        that defined possible typos associated with each key.  This method takes
+        the provided key and compares against the list of allowable keys.  It will
+        then return the authoritative value.
+        
+        Example: you might send the method the key DELIV.  This method will then 
+        look in the config file, and start iterating over all the possible keys
+        and the possible values that are associated with them.  The method will 
+        find the entry for delivery which is:
+        
+        dlv : delivery, deliv, del, bcgwdlv, bcgwdlv1, bcgwdlvr1, bcgwdlvr, dlvr, dlv
+        
+        In that line you will notice that there is an entry for 'deliv' therefor
+        this method will return the authoritative key which is 'dlv'
+        
+        The authoritative key can now be used to pull out values like destination
+        host, destination servicename, etc.
+        
+        :return: The authoritative key that corresponds with the provided key as 
+        defined in the framework config file.
+        :rtype: str
         '''
         self.logger.debug("getDestinationDatabaseKey")
         retVal = None
@@ -1300,10 +1341,10 @@ class TemplateConfigFileReader(object):
         if self.key == self.const.ConfFileDestKey_Prod:
             retVal = True
         return retVal
-    
+
     def isDestOther(self):
         '''
-        checks to see if the destination database environment key is set to 
+        checks to see if the destination database environment key is set to
         'other', ie a non bcgw database destination
         :return: is the destination database keyword set to 'other'
         :rtype: boolean
