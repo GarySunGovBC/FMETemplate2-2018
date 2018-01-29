@@ -649,63 +649,77 @@ class DefaultShutdown(object):
                          destKey)
 
     def shutdown(self):
-        # getDestDatabaseEnvKey, and then validate it retrieving the 
-        # validated version
-        destKey = self.params.getDestDatabaseEnvKey()
-        destKey = self.config.getDestinationDatabaseKey(destKey)
-
-        # destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
-        if not self.config.isDataBCNode():
-            # either not being run on a databc computer, or is being run in
-            # development mode, either way should not be writing to to the
-            # DWM logger.
-            msg = "DWM record is not being writen as script is being run external" + \
-                  " to databc firewalls."
-            self.logger.info(msg)
-        elif destKey in \
-             [self.const.ConfFileDestKey_Devel, self.const.ConfFileDestKey_Other]:
-            msg = 'DWM record is not being written because the script is being ' + \
-                  'run in development mode'
-            self.logger.info(msg)
-        else:
-            dwmValidKeys = self.config.getDWMValidDestinationKeywords()
-            # if destKey.lower() in ['dlv', 'tst', 'prd']:
-            if destKey.lower() in dwmValidKeys:
-                self.logger.info("DWM record is being created")
-                dwmWriter = DWMWriter(self.fme)
-                # dwmWriter.printParams()
-                dwmWriter.writeRecord()
+        exceptionRaised = False
+        try:
+            # getDestDatabaseEnvKey, and then validate it retrieving the 
+            # validated version
+            destKey = self.params.getDestDatabaseEnvKey()
+            destKey = self.config.getDestinationDatabaseKey(destKey)
+    
+            # destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
+            if not self.config.isDataBCNode():
+                # either not being run on a databc computer, or is being run in
+                # development mode, either way should not be writing to to the
+                # DWM logger.
+                msg = "DWM record is not being writen as script is being run external" + \
+                      " to databc firewalls."
+                self.logger.info(msg)
+            elif destKey in \
+                 [self.const.ConfFileDestKey_Devel, self.const.ConfFileDestKey_Other]:
+                msg = 'DWM record is not being written because the script is being ' + \
+                      'run in development mode'
+                self.logger.info(msg)
             else:
-                self.logger.info("destination key is %s so no record is "
-                                 "being written to dwm", destKey)
-
-        # don't run analyze if the destination database key word is 'other'
-        # of if its being run on a non databc computer
-        if not self.config.isDestOther() and not self.config.isDataBCNode():
-            self.logger.info('Starting into analyze block, destination key word: %s',
-                             self.fme.macroValues[self.const.FMWParams_DestKey])
-            # analyze destination tables
-            dbMeth = DataBCDbMethods.DataBCDbMethods(self.fme, self.const, self.params, self.config)
-            dbMeth.analyzeDestinationFeatures()
-
-            # default notifications
-            self.logger.debug("starting to process notifications")
-
-        # emailer block
-        if self.config.isDataBCNode():
-            self.logger.debug("starting into the notification block")
-            emailer = Emailer.EmailFrameworkBridge(self.fme, self.const, self.params, self.config)
-            email2Add = 'kevin.netherton@gov.bc.ca'
-            if not emailer.notifyFail:
-                emailer.notifyFail = email2Add
-                self.logger.debug("adding email address to fails")
-            else:
-                if email2Add.lower() not in emailer.notifyFail.lower():
-                    emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
-            self.logger.debug("getting ready to send notification")
-            emailer.sendNotifications()
-            self.logger.debug("notifications are complete")
-            self.logger.info("shutdown is now complete")
+                dwmValidKeys = self.config.getDWMValidDestinationKeywords()
+                # if destKey.lower() in ['dlv', 'tst', 'prd']:
+                if destKey.lower() in dwmValidKeys:
+                    self.logger.info("DWM record is being created")
+                    dwmWriter = DWMWriter(self.fme)
+                    # dwmWriter.printParams()
+                    dwmWriter.writeRecord()
+                else:
+                    self.logger.info("destination key is %s so no record is "
+                                     "being written to dwm", destKey)
+    
+            # don't run analyze if the destination database key word is 'other'
+            # of if its being run on a non databc computer
+            if not self.config.isDestOther() and not self.config.isDataBCNode():
+                self.logger.info('Starting into analyze block, destination key word: %s',
+                                 self.fme.macroValues[self.const.FMWParams_DestKey])
+                # analyze destination tables
+                dbMeth = DataBCDbMethods.DataBCDbMethods(self.fme, self.const, self.params, self.config)
+                dbMeth.analyzeDestinationFeatures()
+    
+                # default notifications
+                self.logger.debug("starting to process notifications")
+        except Exception, e:
+            self.logger.exception("Exception raised in Shutdown")
+            exceptionRaised = True
+        finally:
+            # emailer block
+            if self.config.isDataBCNode():
+                self.logger.debug("starting into the notification block")
+                emailer = Emailer.EmailFrameworkBridge(self.fme, self.const,
+                                                       self.params, self.config)
+                email2Add = 'kevin.netherton@gov.bc.ca'
+                # if an exception was raised in the shutdown then send out an email
+                # notifying of this situation even if the fmw completed successfully
+                if exceptionRaised:
+                    # the exception was in the shutdown not a problem with the actual
+                    # fmw so only email databc.  Currenlty in beta feature, so emailing
+                    # only myself (kevin.netherton@gov.bc.ca)
+                    emailer.notifyFail = email2Add
+                # add default email address for failures.
+                elif not emailer.notifyFail:
+                    emailer.notifyFail = email2Add
+                    self.logger.debug("adding email address to fails")
+                else:
+                    if email2Add.lower() not in emailer.notifyFail.lower():
+                        emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
+                self.logger.debug("getting ready to send notification")
+                emailer.sendNotifications()
+                self.logger.debug("notifications are complete")
+                self.logger.info("shutdown is now complete")
 
 
 class TemplateConfigFileReader(object):
