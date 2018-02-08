@@ -153,11 +153,13 @@ class TemplateConstants(object):
     sqlserverSection = 'sqlserver'
     sqlserver_param_port = 'defaultport'
     sqlserver_param_pmpidentifier = 'pmpidentifier'
+    
     # email parameters
     emailerSection = 'notifications'
     emailer_smtpServer = 'smtpserver'
     emailer_smtpPort = 'smtpport'
     emailer_fromAddress = 'emailfrom'
+    defaultEmailOnFailure = 'DataBCDA@gov.bc.ca'
 
     # When creating a connection file the framework will initiate a jenkins job
     # it will then wait for this amount of time before testing to see if the
@@ -701,7 +703,9 @@ class DefaultShutdown(object):
                 self.logger.debug("starting into the notification block")
                 emailer = Emailer.EmailFrameworkBridge(self.fme, self.const,
                                                        self.params, self.config)
-                email2Add = 'kevin.netherton@gov.bc.ca'
+                #email2Add = 'kevin.netherton@gov.bc.ca'
+                #email2Add = 'DataBCDA@gov.bc.ca'
+                email2Add = self.const.defaultEmailOnFailure
                 # if an exception was raised in the shutdown then send out an email
                 # notifying of this situation even if the fmw completed successfully
                 if exceptionRaised:
