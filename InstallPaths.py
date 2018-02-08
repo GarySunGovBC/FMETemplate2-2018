@@ -15,13 +15,51 @@ creates the .sde connection files
 '''
 
 import _winreg
+import numbers
 import re
 import logging
+import os.path
+import sys
 
+class RegistryReader(object):
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        
+    def getKeyValues(self, keys):
+        keyStr = '\\'.join(keys)
+        self.logger.debug( 'keyStr: %s', keyStr)
+        explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
+        subKeys = []
+        try:
+            i = 0
+            while 1:
+                asubkey = _winreg.EnumKey(explorer, i)
+                subKeys.append(asubkey)
+                i += 1
+        except WindowsError:
+            self.logger.debug('Iteration is now complete')
+        return subKeys
 
-class ArcGisInstallPaths(object):
+    def getKeyItems(self, keys):
+        keyStr = '\\'.join(keys)
+        self.logger.debug( 'keyStr: %s', keyStr)
+        explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
+        values = []
+        try:
+            cnt = 0
+            while True:
+                t = (_winreg.EnumValue(explorer, cnt))
+                values.append(t)
+                cnt += 1
+        except WindowsError:
+            self.logger.debug('Iteration is now complete')
+        return values
+    
+class ArcGisInstallPaths(RegistryReader):
 
     def __init__(self):
+        RegistryReader.__init__(self)
+
         self.logger = logging.getLogger(__name__)
         self.startKeys = ['SOFTWARE']
         self.rootKeyStr = 'HKEY_LOCAL_MACHINE'
@@ -118,76 +156,151 @@ class ArcGisInstallPaths(object):
         self.logger.info('latest desktop key is: {0}'.format(retVal))
         return retVal
 
-    def getKeyValues(self, keys):
-        keyStr = '\\'.join(keys)
-        print 'keyStr', keyStr
-        explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
-        subKeys = []
-        try:
-            i = 0
-            while 1:
-                asubkey = _winreg.EnumKey(explorer, i)
-                subKeys.append(asubkey)
-                i += 1
-        except WindowsError:
-            print 'done with iteration'
-        return subKeys
 
-    def getKeyItems(self, keys):
-        keyStr = '\\'.join(keys)
-        print 'keyStr', keyStr
-        explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
-        values = []
-        try:
-            cnt = 0
-            while True:
-                t = (_winreg.EnumValue(explorer, cnt))
-                values.append(t)
-                cnt += 1
-        except WindowsError:
-            print 'done getting the values'
-        return values
     
-class RegistryReader(object):
+
+
+class PythonInstallPaths(RegistryReader):
+
+    def __init__(self):
+        RegistryReader.__init__(self)
+        self.logger = logging.getLogger(__name__)
+        self.startKeys = ['SOFTWARE']
+        self.rootKeyStr = 'HKEY_LOCAL_MACHINE'
+        self.registryRoot = eval('_winreg.{0}'.format(self.rootKeyStr))
+    
+    def getInstallDir(self, version=None):
+        '''
+        searches for HKEY_LOCAL_MACHINE->SOFTWARE->Python->PythonCore->{latest version}->InstallPath
+        '''
+        keyPath = self.startKeys
+        pyKey = 'Python'
+        pyCoreKey = 'PythonCore'
+        pyInstallKey = 'InstallPath'
+        returnedKeys = self.getKeyValues(keyPath)
+        returnedKeys.sort()
+        self.logger.debug("currentKeys: %s", returnedKeys)
+        installPath = None
+        if pyKey in returnedKeys:
+            keyPath.append(pyKey)
+            # now looking for Python
+            returnedKeys = self.getKeyValues(keyPath)
+            self.logger.debug("looking for pycore in: %s", returnedKeys)
+            if pyCoreKey in returnedKeys:
+                # now get the various versions
+                keyPath.append(pyCoreKey)
+                returnedKeys = self.getKeyValues(keyPath)
+                self.logger.debug("version keys: %s", returnedKeys)
+                versionKey = self.getVersionPath(returnedKeys, version)
+                self.logger.debug("returned key: %s", versionKey)
+                if versionKey:
+                    # now get the install Dir
+                    keyPath.append(versionKey)
+                    self.logger.debug("key path: {0}".format(keyPath))
+                    returnedKeys = self.getKeyValues(keyPath)
+                    self.logger.debug("sub items: {0}".format(returnedKeys))
+                    if pyInstallKey in returnedKeys:
+                        # found it
+                        keyPath.append(pyInstallKey)
+                        returnedKeys = self.getKeyItems(keyPath)
+                        self.logger.debug("items: {0}".format(returnedKeys))
+                        installPath = returnedKeys[0][1]
+        return installPath
+
+    def getVersionPath(self, pyVersionKeys, version=None):
+        '''
+        :param version: The installed version of python, on the current machine
+                        if this value is not provided will return the release
+                        with the highest number.  Otherwise verifies that the
+                        specified version exists.
+        :return: The python version key in the registry
+        '''
+        retVal = None
+        if version:
+            if not isinstance(version, basestring):
+                if not isinstance(version, numbers.Number):
+                    # not a string and not a number, don't know what to do
+                    msg = 'specified a python version to look for which is ' + \
+                         'defined as a {0} type, expecting a string or a ' +\
+                         'number.  Actual value as a string is {1}' 
+                    msg = msg.format(type(version), version)
+                    raise ValueError, msg
+                else:
+                    version = unicode(version)
+            if version in pyVersionKeys:
+                retVal = version
+            else:
+                msg = 'You specified a python version of {0}. This version could ' + \
+                      'not be found.  Versions that were found include {1}'
+                msg = msg.format(version, pyVersionKeys)
+                self.logger.warning(msg)
+        else:
+            latest = 0.0
+            for version in pyVersionKeys:
+                if not version.replace('.', '', 1).isdigit():
+                    msg = 'expecting a version string that can be converted to a ' + \
+                          'number.  This is the string that was found {0}.  Ignoring ' + \
+                          'it as don\'t have the logic to deal with it.  Other keys ' + \
+                          'are: {1}'
+                    msg = msg.format(version, pyVersionKeys)
+                    self.logger.warning(msg)
+                else:
+                    version = float(version)
+                    if version > latest:
+                        latest = version
+            if latest:
+                retVal = latest
+        return retVal
+        
+class ArcPyPaths(object):
+    '''
+    mines the registry to find out about where arcgis and arcpy are installed
+    then constructs a list of paths that need to be added to the PYTHONPATH
+    env var in order to successfully import arcpy
+    '''
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        self.defaultPyVersion = '2.7'
         
-    def getKeyValues(self, keys):
-        keyStr = '\\'.join(keys)
-        self.logger.debug( 'keyStr: %s', keyStr)
-        explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
-        subKeys = []
-        try:
-            i = 0
-            while 1:
-                asubkey = _winreg.EnumKey(explorer, i)
-                subKeys.append(asubkey)
-                i += 1
-        except WindowsError:
-            self.logger.debug('Iteration is now complete')
-        return subKeys
-
-    def getKeyItems(self, keys):
-        keyStr = '\\'.join(keys)
-        self.logger.debug( 'keyStr: %s', keyStr)
-        explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
-        values = []
-        try:
-            cnt = 0
-            while True:
-                t = (_winreg.EnumValue(explorer, cnt))
-                values.append(t)
-                cnt += 1
-        except WindowsError:
-            self.logger.debug('Iteration is now complete')
-        return values
+    def getPaths(self, pythonVersion=None):
+        arcGisPaths = self.getArcGisDesktopPaths()
+        pythonPaths = self.getPythonPaths(pythonVersion)
+        arcGisPaths.extend(pythonPaths) # merge the two lists
+        return arcGisPaths
+        
+    def getPythonPaths(self, version):
+        pypath = PythonInstallPaths()
+        pythonRootPath = pypath.getInstallDir(version)
+        
+        sitePaths = os.path.join(pythonRootPath, 'Lib', 'site-packages')
+        libPaths = os.path.join(pythonRootPath, 'lib')
+        
+        returnPaths = []
+        returnPaths.append(sitePaths)
+        returnPaths.append(libPaths)
+        return returnPaths
+        
+    def getArcGisDesktopPaths(self):
+        '''
+        gets the paths associated with the install of arcgis desktop
+        '''
+        paths2Add = []
+        desktop = ArcGisInstallPaths()
+        desktopRootDir = desktop.getInstallDir()
+        
+        arcpyDir = os.path.join(desktopRootDir, 'arcpy')
+        toolboxDir = os.path.join(desktopRootDir, 'ArcToolbox', 'Scripts')
+        binPath = os.path.join(desktopRootDir, 'bin')
+        
+        paths2Add.append(arcpyDir)
+        paths2Add.append(toolboxDir)
+        paths2Add.append(binPath)
+        
+        return paths2Add
     
-
-class PythonInstallPaths(object):
-
-    def __init__(self):
-        pass
-
+    def getPathsAndAddToPYTHONPATH(self, pythonVersion=None):
+        paths = self.getPaths(pythonVersion)
+        sys.path.extend(paths)
 
 class ESRIArcGISInstallDirNotFound(OSError):
 
@@ -201,8 +314,14 @@ if __name__ == '__main__':
     logger.addHandler(logging.StreamHandler())
     logger.setLevel(logging.DEBUG)
 
-    arc = ArcGisInstallPaths()
-    arc.getInstallDir()
+    #arc = ArcGisInstallPaths()
+    #arc.getInstallDir()
     
+    #py = PythonInstallPaths()
+    #installDir = py.getInstallDir('2.7')
+    #print 'installDir', installDir
+    pyVersion = '2.7'
+    arcpath = ArcPyPaths()
+    arcpath.getPathsAndAddToPYTHONPATH(pyVersion)
     
 
