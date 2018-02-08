@@ -116,11 +116,11 @@ if __name__ == '__main__':
 
     # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
     
-    sys.path.append(r"E:\sw_nt\python27\ArcGIS10.2\Lib\site-packages")
-    sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\arcpy')
-    sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\ArcToolbox\Scripts')
-    sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\bin')
-    sys.path.append(r"E:\sw_nt\python27\ArcGIS10.2\Lib")
+    #sys.path.append(r"E:\sw_nt\python27\ArcGIS10.2\Lib\site-packages")
+    #sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\arcpy')
+    #sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\ArcToolbox\Scripts')
+    #sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\bin')
+    #sys.path.append(r"E:\sw_nt\python27\ArcGIS10.2\Lib")
 
     
     connFile2Create = sys.argv[1]

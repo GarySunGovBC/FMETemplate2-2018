@@ -48,6 +48,7 @@ import shutil
 import site
 import sys
 import time
+import InstallPaths
 
 import PMP.PMPRestConnect
 
@@ -341,6 +342,11 @@ class TemplateConstants(object):
     # example of a date string returned from fme server rest api:
     #                 u'timeStarted': u'2017-05-29T10:00:04',
     FMEServer_DatetimeFormat = '%Y-%m-%dT%H:%M:%S'
+    
+    # The version of python the framework is configured to use.
+    # used to set up paths to arcpy, allows for multiple python 
+    # installs.
+    PythonVersion = '2.7'
 
     def getSrcInstanceParam(self, position):
         val = self.calcNumVal(self.FMWParams_SrcInstance, position)
@@ -3568,48 +3574,27 @@ class CalcParamsDataBC(object):
         return connectionFileFullPath
 
     def __createSDEConnectionFile(self, connectionFileFullPath, host, serviceName, port=None):
-        jenkinsUrl = self.paramObj.getJenkinsCreateSDEConnectionFileURL()
-        jenkinsToken = self.paramObj.getJenkinsCreateSDEConnectionFileToken()
-        # now assemble the parameters
-        argDict = {}
-        argDict[self.const.jenkinsSection_param_ServiceName] = serviceName
-        argDict[self.const.jenkinsSection_param_SDEConnFilePath] = connectionFileFullPath
-        argDict[self.const.jenkinsSection_param_Host] = host
-        argDict[self.const.jenkinsSection_param_Token] = jenkinsToken
-        if port:
-            argDict[self.const.jenkinsSection_param_Port] = port
-
-        self.logger.debug("jenkins url: %s", host)
-
-        r = requests.post(jenkinsUrl, params=argDict, verify=False)
-        statCode = r.status_code
-        rUrl = r.url
-        if r.status_code < 200 or r.status_code >= 300:
-            msg = 'When placing the rest call to create the jenkins job the returned ' + \
-                  'status code is: {0}.  The url that was called is: {1}'
-            msgWithParams = msg.format(statCode, rUrl)
-            self.logger.error(msgWithParams)
-            raise IOError, msgWithParams
-
-        retryCnt = 0
-        while retryCnt < self.const.sdeConnFileMaxRetries:
-            if os.path.exists(connectionFileFullPath):
-                self.logger.debug("the connection file exists: %s",
-                                  connectionFileFullPath)
-                break
-            # file does not exist, wait and retru
-            self.logger.debug("waiting for the file to get created...")
-            retryCnt += 1
-            time.sleep(self.const.sdeConnFilePollWaitTimeSeconds)
-
-        if retryCnt >= self.const.sdeConnFileMaxRetries:
-            msg = 'Tried {0} times to create the connection file {1} using ' + \
-                  'the jenkins job {2}'
-            msgWithText = msg.format(self.const.sdeConnFileMaxRetries, \
-                                     connectionFileFullPath,
-                                     host)
-            self.logger.error(msgWithText)
-            raise IOError, msgWithText
+        '''
+        This method used to make a rest call to a job that would assemble the 
+        sde connection file.  This is no longer possible so instead will call 
+        a module that will setup the python paths for the arcpy import
+        then call another module to create the sde file
+        '''
+        # this will get the arcpy paths, and add them to the sys.path
+        # parameter which should then allow for use of arcpy using the 
+        # fme python default interpreter
+        arcpyPaths = InstallPaths.ArcPyPaths()
+        arcpyPaths.getPathsAndAddToPYTHONPATH(self.const.PythonVersion)
+        
+        # next step... call CreateSDEConnectonFile module to create the path
+        # I know its strange to import this module here as opposed to at the top
+        # reason is this module uses arcpy... importing arcpy has a significatn 
+        # processing costs as it can take up to 30 seconds to complete.  Also 
+        # the number of times this needs to be done is rare.
+        import CreateSDEConnectionFile
+        
+        connFile = CreateSDEConnectionFile.CreateConnectionFile(connectionFileFullPath, host, serviceName, port)
+        connFile.createConnFile()
 
     def getDestDatabaseConnectionFilePath(self, position=None):
         '''
