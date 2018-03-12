@@ -1,5 +1,5 @@
 requests==2.14.2
-cx_Oracle==5.3
+cx_Oracle==6.1
 pytz==2016.10
 psutil==5.2.2
 ipaddress==1.0.18

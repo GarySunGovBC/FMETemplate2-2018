@@ -271,22 +271,35 @@ class ArcPyPaths(object):
     def getPythonPaths(self, version):
         pypath = PythonInstallPaths()
         pythonRootPath = pypath.getInstallDir(version)
+        returnPaths = self.ammendPythonPaths(pythonRootPath)
+        return returnPaths
+    
+    def ammendPythonPaths(self, pythonRootDir):
+        '''
+        :param rootDir: the root python install directory
+        :type rootDir: str
         
-        sitePaths = os.path.join(pythonRootPath, 'Lib', 'site-packages')
-        libPaths = os.path.join(pythonRootPath, 'lib')
+        :return: The supplied python root dir with the 
+                 following paths ammended:
+                   - lib
+                   - Lib/site-packages
+        '''
+        sitePaths = os.path.join(pythonRootDir, 'Lib', 'site-packages')
+        libPaths = os.path.join(pythonRootDir, 'lib')
         
         returnPaths = []
         returnPaths.append(sitePaths)
         returnPaths.append(libPaths)
         return returnPaths
         
-    def getArcGisDesktopPaths(self):
+    def getArcGisDesktopPaths(self, desktopRootDir=None):
         '''
         gets the paths associated with the install of arcgis desktop
         '''
         paths2Add = []
-        desktop = ArcGisInstallPaths()
-        desktopRootDir = desktop.getInstallDir()
+        if not desktopRootDir:
+            desktop = ArcGisInstallPaths()
+            desktopRootDir = desktop.getInstallDir()
         
         arcpyDir = os.path.join(desktopRootDir, 'arcpy')
         toolboxDir = os.path.join(desktopRootDir, 'ArcToolbox', 'Scripts')
