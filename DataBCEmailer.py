@@ -307,7 +307,21 @@ class EmailFrameworkBridge(object):
             retStr = destTmplt.format(destSchema, host, servName)
         self.logger.debug("dest string: %s", retStr)
         return retStr
-
+    
+    def getDestDbEnvKey(self):
+        '''
+        Attempts to retrieve the destination database environment key.  If no 
+        key can be found will return a null value.
+        
+        :return: Destination Database environment key
+        :rtype: str
+        '''
+        self.logger.debug("getting the destinations string")
+        destDbEnvKey = None
+        if self.const.FMWParams_DestKey in self.fmeObj.macroValues:
+            destDbEnvKey = self.fmeObj.macroValues[self.const.FMWParams_DestKey]
+        return destDbEnvKey
+        
     def getEmailSubject(self):
         '''
         Assembles an email subject line based on the name of the fmw that is
@@ -315,13 +329,14 @@ class EmailFrameworkBridge(object):
         '''
         self.logger.debug("constructing the subject line")
         fmwName = self.fmeObj.macroValues[self.const.FMWMacroKey_FMWName]
+        dbEnv = self.getDestDbEnvKey()
         status = self.getStatus()
         if status:
             statusText = 'Success'
         else:
             statusText = 'Failure'
-        subjectText = '{0} - {1}'
-        subjectText = subjectText.format(fmwName, statusText)
+        subjectText = '{0} - {1} - {2}'
+        subjectText = subjectText.format(fmwName, statusText, dbEnv)
         return subjectText
 
     def getStatus(self):

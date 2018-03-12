@@ -97,6 +97,8 @@ class TemplateConstants(object):
     ConfFileSection_global_failedFeaturesFile = 'failedFeaturesFile'
     ConfFileSection_global_directConnectClientString = 'directconnect_clientstring'
     ConfFileSection_global_directConnectSSClientString = 'directconnect_ss_clientstring'
+    ConfFileSection_global_ARCGISDesktopRootDir = 'defaultArcRootInstall'
+    ConfFileSection_global_PythonRootDir = 'defaultArcPythonPath'
 
     ConfFileSection_destKeywords = 'dest_param_keywords'
 
@@ -1271,6 +1273,20 @@ class TemplateConfigFileReader(object):
             self.const.ConfFileSection_global,
             self.const.ConfFileSection_global_sdeConnFileDir)
         return sdeConnectionFileDir
+
+    def getArcGISDesktopRootDirectory(self):
+        arcGISInstallDir = self.parser.get(
+            self.const.ConfFileSection_global,
+            self.const.ConfFileSection_global_ARCGISDesktopRootDir)
+        return arcGISInstallDir
+    
+    def getPythonRootDir(self):
+        # defaultArcPythonPath
+        pythonRootdir = self.parser.get(
+            self.const.ConfFileSection_global,
+            self.const.ConfFileSection_global_PythonRootDir)
+        return pythonRootdir
+
 
     def getSourcePmpResources(self):
         '''
@@ -3583,8 +3599,33 @@ class CalcParamsDataBC(object):
         # this will get the arcpy paths, and add them to the sys.path
         # parameter which should then allow for use of arcpy using the 
         # fme python default interpreter
-        arcpyPaths = InstallPaths.ArcPyPaths()
-        arcpyPaths.getPathsAndAddToPYTHONPATH(self.const.PythonVersion)
+        try:
+            # this will get the arcpy paths, and add them to the sys.path
+            # parameter which should then allow for use of arcpy using the 
+            # fme python default interpreter
+            arcpyPaths = InstallPaths.ArcPyPaths()
+            arcpyPaths.getPathsAndAddToPYTHONPATH(self.const.PythonVersion)
+        except WindowsError, e:
+            # 
+            self.logger.exception(e)
+            msg = "was unable to pull the arc install from the registry.  trying " + \
+                  'to guess what the install location is before failing.'
+            self.logger.warning(msg)
+            desktopDir = self.paramObj.getArcGISDesktopRootDirectory()
+            pythonRootDir = self.paramObj.getPythonRootDir()
+            
+            
+            arcpyPaths = InstallPaths.ArcPyPaths()
+            desktopPaths = arcpyPaths.getArcGisDesktopPaths(desktopDir)
+            pyPaths = arcpyPaths.ammendPythonPaths(pythonRootDir)
+            
+            desktopPaths.extend(pyPaths) # merge the two lists
+            sys.path.extend(desktopPaths)
+            #self.paramObj.get
+            #if os.path.exists(E:\sw_nt\arcgis\Desktop10.2)
+            
+        except:
+            raise
         
         # next step... call CreateSDEConnectonFile module to create the path
         # I know its strange to import this module here as opposed to at the top
