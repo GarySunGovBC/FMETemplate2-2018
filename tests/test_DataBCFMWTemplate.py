@@ -221,6 +221,20 @@ class Test_CalcParams(unittest.TestCase):
     def test_getDestinationPassword(self):
         passw = self.calcParams.getDestinationPassword()
         print 'passw', passw
+        
+    def test_getSrcSDEDirectConnectString(self):
+        self.fmeMacroValues = self.fmeMacroValues_DBSrc
+        self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
+
+        # use db params
+        srcSDEDC = self.calcParams.getSrcSDEDirectConnectString()
+        expected = 'sde:oracle11g:apocalypse.idir.bcgov/airprod1.nrs.bcgov'
+        msg = 'Expecting {0}, but got {1}, check the macro values used for ' + \
+              'this test, if they checkout then check the method ' + \
+              'getSrcSDEDirectConnectString()'
+        msg = msg.format(expected, srcSDEDC)
+        self.assertEqual(srcSDEDC, expected, msg)
+        print 'srcSDEDC', srcSDEDC
 
     def test_getSQLServerSchema(self):
         self.fmeMacroValues = self.fmeMacroValues_DBSrc
@@ -540,8 +554,15 @@ class Test_CalcParams(unittest.TestCase):
         msg = msg.format('DEP_MAXRETRIES', expectedValue, depWaitTime)
         self.assertRaises(ValueError, lambda: calcParams.getDependencyMaxRetries())
 
-        
+    def test_getSrcDatabaseConnectionFilePath(self):
+        self.fmeMacroValues = self.fmeMacroValues_DBSrc
+        self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
 
+        # use db params
+        # should override a bunch of stuff, but this is quick and dirty!
+        srcSDEDC = self.calcParams.getSrcDatabaseConnectionFilePath()
+        print 'srcSDEDC', srcSDEDC
+        
 class Test_CalcParamsDevel(unittest.TestCase):
     def setUp(self):
         self.logger = logging.getLogger()
@@ -1134,8 +1155,8 @@ if __name__ == "__main__":
     # sys.argv = ['','Test_Shutdown.test_shutdown']
 
 
-    # sys.argv = ['', 'Test_TemplateConfigFileReader.test_isDataBCNode', 'Test_TemplateConfigFileReader.test_getFMEServerNode']
-
+    #sys.argv = ['', 'Test_TemplateConfigFileReader.test_isDataBCNode', 'Test_TemplateConfigFileReader.test_getFMEServerNode']
+    sys.argv = ['', 'Test_CalcParams.test_getSrcDatabaseConnectionFilePath']
     # 'Test_CalcParams.test_getFailedFeaturesFile',
     #
     

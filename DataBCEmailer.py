@@ -21,7 +21,7 @@ import os.path
 import re
 import smtplib
 
-#import DataBCFMWTemplate
+# import DataBCFMWTemplate
 
 
 class EmailFrameworkBridge(object):
@@ -47,13 +47,13 @@ class EmailFrameworkBridge(object):
         self.fmeObj = fmeObj
         self.logger = logging.getLogger(__name__)
         self.logger.debug("constructing emailer object")
-        
-        self.const = const #TemplateConstants
-        self.params = params #calcparamsbase
-        self.config = config # templateconfigfile
-                
-        #self.const = DataBCFMWTemplate.TemplateConstants()
-        #self.params = DataBCFMWTemplate.TemplateConfigFileReader(
+
+        self.const = const  # TemplateConstants
+        self.params = params  # calcparamsbase
+        self.config = config  # templateconfigfile
+
+        # self.const = DataBCFMWTemplate.TemplateConstants()
+        # self.params = DataBCFMWTemplate.TemplateConfigFileReader(
         #    self.fmeObj.macroValues[self.const.FMWParams_DestKey])
         self.email = None
 
@@ -62,7 +62,7 @@ class EmailFrameworkBridge(object):
         self.notifyAll = None
         self.notifyFail = None
         self.notifySuccess = None
-        
+
         self.getNotificationEmails()
 
     def printMacros(self):
@@ -74,8 +74,14 @@ class EmailFrameworkBridge(object):
         msg = "{0} = {1}  ({2})"
         for macroKey in macroKeys:
             value = str(self.fmeObj.macroValues[macroKey])
-            # value2 = self.fmeObj.resolveFMEMacros(macroKey)
             msgFormatted = msg.format(macroKey, value, value)
+
+            # value2 = self.fmeObj.resolveFMEMacros(macroKey)
+            if macroKey in [self.const.FMWParams_DestPassword,
+                            self.const.FMWParams_SrcOraPassword,
+                            self.const.FMWParams_SrcSSPswd]:
+                value = '***Redacted!***'
+                msgFormatted = msg.format(macroKey, value, value)
             self.logger.debug(msgFormatted)
 
     def reformatEmailAddresses(self, emailString):
@@ -285,7 +291,8 @@ class EmailFrameworkBridge(object):
                     self.logger.debug("%s = %s", param, value)
                     paramStr = paramTmpltStr.format(param, value)
                     returnParamList.append(paramStr)
-        return returnParamList
+        returnParamStr = '\n'.join(returnParamList)
+        return returnParamStr
 
     def getDestination(self):
         '''
@@ -300,19 +307,19 @@ class EmailFrameworkBridge(object):
         destTmplt = 'schema: {0} host: {1} service name: {2}'
 
         if self.const.FMWParams_DestKey in self.fmeObj.macroValues:
-            #params = DataBCFMWTemplate.CalcParams(self.fmeObj.macroValues)
+            # params = DataBCFMWTemplate.CalcParams(self.fmeObj.macroValues)
             host = self.config.getDestinationHost()
             servName = self.config.getDestinationServiceName()
             destSchema = self.params.getDestinationSchema()
             retStr = destTmplt.format(destSchema, host, servName)
         self.logger.debug("dest string: %s", retStr)
         return retStr
-    
+
     def getDestDbEnvKey(self):
         '''
-        Attempts to retrieve the destination database environment key.  If no 
+        Attempts to retrieve the destination database environment key.  If no
         key can be found will return a null value.
-        
+
         :return: Destination Database environment key
         :rtype: str
         '''
@@ -321,7 +328,7 @@ class EmailFrameworkBridge(object):
         if self.const.FMWParams_DestKey in self.fmeObj.macroValues:
             destDbEnvKey = self.fmeObj.macroValues[self.const.FMWParams_DestKey]
         return destDbEnvKey
-        
+
     def getEmailSubject(self):
         '''
         Assembles an email subject line based on the name of the fmw that is
@@ -335,7 +342,7 @@ class EmailFrameworkBridge(object):
             statusText = 'Success'
         else:
             statusText = 'Failure'
-        subjectText = '{0} - {1} - {2}'
+        subjectText = '{2} - {1} - {0}'
         subjectText = subjectText.format(fmwName, statusText, dbEnv)
         return subjectText
 
@@ -380,6 +387,7 @@ class EmailFrameworkBridge(object):
                 emailAddresses.extend(notifyFail)
         return emailAddresses
 
+
 class EmailServer(object):
     '''
     Contains the parameters that are required to actually send
@@ -391,6 +399,7 @@ class EmailServer(object):
     :ivar smtpServer: the smtp server name
     :ivar smtpPort: the smtp port
     '''
+
     def __init__(self, config):
         self.config = config
         self.smtpServer = None
@@ -417,6 +426,7 @@ class EmailServer(object):
         '''
         return self.smtpServer
 
+
 class Email(object):
     '''
     This is a class that contains the structure of an email
@@ -435,6 +445,7 @@ class Email(object):
     :ivar attachementFilePath: if the email is to include an attachement the path
                                to the file that is to be attached is defined here.
     '''
+
     def __init__(self, emailTo, emailFrom, emailSubject, fmwFileName, emailBody=None):
         self.emailTo = emailTo
         self.emailFrom = emailFrom
@@ -472,6 +483,7 @@ class Email(object):
                  is located
         '''
         return self.attachementFilePath
+
 
 class SendEmail(object):
     '''
