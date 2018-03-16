@@ -188,10 +188,14 @@ class TemplateConstants(object):
     FMWParams_SrcXLSPrefix = 'SRC_DATASET_XLS_'
     FMWParams_SrcFeaturePrefix = 'SRC_FEATURE_'
     FMWParams_SrcSchema = 'SRC_ORA_SCHEMA'
+    FMWParams_SrcOraConnFile = 'SRC_ORA_CONNFILE'
+    FMWParams_SrcOraPassword = 'SRC_ORA_PASSWORD'
     FMWParams_SrcProxySchema = 'SRC_ORA_PROXY_SCHEMA'
     FMWParams_SrcSSSchema = 'SRC_SS_SCHEMA'
     FMWParams_SrcProxySSSchema = 'SRC_SS_PROXY_SCHEMA'
     FMWParams_SrcSSDbName = 'SRC_SS_DBNAME'
+    
+    FMWParams_SrcSSPswd = 'SRC_SS_PASSWORD'
 
     FMWParams_SrcInstance = 'SRC_ORA_INSTANCE'
     FMWParams_SrcServiceName = 'SRC_ORA_SERVICENAME'
