@@ -1064,17 +1064,20 @@ class TemplateConfigFileReader(object):
                                         self.const.ConfFileSection_global_devCredsFile)
         return credsFileName
 
-    def getDWMDbPort(self):
-        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbport)
+    #def getDWMDbPort(self):
+    #    return self.parser.get(self.const.ConfFile_dwm,
+    #                           self.const.ConfFile_dwm_dbport)
 
-    def getDWMDbInstance(self):
-        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbinstance)
+    #def getDWMDbInstance(self):
+    #    return self.parser.get(self.const.ConfFile_dwm,
+    #                           self.const.ConfFile_dwm_dbinstance)
 
-    def getDWMDbServer(self):
-        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbserver)
+    #def getDWMDbServer(self):
+    #    return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbserver)
 
     def getDWMDbUser(self):
-        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbuser)
+        return self.parser.get(self.const.ConfFile_dwm,
+                               self.const.ConfFile_dwm_dbuser)
 
     def getDWMTable(self):
         dwmTab = self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_table)
@@ -1137,26 +1140,6 @@ class TemplateConfigFileReader(object):
         token = self.parser.get(
             self.const.FMEServerSection,
             self.const.FMEServerSection_Token)
-        return token
-
-    def getJenkinsCreateSDEConnectionFileURL(self):
-        '''
-        The path to the sde connection file that should be created by a jenkins
-        job.
-        '''
-        url = self.parser.get(
-            self.const.jenkinsSection,
-            self.const.jenkinsSection_createSDEconnFile_url)
-        return url
-
-    def getJenkinsCreateSDEConnectionFileToken(self):
-        '''
-        The token that should be used to authorize communication with Jenkins
-        when creating new SDE connection files.
-        '''
-        token = self.parser.get(
-            self.const.jenkinsSection,
-            self.const.jenkinsSection_createSDEconnFile_token)
         return token
 
     def getOracleDirectConnectClientString(self):
@@ -1312,7 +1295,8 @@ class TemplateConfigFileReader(object):
         '''
         :return: default connection port for SQL server databases (from config file)
         '''
-        return self.parser.get(self.const.sqlserverSection, self.const.sqlserver_param_port)
+        return self.parser.get(self.const.sqlserverSection,
+                               self.const.sqlserver_param_port)
 
     def getEmailSMTPServer(self):
         '''
@@ -4187,7 +4171,7 @@ class ModuleLogConfig(object):
         tmpLog = logging.getLogger(__name__)
         tmpLog.debug("name of current logger: %s", __name__)
         tmpLog.debug("logFileFullPath: %s", logFileFullPath)
-
+        tmpLog.debug("handlers already configed: {0}".format(tmpLog.handlers))
         if not tmpLog.handlers:
             logging.logFileName = logFileFullPath
             const = TemplateConstants()
