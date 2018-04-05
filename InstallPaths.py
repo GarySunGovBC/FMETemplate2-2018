@@ -26,7 +26,9 @@ class RegistryReader(object):
         self.logger = logging.getLogger(__name__)
         
     def getKeyValues(self, keys):
-        keyStr = '\\'.join(keys)
+        self.logger.debug("keys: %s", keys)
+        keyStr = '\\'.join(str(e) for e in keys)
+        #keyStr = '\\'.join(keys)
         self.logger.debug( 'keyStr: %s', keyStr)
         explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
         subKeys = []
@@ -41,7 +43,8 @@ class RegistryReader(object):
         return subKeys
 
     def getKeyItems(self, keys):
-        keyStr = '\\'.join(keys)
+        #keyStr = '\\'.join(keys)
+        keyStr = '\\'.join(str(e) for e in keys)
         self.logger.debug( 'keyStr: %s', keyStr)
         explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
         values = []
@@ -268,7 +271,9 @@ class ArcPyPaths(object):
         arcGisPaths.extend(pythonPaths) # merge the two lists
         return arcGisPaths
         
-    def getPythonPaths(self, version):
+    def getPythonPaths(self, version=None):
+        if not version:
+            version = self.defaultPyVersion
         pypath = PythonInstallPaths()
         pythonRootPath = pypath.getInstallDir(version)
         returnPaths = self.ammendPythonPaths(pythonRootPath)

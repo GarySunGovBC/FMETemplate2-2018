@@ -10,7 +10,7 @@ import sys
 import getpass
 import json
 # notify that usercustomize is being run
-print 'RUNNING USERCUSTOMIZE {0}'.format(__file__)
+#print 'RUNNING USERCUSTOMIZE {0}'.format(__file__)
 
 # get the devpaths.json file
 curDir = os.path.dirname(__file__)
@@ -46,7 +46,7 @@ if dir2Add:
     for subDir in subDirs:
         pth = os.path.join(dir2Add, subDir)
         sys.path.insert(0, pth)
-        print 'added path: {0}'.format(pth)
+        #print 'added path: {0}'.format(pth)
 else:
     # now make sure these are at the start of the path list
     #subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
@@ -56,7 +56,7 @@ else:
         pthCntr = 0
         pth2Rerder = os.path.realpath(pth2Rerder)
         sys.path.insert(0, pth2Rerder)
-        print 'inserted', pth2Rerder, 'to the front of the pathlist'
+        #print 'inserted', pth2Rerder, 'to the front of the pathlist'
         #for curPth in sys.path:
         #    if pth2Rerder == curPth:
         #        del sys.path[pthCntr]
@@ -64,5 +64,5 @@ else:
         #        print 'inserted', pth2Rerder, 'to the front of the pathlist'
         #        break
         #    pthCntr += 1
-print 'pathlist:', sys.path
+#print 'pathlist:', sys.path
 

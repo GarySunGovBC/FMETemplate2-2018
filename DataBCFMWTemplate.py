@@ -4789,7 +4789,7 @@ class DWMWriter(object):
         '''
         return self.fme.totalFeaturesWritten
 
-    def getTotalFeaturesRejectedCount(self):  # pylint: disable=no-self-use
+    def getTotalFeaturesRejectedCount(self, subprocess=True):  # pylint: disable=no-self-use
         '''
         :return: the total number of features that have been rejected by the
                  replication.  Currently not enabled, only returns None.
@@ -4819,8 +4819,12 @@ class DWMWriter(object):
         ffsFileName = '{0}_log.ffs'.format(logFileNoSuffix)
         self.logger.debug("ffs file is: %s", ffsFileName)
         if os.path.exists(ffsFileName):
+            self.logger.debug("creating and FFReader object")
             ffs = FFSReader.Reader(ffsFileName)
-            retVal = ffs.getFeatureCount()
+            if subprocess:
+                retVal = ffs.getFeatureCountSeparateProcess()
+            else:
+                retVal = ffs.getFeatureCountSameProcess()
             self.logger.debug("failed features read from ffs file: %s", retVal)
         return retVal
 
