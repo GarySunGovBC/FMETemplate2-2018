@@ -49,6 +49,7 @@ import site
 import sys
 import time
 import InstallPaths
+import FFSReader
 
 import PMP.PMPRestConnect
 
@@ -56,7 +57,6 @@ import DB.DbLib
 import DataBCEmailer as Emailer
 import DataBCDbMethods
 import FMWExecutionOrderDependencies
-import requests
 
 
 class TemplateConstants(object):
@@ -156,7 +156,7 @@ class TemplateConstants(object):
     sqlserverSection = 'sqlserver'
     sqlserver_param_port = 'defaultport'
     sqlserver_param_pmpidentifier = 'pmpidentifier'
-    
+
     # email parameters
     emailerSection = 'notifications'
     emailer_smtpServer = 'smtpserver'
@@ -194,7 +194,7 @@ class TemplateConstants(object):
     FMWParams_SrcSSSchema = 'SRC_SS_SCHEMA'
     FMWParams_SrcProxySSSchema = 'SRC_SS_PROXY_SCHEMA'
     FMWParams_SrcSSDbName = 'SRC_SS_DBNAME'
-    
+
     FMWParams_SrcSSPswd = 'SRC_SS_PASSWORD'
 
     FMWParams_SrcInstance = 'SRC_ORA_INSTANCE'
@@ -348,9 +348,9 @@ class TemplateConstants(object):
     # example of a date string returned from fme server rest api:
     #                 u'timeStarted': u'2017-05-29T10:00:04',
     FMEServer_DatetimeFormat = '%Y-%m-%dT%H:%M:%S'
-    
+
     # The version of python the framework is configured to use.
-    # used to set up paths to arcpy, allows for multiple python 
+    # used to set up paths to arcpy, allows for multiple python
     # installs.
     PythonVersion = '2.7'
 
@@ -609,7 +609,7 @@ class Shutdown(object):
         ModuleLogConfig(fmwDir, fmwName, destKey)
         modDotClass = '{0}.{1}'.format(__name__, 'shutdown')
         self.logger = logging.getLogger(modDotClass)
-        self.logger.debug("Shutdown has been called...")
+        self.logger.info("Shutdown has been called...")
         self.logger.debug("log file name: {0}".format(self.fme.logFileName))
 
         # looking for custom script for shutdown
@@ -657,6 +657,7 @@ class DefaultShutdown(object):
 
         loggerName = '{0}.{1}'.format(__name__, 'shutdown')
         self.logger = logging.getLogger(loggerName)
+        self.logger.info("DefaultShutdown shutdown has been called")
         # self.logger.info('destination key word in shutdown: %s',
         #                 self.fme.macroValues[self.const.FMWParams_DestKey])
         self.logger.info('destination key word in shutdown: %s',
@@ -665,11 +666,11 @@ class DefaultShutdown(object):
     def shutdown(self):
         exceptionRaised = False
         try:
-            # getDestDatabaseEnvKey, and then validate it retrieving the 
+            # getDestDatabaseEnvKey, and then validate it retrieving the
             # validated version
             destKey = self.params.getDestDatabaseEnvKey()
             destKey = self.config.getDestinationDatabaseKey(destKey)
-    
+
             # destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
             if not self.config.isDataBCNode():
                 # either not being run on a databc computer, or is being run in
@@ -694,16 +695,17 @@ class DefaultShutdown(object):
                 else:
                     self.logger.info("destination key is %s so no record is "
                                      "being written to dwm", destKey)
-    
+
             # don't run analyze if the destination database key word is 'other'
             # of if its being run on a non databc computer
             if not self.config.isDestOther() and not self.config.isDataBCNode():
                 self.logger.info('Starting into analyze block, destination key word: %s',
                                  self.fme.macroValues[self.const.FMWParams_DestKey])
                 # analyze destination tables
-                dbMeth = DataBCDbMethods.DataBCDbMethods(self.fme, self.const, self.params, self.config)
+                dbMeth = DataBCDbMethods.DataBCDbMethods(self.fme, self.const, 
+                                                         self.params, self.config)
                 dbMeth.analyzeDestinationFeatures()
-    
+
                 # default notifications
                 self.logger.debug("starting to process notifications")
         except Exception, e:
@@ -715,8 +717,8 @@ class DefaultShutdown(object):
                 self.logger.debug("starting into the notification block")
                 emailer = Emailer.EmailFrameworkBridge(self.fme, self.const,
                                                        self.params, self.config)
-                #email2Add = 'kevin.netherton@gov.bc.ca'
-                #email2Add = 'DataBCDA@gov.bc.ca'
+                # email2Add = 'kevin.netherton@gov.bc.ca'
+                # email2Add = 'DataBCDA@gov.bc.ca'
                 email2Add = self.const.defaultEmailOnFailure
                 # if an exception was raised in the shutdown then send out an email
                 # notifying of this situation even if the fmw completed successfully
@@ -926,26 +928,26 @@ class TemplateConfigFileReader(object):
         :param inkey: This is the destination database env key that you want
                       to validate against defined keys from the config file.
         :type inkey: str
-                      
+
         For each destinantion key, there is a list in the framework config file
         that defined possible typos associated with each key.  This method takes
         the provided key and compares against the list of allowable keys.  It will
         then return the authoritative value.
-        
-        Example: you might send the method the key DELIV.  This method will then 
+
+        Example: you might send the method the key DELIV.  This method will then
         look in the config file, and start iterating over all the possible keys
-        and the possible values that are associated with them.  The method will 
+        and the possible values that are associated with them.  The method will
         find the entry for delivery which is:
-        
+
         dlv : delivery, deliv, del, bcgwdlv, bcgwdlv1, bcgwdlvr1, bcgwdlvr, dlvr, dlv
-        
+
         In that line you will notice that there is an entry for 'deliv' therefor
         this method will return the authoritative key which is 'dlv'
-        
+
         The authoritative key can now be used to pull out values like destination
         host, destination servicename, etc.
-        
-        :return: The authoritative key that corresponds with the provided key as 
+
+        :return: The authoritative key that corresponds with the provided key as
         defined in the framework config file.
         :rtype: str
         '''
@@ -1061,17 +1063,20 @@ class TemplateConfigFileReader(object):
                                         self.const.ConfFileSection_global_devCredsFile)
         return credsFileName
 
-    def getDWMDbPort(self):
-        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbport)
+    #def getDWMDbPort(self):
+    #    return self.parser.get(self.const.ConfFile_dwm,
+    #                           self.const.ConfFile_dwm_dbport)
 
-    def getDWMDbInstance(self):
-        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbinstance)
+    #def getDWMDbInstance(self):
+    #    return self.parser.get(self.const.ConfFile_dwm,
+    #                           self.const.ConfFile_dwm_dbinstance)
 
-    def getDWMDbServer(self):
-        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbserver)
+    #def getDWMDbServer(self):
+    #    return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbserver)
 
     def getDWMDbUser(self):
-        return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbuser)
+        return self.parser.get(self.const.ConfFile_dwm,
+                               self.const.ConfFile_dwm_dbuser)
 
     def getDWMTable(self):
         dwmTab = self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_table)
@@ -1134,26 +1139,6 @@ class TemplateConfigFileReader(object):
         token = self.parser.get(
             self.const.FMEServerSection,
             self.const.FMEServerSection_Token)
-        return token
-
-    def getJenkinsCreateSDEConnectionFileURL(self):
-        '''
-        The path to the sde connection file that should be created by a jenkins
-        job.
-        '''
-        url = self.parser.get(
-            self.const.jenkinsSection,
-            self.const.jenkinsSection_createSDEconnFile_url)
-        return url
-
-    def getJenkinsCreateSDEConnectionFileToken(self):
-        '''
-        The token that should be used to authorize communication with Jenkins
-        when creating new SDE connection files.
-        '''
-        token = self.parser.get(
-            self.const.jenkinsSection,
-            self.const.jenkinsSection_createSDEconnFile_token)
         return token
 
     def getOracleDirectConnectClientString(self):
@@ -1283,14 +1268,13 @@ class TemplateConfigFileReader(object):
             self.const.ConfFileSection_global,
             self.const.ConfFileSection_global_ARCGISDesktopRootDir)
         return arcGISInstallDir
-    
+
     def getPythonRootDir(self):
         # defaultArcPythonPath
         pythonRootdir = self.parser.get(
             self.const.ConfFileSection_global,
             self.const.ConfFileSection_global_PythonRootDir)
         return pythonRootdir
-
 
     def getSourcePmpResources(self):
         '''
@@ -1310,7 +1294,8 @@ class TemplateConfigFileReader(object):
         '''
         :return: default connection port for SQL server databases (from config file)
         '''
-        return self.parser.get(self.const.sqlserverSection, self.const.sqlserver_param_port)
+        return self.parser.get(self.const.sqlserverSection,
+                               self.const.sqlserver_param_port)
 
     def getEmailSMTPServer(self):
         '''
@@ -3595,49 +3580,48 @@ class CalcParamsDataBC(object):
 
     def __createSDEConnectionFile(self, connectionFileFullPath, host, serviceName, port=None):
         '''
-        This method used to make a rest call to a job that would assemble the 
-        sde connection file.  This is no longer possible so instead will call 
+        This method used to make a rest call to a job that would assemble the
+        sde connection file.  This is no longer possible so instead will call
         a module that will setup the python paths for the arcpy import
         then call another module to create the sde file
         '''
         # this will get the arcpy paths, and add them to the sys.path
-        # parameter which should then allow for use of arcpy using the 
+        # parameter which should then allow for use of arcpy using the
         # fme python default interpreter
         try:
             # this will get the arcpy paths, and add them to the sys.path
-            # parameter which should then allow for use of arcpy using the 
+            # parameter which should then allow for use of arcpy using the
             # fme python default interpreter
             arcpyPaths = InstallPaths.ArcPyPaths()
             arcpyPaths.getPathsAndAddToPYTHONPATH(self.const.PythonVersion)
         except WindowsError, e:
-            # 
+            #
             self.logger.exception(e)
             msg = "was unable to pull the arc install from the registry.  trying " + \
                   'to guess what the install location is before failing.'
             self.logger.warning(msg)
             desktopDir = self.paramObj.getArcGISDesktopRootDirectory()
             pythonRootDir = self.paramObj.getPythonRootDir()
-            
-            
+
             arcpyPaths = InstallPaths.ArcPyPaths()
             desktopPaths = arcpyPaths.getArcGisDesktopPaths(desktopDir)
             pyPaths = arcpyPaths.ammendPythonPaths(pythonRootDir)
-            
-            desktopPaths.extend(pyPaths) # merge the two lists
+
+            desktopPaths.extend(pyPaths)  # merge the two lists
             sys.path.extend(desktopPaths)
-            #self.paramObj.get
-            #if os.path.exists(E:\sw_nt\arcgis\Desktop10.2)
-            
+            # self.paramObj.get
+            # if os.path.exists(E:\sw_nt\arcgis\Desktop10.2)
+
         except:
             raise
-        
+
         # next step... call CreateSDEConnectonFile module to create the path
         # I know its strange to import this module here as opposed to at the top
-        # reason is this module uses arcpy... importing arcpy has a significatn 
-        # processing costs as it can take up to 30 seconds to complete.  Also 
+        # reason is this module uses arcpy... importing arcpy has a significatn
+        # processing costs as it can take up to 30 seconds to complete.  Also
         # the number of times this needs to be done is rare.
         import CreateSDEConnectionFile
-        
+
         connFile = CreateSDEConnectionFile.CreateConnectionFile(connectionFileFullPath, host, serviceName, port)
         connFile.createConnFile()
 
@@ -4186,7 +4170,7 @@ class ModuleLogConfig(object):
         tmpLog = logging.getLogger(__name__)
         tmpLog.debug("name of current logger: %s", __name__)
         tmpLog.debug("logFileFullPath: %s", logFileFullPath)
-
+        tmpLog.debug("handlers already configed: {0}".format(tmpLog.handlers))
         if not tmpLog.handlers:
             logging.logFileName = logFileFullPath
             const = TemplateConstants()
@@ -4565,7 +4549,7 @@ class DWMWriter(object):
             self.const = TemplateConstants()
         self.fme = fme
         # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
-        modDotClass = '{0}'.format(__name__)
+        modDotClass = __name__
         self.logger = logging.getLogger(modDotClass)
 
         self.params = CalcParamsBase(self.fme.macroValues)
@@ -4574,7 +4558,7 @@ class DWMWriter(object):
         self.config = TemplateConfigFileReader(self.destKey)
 
         self.dwmKey = self.config.getDWMDestinationKey(self.destKey)
-        # incase the dwm key is
+        # in case the dwm key is
         self.config = TemplateConfigFileReader(self.dwmKey)
 
         self.getDatabaseConnection()
@@ -4804,12 +4788,44 @@ class DWMWriter(object):
         '''
         return self.fme.totalFeaturesWritten
 
-    def getTotalFeaturesRejectedCount(self):  # pylint: disable=no-self-use
+    def getTotalFeaturesRejectedCount(self, subprocess=True):  # pylint: disable=no-self-use
         '''
         :return: the total number of features that have been rejected by the
                  replication.  Currently not enabled, only returns None.
+                 
+        Steps:
+        a) does ffs file exist?
+        b) create ffs file reader
+        c) determine how many features exist in the ffs file
+        d) return them
+        
+        
+        
+        
+        for both 
+          - start by getting the value of fme.logFileName
+          - just add a .ffs extension (don't remove the log extension just 
+            add to it with .ffs.
+          - if that file exists there is your ffs file.
+          - open and read it.
+        
         '''
-        return None
+        #self.params.get
+        retVal = None
+        logFile = self.getLogFileName()
+        self.logger.debug("log file path: %s", logFile)
+        logFileNoSuffix = os.path.splitext(logFile)[0]
+        ffsFileName = '{0}_log.ffs'.format(logFileNoSuffix)
+        self.logger.debug("ffs file is: %s", ffsFileName)
+        if os.path.exists(ffsFileName):
+            self.logger.debug("creating and FFReader object")
+            ffs = FFSReader.Reader(ffsFileName)
+            if subprocess:
+                retVal = ffs.getFeatureCountSeparateProcess()
+            else:
+                retVal = ffs.getFeatureCountSameProcess()
+            self.logger.debug("failed features read from ffs file: %s", retVal)
+        return retVal
 
     def getNotificationEmail(self):  # pylint: disable=no-self-use
         '''
@@ -4825,7 +4841,6 @@ class DWMWriter(object):
                  parameters logging and the other for the actual fme logging /
                  startup and shutdown logging.  The latter is the one returned
                  by this method.
-
         How it was done:
 
         logFilename = os.path.abspath(logFile)
@@ -4833,9 +4848,6 @@ class DWMWriter(object):
         logFilename = logFilename.replace(' ','+')
         '''
         logFile = self.fme.logFileName
-        # if logFile:
-        #    logFile = os.path.abspath(logFile)
-        #    logFile = urllib.quote(logFile)
         return logFile
 
     def getDataSource(self):

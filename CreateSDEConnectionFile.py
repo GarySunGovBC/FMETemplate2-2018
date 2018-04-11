@@ -63,10 +63,10 @@ class CreateConnectionFile(object):
             else:
                 easyConnectString = '{0}:{1}/{2}'.format(self.host, self.port, self.serviceName)
             self.logger.debug("easyConnectString: %s", easyConnectString)
-            
+
             self.logger.debug("importing arcpy...")
             import arcpy  # @UnresolvedImport
-                
+
             self.logger.debug("arcpy imported")
             arcpy.SetProduct('arcinfo')
             self.logger.debug('arcpy product info %s', arcpy.ProductInfo())

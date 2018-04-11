@@ -20,16 +20,17 @@ import pprint
 import DataBCFMWTemplate
 import logging
 
+
 class Test_CalcParams(unittest.TestCase):
 
     def setUp(self):
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.DEBUG)
 
-        #ch = logging.StreamHandler()
-        #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        #ch.setFormatter(formatter)
-        #self.logger.addHandler(ch)
+        # ch = logging.StreamHandler()
+        # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # ch.setFormatter(formatter)
+        # self.logger.addHandler(ch)
 
         # dummy data used for testing.
         # these are for a file source
@@ -137,7 +138,6 @@ class Test_CalcParams(unittest.TestCase):
                                     'SRC_PORT': 443
                                     }
 
-
         self.fmeMacroValues = self.fmeMacroValues_fileSrc
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
 
@@ -147,13 +147,13 @@ class Test_CalcParams(unittest.TestCase):
         otherLogger.setLevel(logging.DEBUG)
 
         self.logger.setLevel(logging.DEBUG)
-        
+
         print 'getting the handlers, '
         hasStream = False
         for handler in self.logger.handlers:
             if isinstance(handler, logging.StreamHandler):
                 hasStream = True
-            #print handler
+            # print handler
         if not hasStream:
             ch = logging.StreamHandler()
             formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s')
@@ -169,22 +169,22 @@ class Test_CalcParams(unittest.TestCase):
     def test_getDestServer(self):
         host = self.calcParams.getDestinationHost()
         print 'host', host
-        
+
     def test_getDestinationTables(self):
         tabs = self.calcParams.getDestinationTables()
         expect = ['CLAB_INDIAN_RESERVES']
         msg = 'did not properly retrieve the destination tables, got {0}' + \
               'expected {1}'
         msg = msg.format(tabs, expect)
-        self.assertEqual(tabs, expect,  msg)
-        
+        self.assertEqual(tabs, expect, msg)
+
         tabs = self.calcParams.getDestinationTables(includeSchemaPrefix=True)
         expect = ['WHSE_ADMIN_BOUNDARIES.CLAB_INDIAN_RESERVES']
         msg = 'did not properly retrieve the destination tables, got {0}' + \
               'expected {1}'
         msg = msg.format(tabs, expect)
-        self.assertEqual(set(tabs), set(expect),  msg)
-        
+        self.assertEqual(set(tabs), set(expect), msg)
+
         self.calcParams.fmeMacroVals['DEST_FEATURE_2'] = 'TEST123'
         self.calcParams.fmeMacroVals['DEST_SCHEMA_2'] = 'SCHEMATEST'
         tabs = self.calcParams.getDestinationTables(includeSchemaPrefix=True)
@@ -192,8 +192,8 @@ class Test_CalcParams(unittest.TestCase):
         msg = 'did not properly retrieve the destination tables, got {0}' + \
               'expected {1}'
         msg = msg.format(tabs, expect)
-        self.assertEqual(set(tabs), set(expect),  msg)
-        
+        self.assertEqual(set(tabs), set(expect), msg)
+
         self.calcParams.fmeMacroVals['DEST_FEATURE_5'] = 'TEST5555'
         self.calcParams.fmeMacroVals['DEST_SCHEMA_5'] = 'SCHEMATEST_5555'
         tabs = self.calcParams.getDestinationTables(includeSchemaPrefix=True)
@@ -201,27 +201,27 @@ class Test_CalcParams(unittest.TestCase):
         msg = 'did not properly retrieve the destination tables, got {0}' + \
               'expected {1}'
         msg = msg.format(tabs, expect)
-        self.assertEqual(set(tabs), set(expect),  msg)
-        
+        self.assertEqual(set(tabs), set(expect), msg)
+
         self.calcParams.fmeMacroVals['DEST_FEATURE_6'] = 'TEST_NUM6'
         tabs = self.calcParams.getDestinationTables(includeSchemaPrefix=True)
         expect = ['WHSE_ADMIN_BOUNDARIES.CLAB_INDIAN_RESERVES', 'SCHEMATEST.TEST123', 'SCHEMATEST_5555.TEST5555', 'WHSE_ADMIN_BOUNDARIES.TEST_NUM6']
         msg = 'did not properly retrieve the destination tables, got {0}' + \
               'expected {1}'
         msg = msg.format(tabs, expect)
-        self.assertEqual(set(tabs), set(expect),  msg)
-        
+        self.assertEqual(set(tabs), set(expect), msg)
+
         tabs = self.calcParams.getDestinationTables(includeSchemaPrefix=False)
         expect = ['CLAB_INDIAN_RESERVES', 'TEST123', 'TEST5555', 'TEST_NUM6']
         msg = 'did not properly retrieve the destination tables, got {0}' + \
               'expected {1}'
         msg = msg.format(tabs, expect)
-        self.assertEqual(set(tabs), set(expect),  msg)
+        self.assertEqual(set(tabs), set(expect), msg)
 
     def test_getDestinationPassword(self):
         passw = self.calcParams.getDestinationPassword()
         print 'passw', passw
-        
+
     def test_getSrcSDEDirectConnectString(self):
         self.fmeMacroValues = self.fmeMacroValues_DBSrc
         self.calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues)
@@ -294,7 +294,6 @@ class Test_CalcParams(unittest.TestCase):
         self.calcParams.fmeMacroVals['DEST_DB_ENV_KEY'] = 'DLV'
         spass = self.calcParams.getSourcePassword()
         self.assertIsNotNone(spass, msg.format(self.calcParams.fmeMacroVals['SRC_ORA_SCHEMA'], self.calcParams.fmeMacroVals['SRC_ORA_SERVICENAME']))
-
 
         msg = "unable to retrieve the password for schema {0} and " + \
               'instance {1} using source password retrieval methods'
@@ -560,17 +559,22 @@ class Test_CalcParams(unittest.TestCase):
 
         # use db params
         # should override a bunch of stuff, but this is quick and dirty!
-        srcSDEDC = self.calcParams.getSrcDatabaseConnectionFilePath()
-        print 'srcSDEDC', srcSDEDC
-        
+        try:
+            srcSDEDC = self.calcParams.getSrcDatabaseConnectionFilePath()
+        except:
+            print 'failed'
+        #print 'srcSDEDC', srcSDEDC
+
+
 class Test_CalcParamsDevel(unittest.TestCase):
+
     def setUp(self):
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.DEBUG)
-        #ch = logging.StreamHandler()
-        #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        #ch.setFormatter(formatter)
-        #self.logger.addHandler(ch)
+        # ch = logging.StreamHandler()
+        # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # ch.setFormatter(formatter)
+        # self.logger.addHandler(ch)
 
         self.fmeMacroValues_DBSrc = {
                                     'DEST_DB_ENV_KEY': 'DEV',
@@ -802,7 +806,6 @@ class Test_CalcParamsDevel(unittest.TestCase):
         msg = 'expecting the values {0} but recieved {1}'
         self.assertEqual(retrievedPassword, expectedConnectStr, msg.format(expectedConnectStr, retrievedPassword))
 
-
         # expectedPassword = 'thisIsNotThePassword'
         # 3msg = 'Development password retrieval returned {0} but expected {1} '
         # self.assertEqual(retrievedPassword, expectedPassword, msg.format(retrievedPassword, expectedPassword))
@@ -818,19 +821,19 @@ class Test_TemplateConfigFileReader(unittest.TestCase):
 
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.DEBUG)
-# 
+#
 #         otherLogger = logging.getLogger('DataBCFMWTemplate')
 #         otherLogger.setLevel(logging.DEBUG)
-# 
+#
 #         self.logger.setLevel(logging.DEBUG)
-# 
+#
 #         ch = logging.StreamHandler()
 #         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(lineno)d - %(message)s')
 #         ch.setFormatter(formatter)
 #         self.logger.addHandler(ch)
 #         self.logger = logging.getLogger()
 #         self.logger.debug("this is the the first log message")
-# 
+#
 #         otherLogger.addHandler(ch)
 
     def test_getDestinationDatabaseKey(self):
@@ -871,12 +874,12 @@ class Test_TemplateConfigFileReader(unittest.TestCase):
         msg = 'test should return {0} but instead returned {1}'
         msg = msg.format(expectedValue, pmpRes)
         self.assertEqual(expectedValue, pmpRes, msg)
-        
+
         msg = 'expecting method to return type: str but instead got a {0}. ' + \
               'value returned is: {1}'
         msg = msg.format(type(pmpRes), pmpRes)
         self.assertTrue(isinstance(pmpRes, list), msg)
-        
+
         testValue = 'DUMMY, DUMMY'
         expectedValue = ['DUMMY', 'DUMMY']
         self.confFileReader.parser.set(testDBEnv, testParamEntry, testValue)
@@ -884,7 +887,7 @@ class Test_TemplateConfigFileReader(unittest.TestCase):
         msg = 'test should return {0} but instead returned {1}'
         msg = msg.format(expectedValue, pmpRes)
         self.assertEqual(expectedValue, pmpRes, msg)
-        
+
         msg = 'expecting method to return type: list but instead got a {0}. ' + \
               'value returned is: {1}'
         msg = msg.format(type(pmpRes), pmpRes)
@@ -942,10 +945,13 @@ class Test_TemplateConfigFileReader(unittest.TestCase):
               "for any scripts that require putty to build ssh tunnels"
         self.assertTrue(puttyPathExists, msg)
 
+
 class Test_Startup(unittest.TestCase):
+
     def setUp(self):
 
         class fme(object):
+
             def __init__(self):
                 self.macroValues = {  'DEST_DB_ENV_KEY': 'DELIV',
                                 'DEST_FEATURE_1': 'CLAB_INDIAN_RESERVES',
@@ -993,6 +999,7 @@ class Test_Startup(unittest.TestCase):
                                 'FME_PRODUCT_NAME_ENCODED': 'FME<openparen>R<closeparen><space>2014<space>SP5',
                                 'SRC_FEATURE_1': 'CLAB_INDIAN_RESERVES',
                                 'SRC_FILEGDB_1': '\\\\data.bcgov\\data_staging_ro\\BCGW\\administrative_boundaries\\Federal_IRs.gdb'}
+
         self.fme = fme()
         self.logger = logging.getLogger()
         self.logger.setLevel(logging.DEBUG)
@@ -1002,11 +1009,16 @@ class Test_Startup(unittest.TestCase):
         start = DataBCFMWTemplate.Start(self.fme)
         start.startup()
 
+
 class Test_Shutdown(unittest.TestCase):
+
     def setUp(self):
+
         class fme(object):
+
             def __init__(self):
                 pass
+
         self.fme = fme()
         self.fme.macroValues = {  'DEST_DB_ENV_KEY': 'DELIV',
                                 'DEST_FEATURE_1': 'CLAB_INDIAN_RESERVES',
@@ -1094,6 +1106,7 @@ class Test_Shutdown(unittest.TestCase):
         self.fme.macroValues['DEST_DB_ENV_KEY'] = 'DBCDLV'
         dwmWriter = DataBCFMWTemplate.DWMWriter(self.fme)
 
+
 class Test_PMPHelper(unittest.TestCase):
 
     def setUp(self):
@@ -1110,7 +1123,7 @@ class Test_PMPHelper(unittest.TestCase):
         msg = 'The key file {0} does not exist, therefor was not created'
         msg = msg.format(sshKeyFile)
         self.assertTrue(keyExists, msg)
-        
+
         if os.path.exists(sshKeyFile):
             os.remove(sshKeyFile)
         self.pmpHelper.getSSHKey(sshKeyFile)
@@ -1120,14 +1133,15 @@ class Test_PMPHelper(unittest.TestCase):
         msg = msg.format(sshKeyFile)
         self.assertTrue(keyExists, msg)
 
+
 if __name__ == "__main__":
     import sys
-    
+
     # logging config
     logger = logging.getLogger()
 
-    #otherLogger = logging.getLogger('DataBCFMWTemplate')
-    #otherLogger.setLevel(logging.DEBUG)
+    # otherLogger = logging.getLogger('DataBCFMWTemplate')
+    # otherLogger.setLevel(logging.DEBUG)
 
     logger.setLevel(logging.DEBUG)
 
@@ -1137,9 +1151,7 @@ if __name__ == "__main__":
     logger.addHandler(ch)
     logger.debug("this is the the first log message")
 
-    #otherLogger.addHandler(ch)
-
-
+    # otherLogger.addHandler(ch)
 
     # sys.argv = ['', 'Test_TemplateConfigFileReader.test_getDestinationDatabaseKey',
     #                       'Test_TemplateConfigFileReader.test_validateKey']
@@ -1149,17 +1161,16 @@ if __name__ == "__main__":
     # sys.argv = ['','Test_CalcParams.test_getSQLServerSchemaForPasswordRetrieval']
     # sys.argv = ['','Test_CalcParamsDevel.test_getSrcSqlServerPassword']
 
-
-    #sys.argv =  ['', 'Test_TemplateConfigFileReader.test_getPmpResource']
-    #sys.argv = ['', 'Test_TemplateConfigFileReader.test_calcPuttyExecPath']
+    # sys.argv =  ['', 'Test_TemplateConfigFileReader.test_getPmpResource']
+    # sys.argv = ['', 'Test_TemplateConfigFileReader.test_calcPuttyExecPath']
     # sys.argv = ['','Test_Shutdown.test_shutdown']
 
-
-    #sys.argv = ['', 'Test_TemplateConfigFileReader.test_isDataBCNode', 'Test_TemplateConfigFileReader.test_getFMEServerNode']
-    sys.argv = ['', 'Test_CalcParams.test_getSrcDatabaseConnectionFilePath']
+    # sys.argv = ['', 'Test_TemplateConfigFileReader.test_isDataBCNode', 'Test_TemplateConfigFileReader.test_getFMEServerNode']
+    #sys.argv = ['', 'Test_CalcParams.test_getSrcDatabaseConnectionFilePath']
+    #sys.argv = ['']
     # 'Test_CalcParams.test_getFailedFeaturesFile',
     #
-    
+
     unittest.main()
 
     # suite = unittest.TestSuite()
@@ -1168,5 +1179,4 @@ if __name__ == "__main__":
     # suite.addTest(Test_CalcParamsDevel('test_getDestinationPassword'))
 
     # unittest.TextTestRunner().run(suite)
-
 
