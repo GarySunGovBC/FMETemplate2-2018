@@ -3,20 +3,20 @@ Created on Mar 22, 2018
 
 @author: kjnether
 '''
-import os.path
 import logging
-import sys
-import tempfile
+import os.path
+import re
 import shutil
 import subprocess
-import re
 import sys
+import tempfile
+
 import DataBCFMWTemplate
-logger = logging.getLogger(__name__)
 
 
 def attemptFMEObjectsImport():
     global fmeobjects
+    logger = logging.getLogger(__name__)
     try:
         logger.debug("Attempt 1: importing the fmeobjects module")
         import fmeobjects  # @UnresolvedImport
@@ -72,7 +72,7 @@ class Reader(object):
         attemptFMEObjectsImport()
         try:
             self.logger.debug("starting to open and read the ffs file: %s", ffsFile)
-            reader = fmeobjects.FMEUniversalReader('FFS', False, [])
+            reader = fmeobjects.FMEUniversalReader('FFS', False, [])  # @UndefinedVariable
             self.logger.debug("created the reader... now try reading")
             # reader.open(self.ffsFile, [])
             reader.open(ffsFile, [])
@@ -109,14 +109,8 @@ class Reader(object):
         output from the ffs file
 
         '''
-        # parameters needed to do this:
-        #   ffs file path
-        #   python exe path
-        #   path to this module __file__
-        #
-        # TODO: replace this with a method call to calculate the path
-        # pythonexe = 'E:\sw_nt\python27\ArcGIS10.2'
-        # -----------------------------------------------------------------
+        param = DataBCFMWTemplate.TemplateConfigFileReader('DLV')
+        #frameworkRootDir = param.getTemplateRootDirectory()
         try:
             # this will get the arcpy paths, and add them to the sys.path
             # parameter which should then allow for use of arcpy using the
@@ -130,7 +124,6 @@ class Reader(object):
             msg = "was unable to pull the arc install from the registry.  trying " + \
                   'to guess what the install location is before failing.'
             self.logger.warning(msg)
-            param = DataBCFMWTemplate.TemplateConfigFileReader('DLV')
             pythonRootDir = param.getPythonRootDir()
         except:
             raise
@@ -146,10 +139,10 @@ class Reader(object):
             thisFileList[1] = '.py'
         thisFileString = ''.join(thisFileList)
         self.logger.debug("thisFileString: %s", thisFileString)
-        
+
         # making sure all the template files are available
         curDir = os.path.dirname(__file__)
-        libDir = os.path.join(curDir, 'lib')
+        #libDir = os.path.join(curDir, 'lib')
         self.logger.debug("syspath %s", sys.path)
 
         # make sure all of sys.path is a regular string
@@ -159,21 +152,13 @@ class Reader(object):
 
         syspathString = ';'.join(sysPathStrList)
         self.logger.debug("syspath string %s, %s", syspathString, type(syspathString))
-        #my_env['PYTHONPATH'] = curDir + ';' + libDir + ';' + syspathString + ';' + my_env['PATH']
-        #my_env['PATH']       = curDir + ';' + libDir + ';' +  syspathString + ';' + my_env['PATH']
+        # my_env['PYTHONPATH'] = curDir + ';' + libDir + ';' + syspathString + ';' + my_env['PATH']
+        # my_env['PATH']       = curDir + ';' + libDir + ';' +  syspathString + ';' + my_env['PATH']
+
         my_env['PYTHONPATH'] = r'\\data.bcgov\work\scripts\python\DataBCFmeTemplate2\lib'
-        
-        #for curEnv in my_env:
-        #    if not isinstance(my_env[curEnv], str):
-        #        self.logger.error("env that is not string is: %s", curEnv, type(my_env[curEnv]))
-                
-#         my_envList = my_env['PATH'].split(';')
-#         for curEnv in my_envList:
-#             self.logger.debug("env: %s", curEnv)
-#         self.logger.debug("------------------------------------------------")
-#         for curEnv in sys.path:
-#             self.logger.debug("sys path: {0}".format(curEnv))
-#         
+        # not using this for anything in the template reader that has to do with keys
+        # so hard coding the 'DLV' key.
+        DataBCFMWTemplate.TemplateConfigFileReader('DLV')
         self.logger.debug("myenv: %s", my_env)
 
         commandList = [pythonExe, thisFileString, self.ffsFile]
@@ -209,38 +194,6 @@ class Reader(object):
         else:
             feats = self.getFeatureCountSeparateProcess()
         return feats
-#         tempDir = os.path.dirname(self.ffsFile)
-#         #ffsFile = tempfile.NamedTemporaryFile(dir=tempDir, delete=False)
-#         ffsFile = tempfile.mktemp(suffix='.ffs', dir=tempDir, prefix='tmp_')
-#         self.logger.debug("tempfile name: %s", ffsFile)
-#         shutil.copyfile(self.ffsFile, ffsFile)
-#         self.logger.debug("copied %s to %s", self.ffsFile, ffsFile)
-#         try:
-#             attemptFMEObjectsImport()
-#             self.logger.debug("starting to open and read the ffs file: %s", ffsFile)
-#             reader = fmeobjects.FMEUniversalReader('FFS', False, [])
-#             self.logger.debug("created the reader... now try reading")
-#             # reader.open(self.ffsFile, [])
-#             reader.open(ffsFile, [])
-#
-#             # Read all the features on the dataset.
-#             feature = reader.read()
-#             # atribNames = feature.getAllAttributeNames()
-#             # self.logger.debug( 'atribNames: %s', atribNames)
-#             featureCnt = 0
-#             while feature != None:
-#                 featureCnt += 1
-#                 # Just log each feature.
-#                 # print 'feature: %s', feature
-#                 feature = reader.read()
-#             self.logger.info('total features: %s', featureCnt)
-#             # Close the reader before leaving.
-#             reader.close()
-#         finally:
-#             if os.path.exists(ffsFile):
-#                 self.logger.debug("cleaning up the temp file: %s", ffsFile)
-#                 os.remove(ffsFile)
-#         return featureCnt
 
 
 if __name__ == '__main__':

@@ -57,7 +57,6 @@ import DB.DbLib
 import DataBCEmailer as Emailer
 import DataBCDbMethods
 import FMWExecutionOrderDependencies
-import requests
 
 
 class TemplateConstants(object):

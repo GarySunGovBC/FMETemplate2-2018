@@ -21,15 +21,17 @@ import logging
 import os.path
 import sys
 
+
 class RegistryReader(object):
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        
+
     def getKeyValues(self, keys):
         self.logger.debug("keys: %s", keys)
         keyStr = '\\'.join(str(e) for e in keys)
-        #keyStr = '\\'.join(keys)
-        self.logger.debug( 'keyStr: %s', keyStr)
+        # keyStr = '\\'.join(keys)
+        self.logger.debug('keyStr: %s', keyStr)
         explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
         subKeys = []
         try:
@@ -43,9 +45,9 @@ class RegistryReader(object):
         return subKeys
 
     def getKeyItems(self, keys):
-        #keyStr = '\\'.join(keys)
+        # keyStr = '\\'.join(keys)
         keyStr = '\\'.join(str(e) for e in keys)
-        self.logger.debug( 'keyStr: %s', keyStr)
+        self.logger.debug('keyStr: %s', keyStr)
         explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
         values = []
         try:
@@ -57,7 +59,8 @@ class RegistryReader(object):
         except WindowsError:
             self.logger.debug('Iteration is now complete')
         return values
-    
+
+
 class ArcGisInstallPaths(RegistryReader):
 
     def __init__(self):
@@ -160,9 +163,6 @@ class ArcGisInstallPaths(RegistryReader):
         return retVal
 
 
-    
-
-
 class PythonInstallPaths(RegistryReader):
 
     def __init__(self):
@@ -171,7 +171,7 @@ class PythonInstallPaths(RegistryReader):
         self.startKeys = ['SOFTWARE']
         self.rootKeyStr = 'HKEY_LOCAL_MACHINE'
         self.registryRoot = eval('_winreg.{0}'.format(self.rootKeyStr))
-    
+
     def getInstallDir(self, version=None):
         '''
         searches for HKEY_LOCAL_MACHINE->SOFTWARE->Python->PythonCore->{latest version}->InstallPath
@@ -224,8 +224,8 @@ class PythonInstallPaths(RegistryReader):
                 if not isinstance(version, numbers.Number):
                     # not a string and not a number, don't know what to do
                     msg = 'specified a python version to look for which is ' + \
-                         'defined as a {0} type, expecting a string or a ' +\
-                         'number.  Actual value as a string is {1}' 
+                         'defined as a {0} type, expecting a string or a ' + \
+                         'number.  Actual value as a string is {1}'
                     msg = msg.format(type(version), version)
                     raise ValueError, msg
                 else:
@@ -254,23 +254,25 @@ class PythonInstallPaths(RegistryReader):
             if latest:
                 retVal = latest
         return retVal
-        
+
+
 class ArcPyPaths(object):
     '''
     mines the registry to find out about where arcgis and arcpy are installed
     then constructs a list of paths that need to be added to the PYTHONPATH
     env var in order to successfully import arcpy
     '''
+
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.defaultPyVersion = '2.7'
-        
+
     def getPaths(self, pythonVersion=None):
         arcGisPaths = self.getArcGisDesktopPaths()
         pythonPaths = self.getPythonPaths(pythonVersion)
-        arcGisPaths.extend(pythonPaths) # merge the two lists
+        arcGisPaths.extend(pythonPaths)  # merge the two lists
         return arcGisPaths
-        
+
     def getPythonPaths(self, version=None):
         if not version:
             version = self.defaultPyVersion
@@ -278,25 +280,25 @@ class ArcPyPaths(object):
         pythonRootPath = pypath.getInstallDir(version)
         returnPaths = self.ammendPythonPaths(pythonRootPath)
         return returnPaths
-    
+
     def ammendPythonPaths(self, pythonRootDir):
         '''
         :param rootDir: the root python install directory
         :type rootDir: str
-        
-        :return: The supplied python root dir with the 
+
+        :return: The supplied python root dir with the
                  following paths ammended:
                    - lib
                    - Lib/site-packages
         '''
         sitePaths = os.path.join(pythonRootDir, 'Lib', 'site-packages')
         libPaths = os.path.join(pythonRootDir, 'lib')
-        
+
         returnPaths = []
         returnPaths.append(sitePaths)
         returnPaths.append(libPaths)
         return returnPaths
-        
+
     def getArcGisDesktopPaths(self, desktopRootDir=None):
         '''
         gets the paths associated with the install of arcgis desktop
@@ -305,20 +307,21 @@ class ArcPyPaths(object):
         if not desktopRootDir:
             desktop = ArcGisInstallPaths()
             desktopRootDir = desktop.getInstallDir()
-        
+
         arcpyDir = os.path.join(desktopRootDir, 'arcpy')
         toolboxDir = os.path.join(desktopRootDir, 'ArcToolbox', 'Scripts')
         binPath = os.path.join(desktopRootDir, 'bin')
-        
+
         paths2Add.append(arcpyDir)
         paths2Add.append(toolboxDir)
         paths2Add.append(binPath)
-        
+
         return paths2Add
-    
+
     def getPathsAndAddToPYTHONPATH(self, pythonVersion=None):
         paths = self.getPaths(pythonVersion)
         sys.path.extend(paths)
+
 
 class ESRIArcGISInstallDirNotFound(OSError):
 
@@ -332,14 +335,13 @@ if __name__ == '__main__':
     logger.addHandler(logging.StreamHandler())
     logger.setLevel(logging.DEBUG)
 
-    #arc = ArcGisInstallPaths()
-    #arc.getInstallDir()
-    
-    #py = PythonInstallPaths()
-    #installDir = py.getInstallDir('2.7')
-    #print 'installDir', installDir
+    # arc = ArcGisInstallPaths()
+    # arc.getInstallDir()
+
+    # py = PythonInstallPaths()
+    # installDir = py.getInstallDir('2.7')
+    # print 'installDir', installDir
     pyVersion = '2.7'
     arcpath = ArcPyPaths()
     arcpath.getPathsAndAddToPYTHONPATH(pyVersion)
-    
 
