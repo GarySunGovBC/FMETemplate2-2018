@@ -200,10 +200,12 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         usage = 'FFSReader <ffs file to read>'
         raise ValueError, usage
-
-    logger = logging.getLogger(__name__)
-    logger.addHandler(logging.StreamHandler())
-    logger.setLevel(logging.DEBUG)
+    
+    # TODO: Modify this to use the logging config file to retrieve the 
+    #       logger when called as its own script
+    #logger = logging.getLogger(__name__)
+    #logger.addHandler(logging.StreamHandler())
+    #logger.setLevel(logging.DEBUG)
 
     ffsFile = sys.argv[1]
     rdr = Reader(ffsFile)
