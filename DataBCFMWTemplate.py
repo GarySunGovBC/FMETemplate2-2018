@@ -181,6 +181,8 @@ class TemplateConstants(object):
     # FMWParams_DestInstance = 'DEST_INSTANCE'
     FMWParams_DestServiceName = 'DEST_ORA_SERVICENAME'
     FMWParams_DestPassword = 'DEST_PASSWORD'
+    
+    FMWParams_FailedFeatures = 'FAILED_FEATURES'
 
     # published parameters - source
     FMWParams_srcDataSet = 'SRC_DATASET_'  # prefix for any file based source dataset
@@ -702,7 +704,7 @@ class DefaultShutdown(object):
                 self.logger.info('Starting into analyze block, destination key word: %s',
                                  self.fme.macroValues[self.const.FMWParams_DestKey])
                 # analyze destination tables
-                dbMeth = DataBCDbMethods.DataBCDbMethods(self.fme, self.const, 
+                dbMeth = DataBCDbMethods.DataBCDbMethods(self.fme, self.const,
                                                          self.params, self.config)
                 dbMeth.analyzeDestinationFeatures()
 
@@ -2072,6 +2074,19 @@ class GetPublishedParams(object):
                 destFeatures.append(destFeat)
         return destFeatures
 
+    def getFailedFeaturesFiles(self):
+        '''
+        does a search in the FME macro parameters for any parameters that match
+        the pattern FAILED_FEATURE.* and returns the values associated with them
+        '''
+        failedFiles = []
+        patternString = '^{0}.*$'.format(self.const.FMWParams_FailedFeatures)
+        pattern = re.compile(patternString, re.IGNORECASE)
+        for paramKey in self.fmeMacroVals:
+            if pattern.match(paramKey):
+                failedFiles.append(self.fmeMacroVals[paramKey])
+        return failedFiles
+    
     def getFMWDirectory(self):
         '''
         :return: the directory that the current fmw that is being run resides in
@@ -4600,6 +4615,7 @@ class DWMWriter(object):
         self.logger = logging.getLogger(modDotClass)
 
         self.params = CalcParamsBase(self.fme.macroValues)
+        self.pubParams = GetPublishedParams(self.fme.macroValues)
 
         self.destKey = self.params.getDestDatabaseEnvKey()
         self.config = TemplateConfigFileReader(self.destKey)
@@ -4864,6 +4880,13 @@ class DWMWriter(object):
         logFileNoSuffix = os.path.splitext(logFile)[0]
         ffsFileName = '{0}_log.ffs'.format(logFileNoSuffix)
         self.logger.debug("ffs file is: %s", ffsFileName)
+        
+        # ffs files from SDE 30 writer are named with the same name as the job
+        # number.  If the fmw uses the SDE Geodb writer then the the ffs files 
+        # will come from a published parameter.
+        
+        ffsFileNameGeoDb = self.pubParams.getFailedFeaturesFiles()
+        
         if os.path.exists(ffsFileName):
             self.logger.debug("creating and FFReader object")
             ffs = FFSReader.Reader(ffsFileName)
