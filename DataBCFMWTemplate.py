@@ -181,6 +181,8 @@ class TemplateConstants(object):
     # FMWParams_DestInstance = 'DEST_INSTANCE'
     FMWParams_DestServiceName = 'DEST_ORA_SERVICENAME'
     FMWParams_DestPassword = 'DEST_PASSWORD'
+    
+    FMWParams_FailedFeatures = 'FAILED_FEATURES'
 
     # published parameters - source
     FMWParams_srcDataSet = 'SRC_DATASET_'  # prefix for any file based source dataset
@@ -702,7 +704,7 @@ class DefaultShutdown(object):
                 self.logger.info('Starting into analyze block, destination key word: %s',
                                  self.fme.macroValues[self.const.FMWParams_DestKey])
                 # analyze destination tables
-                dbMeth = DataBCDbMethods.DataBCDbMethods(self.fme, self.const, 
+                dbMeth = DataBCDbMethods.DataBCDbMethods(self.fme, self.const,
                                                          self.params, self.config)
                 dbMeth.analyzeDestinationFeatures()
 
@@ -1106,11 +1108,19 @@ class TemplateConfigFileReader(object):
 
     def getFailedFeaturesFile(self):
         '''
-        :return: the name of the file that should be used to store failed features
+        :return: the name of the file that should be used to store failed 
+                 features.
+                 
+                 5-7-2018 - modifying so that the name of the ffs file is going to 
+                 be:
+             $(DEST_SCHEMA)_$(DEST_FEATURE_1)_JOB_$(FME_JOB_ID)_failed_features.ffs
         '''
+        #destSchema = self.getDest
+        
         failedFeatsFile = self.parser.get(
             self.const.ConfFileSection_global,
             self.const.ConfFileSection_global_failedFeaturesFile)
+        
         return failedFeatsFile
 
     def getFMEServerHost(self):
@@ -1996,6 +2006,25 @@ class GetPublishedParams(object):
         destSchemaKey = self.getMacroKeyForPosition(destSchemaKey, position)
         destSchema = self.getFMEMacroValue(destSchemaKey)
         return destSchema
+    
+    def getDestinationFeature(self, position=None):
+        '''
+        :param position: in the event that there is more than one DEST_FEATURE+#
+                         the position is used to indicate which DEST_FEATURE_# 
+                         it is that you want to retrieve. 
+        
+        if position is set to 2 then will try to retrieve the value for the 
+        published parameter DEST_FEATURE_2 
+        '''
+        position2Use = 1
+        if position:
+            position2Use = position
+        destFeatureKey = self.const.FMWParams_DestFeatPrefix
+        if destFeatureKey[-1] == '_':
+            destFeatureKey = destFeatureKey[0:-1]
+        destFeatureKey = self.getMacroKeyForPosition(destFeatureKey, position2Use)
+        destFeature = self.getFMEMacroValue(destFeatureKey)
+        return destFeature
 
     def getDestinationTables(self, includeSchemaPrefix=False):
         '''
@@ -2045,6 +2074,19 @@ class GetPublishedParams(object):
                 destFeatures.append(destFeat)
         return destFeatures
 
+    def getFailedFeaturesFiles(self):
+        '''
+        does a search in the FME macro parameters for any parameters that match
+        the pattern FAILED_FEATURE.* and returns the values associated with them
+        '''
+        failedFiles = []
+        patternString = '^{0}.*$'.format(self.const.FMWParams_FailedFeatures)
+        pattern = re.compile(patternString, re.IGNORECASE)
+        for paramKey in self.fmeMacroVals:
+            if pattern.match(paramKey):
+                failedFiles.append(self.fmeMacroVals[paramKey])
+        return failedFiles
+    
     def getFMWDirectory(self):
         '''
         :return: the directory that the current fmw that is being run resides in
@@ -2637,16 +2679,16 @@ class CalcParamsBase(GetPublishedParams):
             raise ValueError, msg
         return waitTime
 
-    def getFailedFeaturesFile(self, failedFeatsFileName=None):
+    def getFailedFeaturesFile(self, failedFeatsFileName=None, position=None):
         '''
-        Sends back the FFS File associated with this job
+        Sends back the FFS File associated with this job, 
         '''
         if not self.plugin:
             self.addPlugin()
         msg = self.debugMethodMessage.format("getFailedFeaturesFile")
         self.logger.debug(msg)
         self.logger.debug("Calling plugin to get the failed features")
-        failedFeatures = self.plugin.getFailedFeaturesFile(failedFeatsFileName)
+        failedFeatures = self.plugin.getFailedFeaturesFile(failedFeatsFileName, position)
         return failedFeatures
 
     def getFMWLogFileRelativePath(self, create=True):
@@ -3404,7 +3446,7 @@ class CalcParamsDevelopment(object):
             raise ValueError, msg
         return retVal
 
-    def getFailedFeaturesFile(self, failedFeatsFileName=None):
+    def getFailedFeaturesFile(self, failedFeatsFileName=None, postion=None):
         '''
         When run in development mode will look for an
         ./outputs/failed directory, if it doesn't exist
@@ -3412,6 +3454,7 @@ class CalcParamsDevelopment(object):
 
         The csv file will be failedFeatures.csv
         '''
+        self.logger.debug("failed features in dev mode")
         fmwDir = self.parent.getFMWDirectory()
         # fmwFile = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
         # params to get from config file
@@ -3419,7 +3462,18 @@ class CalcParamsDevelopment(object):
         # failedFeaturesFile
         outputsDir = self.paramObj.getOutputsDirectory()
         failedFeatsDir = self.paramObj.getFailedFeaturesDir()
-        failedFeatsFile = self.paramObj.getFailedFeaturesFile()
+        destSchema = self.parent.getDestinationSchema(postion)
+        destFeature = self.parent.getDestinationFeature(postion)
+        # ("^Y^m^d^H^M^S")_failed_features.ffs
+        now = datetime.datetime.now()
+        nowStr = now.strftime('%Y%m%d%H%M%S')
+        failedFeatsFile = '{0}_{1}_{2}_failedFeatures.ffs'.format(destSchema, destFeature, nowStr)
+
+        # changing where the failed features file comes from, instead of from 
+        # the framework config file it is calculated by appending the following
+        # parameters.
+        # $(DEST_SCHEMA)_$(DEST_FEATURE_1)_JOB_$(FME_JOB_ID)_failed_features.ffs
+        #failedFeatsFile = self.paramObj.getFailedFeaturesFile()
         self.logger.debug("failedFeatsFile: %s", failedFeatsFile)
         self.logger.debug("Starting dir for failed features is: %s", fmwDir)
 
@@ -4035,7 +4089,7 @@ class CalcParamsDataBC(object):
             raise ValueError, msg
         return pswd
 
-    def getFailedFeaturesFile(self, failedFeatsFileName=None):
+    def getFailedFeaturesFile(self, failedFeatsFileName=None, position=None):
         '''
         this is going to put the failed features
         into the template outputs directory.
@@ -4059,7 +4113,7 @@ class CalcParamsDataBC(object):
             os.makedirs(ffDir)
 
         fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
-        # fmwName = Util.getParamValue(self.const.FMWMacroKey_FMWName, self.fmeMacroVals)
+        #fmwName = Util.getParamValue(self.const.FMWMacroKey_FMWName, self.fmeMacroVals)
 
         fmwName, suffix = os.path.splitext(fmwName)
         del  suffix
@@ -4070,11 +4124,19 @@ class CalcParamsDataBC(object):
             self.logger.debug(msg)
             os.makedirs(fmwDir)
         if not failedFeatsFileName:
-            failedFeatsFile = self.paramObj.getFailedFeaturesFile()
+            #failedFeatsFile = self.paramObj.getFailedFeaturesFile()
+            destSchema = self.parent.getDestinationSchema(position)
+            destFeature = self.parent.getDestinationFeature(position)
+            jobNumStr = ''
+            if self.const.FMEMacroKey_JobId in self.fmeMacroVals:
+                jobNumStr = self.fmeMacroVals[self.const.FMEMacroKey_JobId]
+            # ("^Y^m^d^H^M^S")_failed_features.ffs
+            # job will be dest_schema 
+            failedFeatsFile = '{0}_{1}_{2}_failedFeatures.ffs'.format(destSchema, destFeature, jobNumStr)            
             ffFullPathFile = os.path.join(fmwDir, failedFeatsFile)
         else:
             ffFullPathFile = os.path.join(fmwDir, failedFeatsFileName)
-        msg = "The full file path for failed features csv file is {0}".format(ffFullPathFile)
+        msg = "The full file path for failed features ffs file is {0}".format(ffFullPathFile)
         self.logger.debug(msg)
         return ffFullPathFile
 
@@ -4553,6 +4615,7 @@ class DWMWriter(object):
         self.logger = logging.getLogger(modDotClass)
 
         self.params = CalcParamsBase(self.fme.macroValues)
+        self.pubParams = GetPublishedParams(self.fme.macroValues)
 
         self.destKey = self.params.getDestDatabaseEnvKey()
         self.config = TemplateConfigFileReader(self.destKey)
@@ -4817,6 +4880,13 @@ class DWMWriter(object):
         logFileNoSuffix = os.path.splitext(logFile)[0]
         ffsFileName = '{0}_log.ffs'.format(logFileNoSuffix)
         self.logger.debug("ffs file is: %s", ffsFileName)
+        
+        # ffs files from SDE 30 writer are named with the same name as the job
+        # number.  If the fmw uses the SDE Geodb writer then the the ffs files 
+        # will come from a published parameter.
+        
+        ffsFileNameGeoDb = self.pubParams.getFailedFeaturesFiles()
+        
         if os.path.exists(ffsFileName):
             self.logger.debug("creating and FFReader object")
             ffs = FFSReader.Reader(ffsFileName)
@@ -4863,7 +4933,7 @@ class DWMWriter(object):
         if dataSourceList:
             dataSrcStr = ',+'.join(dataSourceList)
         if len(dataSrcStr) >= 180:
-            # oracle table for this only acccepts 180 characters, if the lenght is greater than
+            # oracle table for this only acccepts 180 characters, if the length is greater than
             # 180 then try to remove the path from all
             dataSrcTruncatedDirs = []
             dirlist = []
