@@ -728,6 +728,7 @@ class DefaultShutdown(object):
                     # the exception was in the shutdown not a problem with the actual
                     # fmw so only email databc.  Currently in beta feature, so emailing
                     # only myself (kevin.netherton@gov.bc.ca)
+                    emailer.addNotifyEmail('FAIL', email2Add)
                     emailer.notifyFail = email2Add
                 # add default email address for failures.
                 elif not emailer.notifyFail:
