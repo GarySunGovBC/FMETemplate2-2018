@@ -48,6 +48,8 @@ class EmailFrameworkBridge(object):
         self.logger = logging.getLogger(__name__)
         self.logger.debug("constructing emailer object")
 
+        self.validNotificationTypes = ['ALL', 'SUCCESS', 'FAIL']
+
         self.const = const  # TemplateConstants
         self.params = params  # calcparamsbase
         self.config = config  # templateconfigfile
@@ -59,11 +61,11 @@ class EmailFrameworkBridge(object):
 
         # print the macroValues
         # self.printMacros()
-        self.notifyAll = None
-        self.notifyFail = None
-        self.notifySuccess = None
+        self.notifyAll = []
+        self.notifyFail = []
+        self.notifySuccess = []
 
-        self.getNotificationEmails()
+        self.getNotificationEmailsFromFMEMacros()
 
     def printMacros(self):
         '''
@@ -107,20 +109,50 @@ class EmailFrameworkBridge(object):
         self.logger.debug("reformatted list: %s", emailList)
         return emailList
 
-    def getNotificationEmails(self):
+    def getNotificationEmailsFromFMEMacros(self):
         '''
         Reads the published parameters asssociated with the fme job and determines
         if there are any email notification parameters defined and if so populates
         the address properties with the contents of the various email parameters.
+        
+        Example of how notify should look:
+           'NOTIFY_ALL': 'bill<at>cat.com<lf>tony<at>dog.ca<lf>'
+
         '''
         self.logger.debug("getting the notification email addresses")
         for pubParam in self.fmeObj.macroValues:
-            if pubParam == self.const.FMWParams_Notify_All:
-                self.notifyAll = self.fmeObj.macroValues[pubParam]
-            if pubParam == self.const.FMWParams_Notify_Fail:
-                self.notifyFail = self.fmeObj.macroValues[pubParam]
-            if pubParam == self.const.FMWParams_Notify_Success:
-                self.notifySuccess = self.fmeObj.macroValues[pubParam]
+            if pubParam.upper() == self.const.FMWParams_Notify_All:
+                self.notifyAll.extend(self.reformatEmailAddresses(self.fmeObj.macroValues[pubParam]))
+                # self.notifyAll = self.fmeObj.macroValues[pubParam]
+            if pubParam.upper() == self.const.FMWParams_Notify_Fail:
+                self.notifyFail.extend(self.reformatEmailAddresses(self.fmeObj.macroValues[pubParam]))
+                # self.notifyFail = self.fmeObj.macroValues[pubParam]
+            if pubParam.upper() == self.const.FMWParams_Notify_Success:
+                self.notifySuccess.extend(self.reformatEmailAddresses(self.fmeObj.macroValues[pubParam]))
+                # self.notifySuccess = self.fmeObj.macroValues[pubParam]
+
+    def addNotifyEmail(self, notificationType, email2Add):
+        '''
+        :param notificationType: This is the type of failure to be associated
+                                 with the supplied email.  Valid values currently
+                                 allowed:
+                                 ALL, SUCCESS, FAIL
+        :param email2Add: This is the email that we want to add for the specified
+                          notification types
+        '''
+        if notificationType.upper() not in self.validNotificationTypes:
+            msg = 'You specified the notification type: {0} which is not a ' + \
+                  'valid notification type.  Valid types include: {1}'
+            msg = msg.format(notificationType, self.validNotificationTypes)
+            self.logger.error(msg)
+            raise ValueError, msg
+
+        if notificationType.upper() == 'FAIL':
+            self.notifyFail.append(email2Add)
+        elif notificationType.upper() == 'SUCCESS':
+            self.notifySuccess.append(email2Add)
+        elif notificationType.upper() == 'ALL':
+            self.notifyAll.append(email2Add)
 
     def areNotificationsDefined(self):
         '''
@@ -337,7 +369,7 @@ class EmailFrameworkBridge(object):
         self.logger.debug("constructing the subject line")
         fmwName = self.fmeObj.macroValues[self.const.FMWMacroKey_FMWName]
         dbEnv = self.getDestDbEnvKey()
-        status = self.getStatus()
+        status = self.getJobSuccessStatus()
         if status:
             statusText = 'Success'
         else:
@@ -346,7 +378,7 @@ class EmailFrameworkBridge(object):
         subjectText = subjectText.format(fmwName, statusText, dbEnv)
         return subjectText
 
-    def getStatus(self):
+    def getJobSuccessStatus(self):
         '''
         Gets the status string from the fme object.  Returns true or false
         to indicate success.
@@ -369,22 +401,27 @@ class EmailFrameworkBridge(object):
         # get the job status, and configure email messages according to the
         # contents
         self.logger.debug("getting the email addresses now.")
-        status = self.getStatus()
+        status = self.getJobSuccessStatus()
         emailAddresses = []
         if self.notifyAll:
-            notifyAll = self.reformatEmailAddresses(self.notifyAll)
-            self.logger.debug("notifyall: %s", notifyAll)
-            emailAddresses.extend(notifyAll)
+            #notifyAll = self.reformatEmailAddresses(self.notifyAll)
+            self.logger.debug("notifyall: %s", self.notifyAll)
+            emailAddresses.extend(self.notifyAll)
         if status:
             if self.notifySuccess:
-                notifySuccess = self.reformatEmailAddresses(self.notifySuccess)
-                self.logger.debug("notifySuccess: %s", notifySuccess)
-                emailAddresses.extend(notifySuccess)
+                #notifySuccess = self.reformatEmailAddresses(self.notifySuccess)
+                self.logger.debug("notifySuccess: %s", self.notifySuccess)
+                emailAddresses.extend(self.notifySuccess)
         else:
             if self.notifyFail:
-                notifyFail = self.reformatEmailAddresses(self.notifyFail)
-                self.logger.debug("notifyFail: %s", notifyFail)
-                emailAddresses.extend(notifyFail)
+                #notifyFail = self.reformatEmailAddresses(self.notifyFail)
+                self.logger.debug("notifyFail: %s", self.notifyFail)
+                emailAddresses.extend(self.notifyFail)
+        # making unique
+        emailAddresses = list(set(emailAddresses))
+        # getting rid of 'False' values, blank strings, blank objects, None's etc.
+        emailAddresses = [x for x in emailAddresses if x]
+        self.logger.debug("email list after removal of duplicates a nulls: %s", emailAddresses)
         return emailAddresses
 
 
@@ -401,6 +438,8 @@ class EmailServer(object):
     '''
 
     def __init__(self, config):
+        self.logger = logging.getLogger(__name__)
+        self.logger.debug("created an EmailServer")
         self.config = config
         self.smtpServer = None
         self.smtpPort = None
@@ -412,7 +451,9 @@ class EmailServer(object):
         file.
         '''
         self.smtpServer = self.config.getEmailSMTPServer()
+        self.logger.debug("smtpServer: %s", self.smtpServer)
         self.smtpPort = self.config.getEmailSMTPPort()
+        self.logger.debug("smtpPort: %s", self.smtpPort)
 
     def getSMTPPort(self):
         '''
@@ -447,6 +488,7 @@ class Email(object):
     '''
 
     def __init__(self, emailTo, emailFrom, emailSubject, fmwFileName, emailBody=None):
+        self.logger = logging.getLogger(__name__)
         self.emailTo = emailTo
         self.emailFrom = emailFrom
         self.emailSubject = emailSubject
