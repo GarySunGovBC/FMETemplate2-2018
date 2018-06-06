@@ -258,11 +258,13 @@ class EmailFrameworkBridge(object):
             status = unicode(status)
         scriptName = self.fmeObj.macroValues[self.const.FMWMacroKey_FMWName]
         self.logger.debug("script name: %s", scriptName)
-        source = self.getSource()
-        dest = self.getDestination()
+        sourceParamList = self.getSource()
+        #returnParamStr = '\n'.join(returnParamList)
+        sourceStr = '\n'.join(sourceParamList)
+        destStr = self.getDestination()
         jobNum = self.getJobNum()
         self.logger.debug("the body format is: %s", body)
-        body = body.format(scriptName, source, dest, jobNum, status)
+        body = body.format(scriptName, sourceStr, destStr, jobNum, status)
         return body
 
     def getJobNum(self):
@@ -307,24 +309,47 @@ class EmailFrameworkBridge(object):
         all the published parameters and returns anything that starts
         with SRC_ with the exception of SRC_PASSWORD
         '''
-        self.logger.debug("getting the sources for the script")
-        returnParamList = []
-        paramTmpltStr = '{0} = {1}\n'
+        self.logger.debug("getting the destination for the script")
         regexObj = re.compile('SRC_.*')
         omitRegexObj = re.compile(".*_PASSWORD$")
+        returnParamList = self.getParams(regexObj, omitRegexObj)
+        #returnParamStr = '\n'.join(returnParamList)
+        return returnParamList
+        
+    def getParams(self, paramTypeRegex, omitRegex):
+        '''
+        To avoid having to write the code twice to extract source and destination
+        parameters...
+        
+        :param paramTypeRegex:  The parameter name must match this regex
+        :param omitRegex: The parameter must NOT match this regex.
+        
+        :return: the published parameters that pass the criteria in a list
+                 of strings formatted like: param_name = param_value
+        '''
+        self.logger.debug("extracting published paramters")
+        returnParamList = []
+        paramTmpltStr = '{0} = {1}\n'
         self.logger.debug("regex's are now compiled")
         paramKeys = self.fmeObj.macroValues.keys()
         paramKeys.sort()
         for param in paramKeys:
-            if regexObj.match(param):
+            if paramTypeRegex.match(param):
                 # source param=
-                if not omitRegexObj.match(param):
+                if not omitRegex.match(param):
                     value = self.fmeObj.macroValues[param]
                     self.logger.debug("%s = %s", param, value)
                     paramStr = paramTmpltStr.format(param, value)
                     returnParamList.append(paramStr)
-        returnParamStr = '\n'.join(returnParamList)
-        return returnParamStr
+        return returnParamList
+    
+    def getDestPublishedParameters(self):
+        self.logger.debug("getting the destination for the script")
+        regexObj = re.compile('DEST_.*')
+        omitRegexObj = re.compile(".*_PASSWORD$")
+        returnParamList = self.getParams(regexObj, omitRegexObj)
+        #returnParamStr = '\n'.join(returnParamList)
+        return returnParamList
 
     def getDestination(self):
         '''
@@ -337,13 +362,22 @@ class EmailFrameworkBridge(object):
         retStr = 'None'
 
         destTmplt = 'schema: {0} host: {1} service name: {2}'
-
         if self.const.FMWParams_DestKey in self.fmeObj.macroValues:
             # params = DataBCFMWTemplate.CalcParams(self.fmeObj.macroValues)
-            host = self.config.getDestinationHost()
-            servName = self.config.getDestinationServiceName()
-            destSchema = self.params.getDestinationSchema()
-            retStr = destTmplt.format(destSchema, host, servName)
+            try:
+                host = self.config.getDestinationHost()
+                servName = self.config.getDestinationServiceName()
+                destSchema = self.params.getDestinationSchema()
+                retStr = destTmplt.format(destSchema, host, servName)
+            except KeyError:
+                # likely if the code above failed that the fmw does not 
+                # have the destSchema defined for it, which means its likely 
+                # writing to a non BCGW destination.  Going to try to 
+                # extract any parameters here that start with DEST 
+                # and include them as the definition for destination
+                self.logger.exception("stack trace from error, just dumping DEST_* params now")
+                destList = self.getDestPublishedParameters()
+                retStr = '\n'.join(destList)
         self.logger.debug("dest string: %s", retStr)
         return retStr
 
