@@ -401,6 +401,8 @@ class EmailServer(object):
     '''
 
     def __init__(self, config):
+        self.logger = logging.getLogger(__name__)
+        self.logger.debug("created an EmailServer")
         self.config = config
         self.smtpServer = None
         self.smtpPort = None
@@ -412,7 +414,9 @@ class EmailServer(object):
         file.
         '''
         self.smtpServer = self.config.getEmailSMTPServer()
+        self.logger.debug("smtpServer: %s", self.smtpServer)
         self.smtpPort = self.config.getEmailSMTPPort()
+        self.logger.debug("smtpPort: %s", self.smtpPort)
 
     def getSMTPPort(self):
         '''
@@ -447,6 +451,7 @@ class Email(object):
     '''
 
     def __init__(self, emailTo, emailFrom, emailSubject, fmwFileName, emailBody=None):
+        self.logger = logging.getLogger(__name__)
         self.emailTo = emailTo
         self.emailFrom = emailFrom
         self.emailSubject = emailSubject

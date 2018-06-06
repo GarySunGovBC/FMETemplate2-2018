@@ -726,7 +726,7 @@ class DefaultShutdown(object):
                 # notifying of this situation even if the fmw completed successfully
                 if exceptionRaised:
                     # the exception was in the shutdown not a problem with the actual
-                    # fmw so only email databc.  Currenlty in beta feature, so emailing
+                    # fmw so only email databc.  Currently in beta feature, so emailing
                     # only myself (kevin.netherton@gov.bc.ca)
                     emailer.notifyFail = email2Add
                 # add default email address for failures.
@@ -737,7 +737,12 @@ class DefaultShutdown(object):
                     if email2Add.lower() not in emailer.notifyFail.lower():
                         emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
                 self.logger.debug("getting ready to send notification")
-                emailer.sendNotifications()
+                try:
+                    emailer.sendNotifications()
+                except:
+                    self.logger.exception("ERROR RAISED IN NOTIFICATIONS")
+                    self.logger.error("error raised when trying to create an emailer")
+                    raise ValueError, 'crashed when trying to send emailer'
                 self.logger.debug("notifications are complete")
                 self.logger.info("shutdown is now complete")
 
