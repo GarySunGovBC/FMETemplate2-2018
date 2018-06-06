@@ -729,14 +729,16 @@ class DefaultShutdown(object):
                     # fmw so only email databc.  Currently in beta feature, so emailing
                     # only myself (kevin.netherton@gov.bc.ca)
                     emailer.addNotifyEmail('FAIL', email2Add)
-                    emailer.notifyFail = email2Add
+                    #emailer.notifyFail = email2Add
                 # add default email address for failures.
                 elif not emailer.notifyFail:
-                    emailer.notifyFail = email2Add
+                    #emailer.notifyFail = email2Add
+                    emailer.addNotifyEmail('FAIL', email2Add)
                     self.logger.debug("adding email address to fails")
                 else:
-                    if email2Add.lower() not in emailer.notifyFail.lower():
-                        emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
+                    if email2Add.lower() not in emailer.notifyFail:
+                        #emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
+                        emailer.addNotifyEmail('FAIL', email2Add)
                 self.logger.debug("getting ready to send notification")
                 try:
                     emailer.sendNotifications()
