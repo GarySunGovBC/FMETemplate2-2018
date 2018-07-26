@@ -2942,7 +2942,6 @@ class CalcParamsBase(GetPublishedParams):
         jdbcConnStr = tmpltString.format(host, port, SQLServerDBName)
         return jdbcConnStr
 
-
     def getSrcSQLServerConnectString(self, position=None):
         '''
         Gets the:
@@ -3023,8 +3022,8 @@ class CalcParamsBase(GetPublishedParams):
         msg = msg.format(position)
         self.logger.info(msg)
         sourceOraServName = self.getSourceOracleServiceName(position)
-        self.logger.debug("Oracle source service name: {0} position {1}".\
-                          format(sourceOraServName, position))
+        self.logger.debug("Oracle source service name: %s position %s",
+                          sourceOraServName, position)
 
         retVal = False
         destKeys = self.paramObj.parser.items(self.const.ConfFileSection_destKeywords)
@@ -3541,7 +3540,7 @@ class CalcParamsDevelopment(object):
         self.logger.info(msg)
         return ffFile
 
-    def getDestDatabaseConnectionFilePath(self, position=None):
+    def getDestDatabaseConnectionFilePath(self, position=None):  #pylint: disable=invalid-name
         '''
         :param position: The position or in other words what connection file
                          numbered parameters do you want to use in this operation
