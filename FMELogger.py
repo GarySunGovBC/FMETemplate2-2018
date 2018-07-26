@@ -1,9 +1,9 @@
 '''
 Created on Jan 12, 2016
 
-Purpose is to wrap fme log calls into the python 
-logger api, so that log calls that use standard 
-python loggin methods will appear in the fme 
+Purpose is to wrap fme log calls into the python
+logger api, so that log calls that use standard
+python loggin methods will appear in the fme
 log.
 
 follows is a couple links on custom loggers:
@@ -17,20 +17,21 @@ import logging.handlers
 import os.path
 import fmeobjects  # @UnresolvedImport
 
+
 class FMELogHandler(logging.Handler):
-    
+
     def __init__(self, *args, **kwargs):
         print 'started init fo fmelog handler'
         logging.Handler.__init__(self)
         self.fmeLogger = fmeobjects.FMELogFile()  # @UndefinedVariable
-        #self.fmeLogger.logMessageString('starting the startup object, writing to the log')
-        severityDict = {logging.DEBUG: fmeobjects.FME_STATISTIC, 
+        # self.fmeLogger.logMessageString('starting the startup object, writing to the log')
+        severityDict = {logging.DEBUG: fmeobjects.FME_STATISTIC,
                         logging.NOTSET: fmeobjects.FME_INFORM}
         print 'finished'
-        
+
     def flush(self):
         pass
-    
+
     def getSeverity(self, logLevel):
         # next step is to map the severity
         # options for fme severities are:
@@ -51,21 +52,22 @@ class FMELogHandler(logging.Handler):
         elif logLevel == logging.CRITICAL:
             severity = fmeobjects.FME_FATAL
         return severity
-    
+
     def emit(self, record):
         try:
-            #print 'record', record
+            # print 'record', record
             logLevel = record.levelno
-            #print 'log level', logLevel
+            # print 'log level', logLevel
             formattedRecord = self.format(record)
             severity = self.getSeverity(logLevel)
-            #print 'severity', severity
+            # print 'severity', severity
             self.fmeLogger.logMessageString(formattedRecord, severity)
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
             self.handleError(record)
-            
+
+
 class FMEShutdownLogger(logging.Handler):
     '''
     Trying to centralize the logging setup in a logging config file.
@@ -73,41 +75,41 @@ class FMEShutdownLogger(logging.Handler):
     in the fmw where it should be using the FMELogHandler.  Only once
     the script has finished and is in the shutdown mode should this
     handler get used.
-    
-    Thus the init doesn't do much except cache the log file that 
+
+    Thus the init doesn't do much except cache the log file that
     it should be writing to.  Then in the emit method the handler
     will look to see if the filehandle has been created.  If it has
     then it gets re-used otherwise it gets created.
-    
-    This should allow the fileconfig to initialized this logger but 
-    won't create the possible dangerous situation where there are 
+
+    This should allow the fileconfig to initialized this logger but
+    won't create the possible dangerous situation where there are
     two filehandles on the same file.
-    
+
     '''
-    
+
     def __init__(self, *args, **kwargs):
         self.logFileName = logging.logFileName  # @UndefinedVariable
         self.logFH = None
         logging.Handler.__init__(self)
-        
+
     def emit(self, record):
         try:
             if not self.logFH:
                 if os.path.exists(self.logFileName):
-                    self.logFH = open(self.logFileName,'a')
+                    self.logFH = open(self.logFileName, 'a')
                     print 'opened the log file'
             if self.logFH:
-                #msg = self.format(record.message)
+                # msg = self.format(record.message)
                 formattedRecord = self.format(record)
-                #logMessage = record.getMessage() + '\n'
+                # logMessage = record.getMessage() + '\n'
                 self.logFH.write(formattedRecord + "\n")
 
         except (KeyboardInterrupt, SystemExit):
             raise
         except:
             self.handleError(record)
-            
+
     def close(self):
         if self.logFH:
             self.logFH.close()
-        
+

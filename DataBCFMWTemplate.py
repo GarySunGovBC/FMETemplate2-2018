@@ -2911,6 +2911,37 @@ class CalcParamsBase(GetPublishedParams):
         # pswd = self.plugin.getSourcePassword(position)
         pswd = self.plugin.getSourceSqlServerPassword(position)
         return pswd
+    
+    def getSrcSQLServerJDBCConnectString(self, position=None):
+        '''
+        :param position: usually set to none, if an fmw defines more than one 
+                         reader then the positon parameters are used to specify
+                         which parameters should be tied to which reader.
+                         
+                         Example if you had two readers you would have two 
+                         host definitions, SRC_HOST_1 and SRC_HOST_2.  When you 
+                         specify positon as None it will default to 1.  To 
+                         refer to the second reader parameters you would set
+                         the positon to be 2.
+                         
+        using the parameters:
+            - 
+            - 
+        
+        Will construct and return a jdbc string with the following form:
+        jdbc:sqlserver://SERVER.COM:1433;databaseName=DATABASE_NAME
+        
+        '''
+        host = self.getSrcHost(position)
+        port = self.getSrcPort(position)
+        if not port:
+            port = self.paramObj.getSqlServerDefaultPort()
+        SQLServerDBName = self.getSrcSqlServerDatabaseName(position)
+        
+        tmpltString = 'jdbc:sqlserver://{0}:{1};databaseName={2}'
+        jdbcConnStr = tmpltString.format(host, port, SQLServerDBName)
+        return jdbcConnStr
+
 
     def getSrcSQLServerConnectString(self, position=None):
         '''
@@ -3746,6 +3777,7 @@ class CalcParamsDataBC(object):
         # TODO HERE NOW
         # -----------------------------------
         pmpHelper = PMPHelper(self.paramObj, destKey)
+        
 
         msg = 'retrieving the destination password for schema: ({0}) db env key: ({1})'
         msg = msg.format(schema, destKey)
