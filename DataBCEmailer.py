@@ -114,7 +114,7 @@ class EmailFrameworkBridge(object):
         Reads the published parameters asssociated with the fme job and determines
         if there are any email notification parameters defined and if so populates
         the address properties with the contents of the various email parameters.
-        
+
         Example of how notify should look:
            'NOTIFY_ALL': 'bill<at>cat.com<lf>tony<at>dog.ca<lf>'
 
@@ -122,13 +122,16 @@ class EmailFrameworkBridge(object):
         self.logger.debug("getting the notification email addresses")
         for pubParam in self.fmeObj.macroValues:
             if pubParam.upper() == self.const.FMWParams_Notify_All:
-                self.notifyAll.extend(self.reformatEmailAddresses(self.fmeObj.macroValues[pubParam]))
+                self.notifyAll.extend(self.reformatEmailAddresses(
+                    self.fmeObj.macroValues[pubParam]))
                 # self.notifyAll = self.fmeObj.macroValues[pubParam]
             if pubParam.upper() == self.const.FMWParams_Notify_Fail:
-                self.notifyFail.extend(self.reformatEmailAddresses(self.fmeObj.macroValues[pubParam]))
+                self.notifyFail.extend(self.reformatEmailAddresses(
+                    self.fmeObj.macroValues[pubParam]))
                 # self.notifyFail = self.fmeObj.macroValues[pubParam]
             if pubParam.upper() == self.const.FMWParams_Notify_Success:
-                self.notifySuccess.extend(self.reformatEmailAddresses(self.fmeObj.macroValues[pubParam]))
+                self.notifySuccess.extend(self.reformatEmailAddresses(
+                    self.fmeObj.macroValues[pubParam]))
                 # self.notifySuccess = self.fmeObj.macroValues[pubParam]
 
     def addNotifyEmail(self, notificationType, email2Add):
@@ -259,7 +262,7 @@ class EmailFrameworkBridge(object):
         scriptName = self.fmeObj.macroValues[self.const.FMWMacroKey_FMWName]
         self.logger.debug("script name: %s", scriptName)
         sourceParamList = self.getSource()
-        #returnParamStr = '\n'.join(returnParamList)
+        # returnParamStr = '\n'.join(returnParamList)
         sourceStr = '\n'.join(sourceParamList)
         destStr = self.getDestination()
         jobNum = self.getJobNum()
@@ -313,17 +316,17 @@ class EmailFrameworkBridge(object):
         regexObj = re.compile('SRC_.*')
         omitRegexObj = re.compile(".*_PASSWORD$")
         returnParamList = self.getParams(regexObj, omitRegexObj)
-        #returnParamStr = '\n'.join(returnParamList)
+        # returnParamStr = '\n'.join(returnParamList)
         return returnParamList
-        
+
     def getParams(self, paramTypeRegex, omitRegex):
         '''
         To avoid having to write the code twice to extract source and destination
         parameters...
-        
+
         :param paramTypeRegex:  The parameter name must match this regex
         :param omitRegex: The parameter must NOT match this regex.
-        
+
         :return: the published parameters that pass the criteria in a list
                  of strings formatted like: param_name = param_value
         '''
@@ -342,13 +345,13 @@ class EmailFrameworkBridge(object):
                     paramStr = paramTmpltStr.format(param, value)
                     returnParamList.append(paramStr)
         return returnParamList
-    
+
     def getDestPublishedParameters(self):
         self.logger.debug("getting the destination for the script")
         regexObj = re.compile('DEST_.*')
         omitRegexObj = re.compile(".*_PASSWORD$")
         returnParamList = self.getParams(regexObj, omitRegexObj)
-        #returnParamStr = '\n'.join(returnParamList)
+        # returnParamStr = '\n'.join(returnParamList)
         return returnParamList
 
     def getDestination(self):
@@ -370,10 +373,10 @@ class EmailFrameworkBridge(object):
                 destSchema = self.params.getDestinationSchema()
                 retStr = destTmplt.format(destSchema, host, servName)
             except KeyError:
-                # likely if the code above failed that the fmw does not 
-                # have the destSchema defined for it, which means its likely 
-                # writing to a non BCGW destination.  Going to try to 
-                # extract any parameters here that start with DEST 
+                # likely if the code above failed that the fmw does not
+                # have the destSchema defined for it, which means its likely
+                # writing to a non BCGW destination.  Going to try to
+                # extract any parameters here that start with DEST
                 # and include them as the definition for destination
                 self.logger.exception("stack trace from error, just dumping DEST_* params now")
                 destList = self.getDestPublishedParameters()
@@ -438,17 +441,17 @@ class EmailFrameworkBridge(object):
         status = self.getJobSuccessStatus()
         emailAddresses = []
         if self.notifyAll:
-            #notifyAll = self.reformatEmailAddresses(self.notifyAll)
+            # notifyAll = self.reformatEmailAddresses(self.notifyAll)
             self.logger.debug("notifyall: %s", self.notifyAll)
             emailAddresses.extend(self.notifyAll)
         if status:
             if self.notifySuccess:
-                #notifySuccess = self.reformatEmailAddresses(self.notifySuccess)
+                # notifySuccess = self.reformatEmailAddresses(self.notifySuccess)
                 self.logger.debug("notifySuccess: %s", self.notifySuccess)
                 emailAddresses.extend(self.notifySuccess)
         else:
             if self.notifyFail:
-                #notifyFail = self.reformatEmailAddresses(self.notifyFail)
+                # notifyFail = self.reformatEmailAddresses(self.notifyFail)
                 self.logger.debug("notifyFail: %s", self.notifyFail)
                 emailAddresses.extend(self.notifyFail)
         # making unique

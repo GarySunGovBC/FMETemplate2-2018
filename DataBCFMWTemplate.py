@@ -181,7 +181,7 @@ class TemplateConstants(object):
     # FMWParams_DestInstance = 'DEST_INSTANCE'
     FMWParams_DestServiceName = 'DEST_ORA_SERVICENAME'
     FMWParams_DestPassword = 'DEST_PASSWORD'
-    
+
     FMWParams_FailedFeatures = 'FAILED_FEATURES'
 
     # published parameters - source
@@ -642,6 +642,9 @@ class Shutdown(object):
             self.shutdownObj = DefaultShutdown(self.fme)
 
     def shutdown(self):
+        '''
+        Calling shutdown code
+        '''
         self.shutdownObj.shutdown()
 
 
@@ -729,15 +732,15 @@ class DefaultShutdown(object):
                     # fmw so only email databc.  Currently in beta feature, so emailing
                     # only myself (kevin.netherton@gov.bc.ca)
                     emailer.addNotifyEmail('FAIL', email2Add)
-                    #emailer.notifyFail = email2Add
+                    # emailer.notifyFail = email2Add
                 # add default email address for failures.
                 elif not emailer.notifyFail:
-                    #emailer.notifyFail = email2Add
+                    # emailer.notifyFail = email2Add
                     emailer.addNotifyEmail('FAIL', email2Add)
                     self.logger.debug("adding email address to fails")
                 else:
                     if email2Add.lower() not in emailer.notifyFail:
-                        #emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
+                        # emailer.notifyFail = emailer.notifyFail + '\n' + email2Add
                         emailer.addNotifyEmail('FAIL', email2Add)
                 self.logger.debug("getting ready to send notification")
                 try:
@@ -1073,15 +1076,15 @@ class TemplateConfigFileReader(object):
                                         self.const.ConfFileSection_global_devCredsFile)
         return credsFileName
 
-    #def getDWMDbPort(self):
+    # def getDWMDbPort(self):
     #    return self.parser.get(self.const.ConfFile_dwm,
     #                           self.const.ConfFile_dwm_dbport)
 
-    #def getDWMDbInstance(self):
+    # def getDWMDbInstance(self):
     #    return self.parser.get(self.const.ConfFile_dwm,
     #                           self.const.ConfFile_dwm_dbinstance)
 
-    #def getDWMDbServer(self):
+    # def getDWMDbServer(self):
     #    return self.parser.get(self.const.ConfFile_dwm, self.const.ConfFile_dwm_dbserver)
 
     def getDWMDbUser(self):
@@ -1116,19 +1119,19 @@ class TemplateConfigFileReader(object):
 
     def getFailedFeaturesFile(self):
         '''
-        :return: the name of the file that should be used to store failed 
+        :return: the name of the file that should be used to store failed
                  features.
-                 
-                 5-7-2018 - modifying so that the name of the ffs file is going to 
+
+                 5-7-2018 - modifying so that the name of the ffs file is going to
                  be:
              $(DEST_SCHEMA)_$(DEST_FEATURE_1)_JOB_$(FME_JOB_ID)_failed_features.ffs
         '''
-        #destSchema = self.getDest
-        
+        # destSchema = self.getDest
+
         failedFeatsFile = self.parser.get(
             self.const.ConfFileSection_global,
             self.const.ConfFileSection_global_failedFeaturesFile)
-        
+
         return failedFeatsFile
 
     def getFMEServerHost(self):
@@ -2014,15 +2017,15 @@ class GetPublishedParams(object):
         destSchemaKey = self.getMacroKeyForPosition(destSchemaKey, position)
         destSchema = self.getFMEMacroValue(destSchemaKey)
         return destSchema
-    
+
     def getDestinationFeature(self, position=None):
         '''
         :param position: in the event that there is more than one DEST_FEATURE+#
-                         the position is used to indicate which DEST_FEATURE_# 
-                         it is that you want to retrieve. 
-        
-        if position is set to 2 then will try to retrieve the value for the 
-        published parameter DEST_FEATURE_2 
+                         the position is used to indicate which DEST_FEATURE_#
+                         it is that you want to retrieve.
+
+        if position is set to 2 then will try to retrieve the value for the
+        published parameter DEST_FEATURE_2
         '''
         position2Use = 1
         if position:
@@ -2094,7 +2097,7 @@ class GetPublishedParams(object):
             if pattern.match(paramKey):
                 failedFiles.append(self.fmeMacroVals[paramKey])
         return failedFiles
-    
+
     def getFMWDirectory(self):
         '''
         :return: the directory that the current fmw that is being run resides in
@@ -2689,7 +2692,7 @@ class CalcParamsBase(GetPublishedParams):
 
     def getFailedFeaturesFile(self, failedFeatsFileName=None, position=None):
         '''
-        Sends back the FFS File associated with this job, 
+        Sends back the FFS File associated with this job,
         '''
         if not self.plugin:
             self.addPlugin()
@@ -2912,6 +2915,36 @@ class CalcParamsBase(GetPublishedParams):
         pswd = self.plugin.getSourceSqlServerPassword(position)
         return pswd
 
+    def getSrcSQLServerJDBCConnectString(self, position=None):
+        '''
+        :param position: usually set to none, if an fmw defines more than one
+                         reader then the positon parameters are used to specify
+                         which parameters should be tied to which reader.
+
+                         Example if you had two readers you would have two
+                         host definitions, SRC_HOST_1 and SRC_HOST_2.  When you
+                         specify positon as None it will default to 1.  To
+                         refer to the second reader parameters you would set
+                         the positon to be 2.
+
+        using the parameters:
+            -
+            -
+
+        Will construct and return a jdbc string with the following form:
+        jdbc:sqlserver://SERVER.COM:1433;databaseName=DATABASE_NAME
+
+        '''
+        host = self.getSrcHost(position)
+        port = self.getSrcPort(position)
+        if not port:
+            port = self.paramObj.getSqlServerDefaultPort()
+        SQLServerDBName = self.getSrcSqlServerDatabaseName(position)
+
+        tmpltString = 'jdbc:sqlserver://{0}:{1};databaseName={2}'
+        jdbcConnStr = tmpltString.format(host, port, SQLServerDBName)
+        return jdbcConnStr
+
     def getSrcSQLServerConnectString(self, position=None):
         '''
         Gets the:
@@ -2992,8 +3025,8 @@ class CalcParamsBase(GetPublishedParams):
         msg = msg.format(position)
         self.logger.info(msg)
         sourceOraServName = self.getSourceOracleServiceName(position)
-        self.logger.debug("Oracle source service name: {0} position {1}".\
-                          format(sourceOraServName, position))
+        self.logger.debug("Oracle source service name: %s position %s",
+                          sourceOraServName, position)
 
         retVal = False
         destKeys = self.paramObj.parser.items(self.const.ConfFileSection_destKeywords)
@@ -3477,11 +3510,11 @@ class CalcParamsDevelopment(object):
         nowStr = now.strftime('%Y%m%d%H%M%S')
         failedFeatsFile = '{0}_{1}_{2}_failedFeatures.ffs'.format(destSchema, destFeature, nowStr)
 
-        # changing where the failed features file comes from, instead of from 
+        # changing where the failed features file comes from, instead of from
         # the framework config file it is calculated by appending the following
         # parameters.
         # $(DEST_SCHEMA)_$(DEST_FEATURE_1)_JOB_$(FME_JOB_ID)_failed_features.ffs
-        #failedFeatsFile = self.paramObj.getFailedFeaturesFile()
+        # failedFeatsFile = self.paramObj.getFailedFeaturesFile()
         self.logger.debug("failedFeatsFile: %s", failedFeatsFile)
         self.logger.debug("Starting dir for failed features is: %s", fmwDir)
 
@@ -3510,7 +3543,7 @@ class CalcParamsDevelopment(object):
         self.logger.info(msg)
         return ffFile
 
-    def getDestDatabaseConnectionFilePath(self, position=None):
+    def getDestDatabaseConnectionFilePath(self, position=None):  # pylint: disable=invalid-name
         '''
         :param position: The position or in other words what connection file
                          numbered parameters do you want to use in this operation
@@ -4121,7 +4154,7 @@ class CalcParamsDataBC(object):
             os.makedirs(ffDir)
 
         fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
-        #fmwName = Util.getParamValue(self.const.FMWMacroKey_FMWName, self.fmeMacroVals)
+        # fmwName = Util.getParamValue(self.const.FMWMacroKey_FMWName, self.fmeMacroVals)
 
         fmwName, suffix = os.path.splitext(fmwName)
         del  suffix
@@ -4132,15 +4165,15 @@ class CalcParamsDataBC(object):
             self.logger.debug(msg)
             os.makedirs(fmwDir)
         if not failedFeatsFileName:
-            #failedFeatsFile = self.paramObj.getFailedFeaturesFile()
+            # failedFeatsFile = self.paramObj.getFailedFeaturesFile()
             destSchema = self.parent.getDestinationSchema(position)
             destFeature = self.parent.getDestinationFeature(position)
             jobNumStr = ''
             if self.const.FMEMacroKey_JobId in self.fmeMacroVals:
                 jobNumStr = self.fmeMacroVals[self.const.FMEMacroKey_JobId]
             # ("^Y^m^d^H^M^S")_failed_features.ffs
-            # job will be dest_schema 
-            failedFeatsFile = '{0}_{1}_{2}_failedFeatures.ffs'.format(destSchema, destFeature, jobNumStr)            
+            # job will be dest_schema
+            failedFeatsFile = '{0}_{1}_{2}_failedFeatures.ffs'.format(destSchema, destFeature, jobNumStr)
             ffFullPathFile = os.path.join(fmwDir, failedFeatsFile)
         else:
             ffFullPathFile = os.path.join(fmwDir, failedFeatsFileName)
@@ -4863,38 +4896,38 @@ class DWMWriter(object):
         '''
         :return: the total number of features that have been rejected by the
                  replication.  Currently not enabled, only returns None.
-                 
+
         Steps:
         a) does ffs file exist?
         b) create ffs file reader
         c) determine how many features exist in the ffs file
         d) return them
-        
-        
-        
-        
-        for both 
+
+
+
+
+        for both
           - start by getting the value of fme.logFileName
-          - just add a .ffs extension (don't remove the log extension just 
+          - just add a .ffs extension (don't remove the log extension just
             add to it with .ffs.
           - if that file exists there is your ffs file.
           - open and read it.
-        
+
         '''
-        #self.params.get
+        # self.params.get
         retVal = None
         logFile = self.getLogFileName()
         self.logger.debug("log file path: %s", logFile)
         logFileNoSuffix = os.path.splitext(logFile)[0]
         ffsFileName = '{0}_log.ffs'.format(logFileNoSuffix)
         self.logger.debug("ffs file is: %s", ffsFileName)
-        
+
         # ffs files from SDE 30 writer are named with the same name as the job
-        # number.  If the fmw uses the SDE Geodb writer then the the ffs files 
+        # number.  If the fmw uses the SDE Geodb writer then the the ffs files
         # will come from a published parameter.
-        
+
         ffsFileNameGeoDb = self.pubParams.getFailedFeaturesFiles()
-        
+
         if os.path.exists(ffsFileName):
             self.logger.debug("creating and FFReader object")
             ffs = FFSReader.Reader(ffsFileName)
