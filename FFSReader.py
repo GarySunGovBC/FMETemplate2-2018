@@ -24,8 +24,6 @@ def attemptFMEObjectsImport():
     except:
         # once move to production can extract the fme path from the
         # macro value FME_HOME and pass those parameters to this script
-        #
-
         pathList = os.environ['PATH'].split(';')
         sys.path.insert(0, r'E:\sw_nt\FME2015\fmeobjects\python27')
         os.environ['PATH'] = ';'.join(pathList)
@@ -125,7 +123,9 @@ class Reader(object):
                   'to guess what the install location is before failing.'
             self.logger.warning(msg)
             pythonRootDir = param.getPythonRootDir()
-        except:
+        except Exception, e:
+            self.logger.exception(e)
+            self.logger.error('re-raising the exception ')
             raise
         my_env = os.environ.copy()
         pythonExe = os.path.join(pythonRootDir, 'python')

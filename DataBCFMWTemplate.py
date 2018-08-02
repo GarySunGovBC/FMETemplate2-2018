@@ -1291,10 +1291,11 @@ class TemplateConfigFileReader(object):
         return arcGISInstallDir
 
     def getPythonRootDir(self):
-        # defaultArcPythonPath
+        # defaultArcPythonPath        
         pythonRootdir = self.parser.get(
             self.const.ConfFileSection_global,
             self.const.ConfFileSection_global_PythonRootDir)
+        self.logger.debug("Got the python root directory from the config file: %s", pythonRootdir)
         return pythonRootdir
 
     def getSourcePmpResources(self):
