@@ -163,14 +163,22 @@ class TemplateConstants(object):
     emailer_smtpPort = 'smtpport'
     emailer_fromAddress = 'emailfrom'
     defaultEmailOnFailure = 'DataBCDA@gov.bc.ca'
-
+    
+    # kirk parameters
+    kirkSection = 'kirk'
+    kirk_url = 'url'
+    kirk_token = 'token'
+    
     # When creating a connection file the framework will initiate a jenkins job
     # it will then wait for this amount of time before testing to see if the
     # jenkins job has created the sde file.  If it has not it will retry
     # ___ number of times
     sdeConnFileMaxRetries = 20
     sdeConnFilePollWaitTimeSeconds = 10
-
+    
+    # published parameters - for kirk
+    FMWParams_KirkJobId = 'KIRK_JOBID'
+    
     # published parameters - destination
     FMWParams_DestKey = 'DEST_DB_ENV_KEY'
     FMWParams_DestSchema = 'DEST_SCHEMA'
@@ -1337,6 +1345,18 @@ class TemplateConfigFileReader(object):
                  communications associated with this fmw.
         '''
         return self.parser.get(self.const.emailerSection, self.const.emailer_fromAddress)
+
+    def getKirkUrl(self):
+        '''
+        returns the base url where the kirk api resides
+        '''
+        return self.parser.get(self.const.kirkSection, self.const.kirk_url)
+
+    def getKirkToken(self):
+        '''
+        returns the api token required to access the kirk api
+        '''
+        return self.parser.get(self.const.kirkSection, self.const.kirk_token)
 
     def getSqlServerPMPIdentifier(self):
         '''

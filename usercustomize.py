@@ -20,11 +20,12 @@ path2devpathsJson = os.path.join(curDir, configDirName, devpathsFileName)
 
 expectedKeys = ['template_dev_directory', 'host', 'username']
 dir2Add = None
+print 'here 1'
 if os.path.exists(path2devpathsJson):
     fh = open(path2devpathsJson, 'r')
     struct = json.load(fh)
     fh.close()
-    
+    print 'here 2'
     proceed = False
     # make sure the expected keys exist
     for expectKey in expectedKeys:
@@ -47,11 +48,19 @@ if dir2Add:
         pth = os.path.join(dir2Add, subDir)
         sys.path.insert(0, pth)
         #print 'added path: {0}'.format(pth)
+    # While developing kirk!  Once dev is complete this module will become part of 
+    # the dependencies.
+    tmpKirkUtilPath = r'Z:\Workspace\kjnether\proj\DataBCPyLib\KirkUtil'
+    sys.path.insert(0, pth)
 else:
     # now make sure these are at the start of the path list
     #subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
     #lib_intPath = os.path.join(curDir, 'lib_int')
-    pathsToAdd = [curDir, os.path.join(curDir, 'lib'), os.path.join(curDir, 'fmeCustomizations', 'Transformers')]
+    libdir = 'lib'
+    if platform.architecture()[0] == '64bit':
+        libdir = 'lib64'
+    pathsToAdd = [curDir, os.path.join(curDir, libdir), os.path.join(curDir, 'fmeCustomizations', 'Transformers')]
+    #pathsToAdd = [curDir, os.path.join(curDir, 'lib'), os.path.join(curDir, 'fmeCustomizations', 'Transformers')]
     for pth2Rerder in pathsToAdd:
         pthCntr = 0
         pth2Rerder = os.path.realpath(pth2Rerder)
@@ -65,4 +74,5 @@ else:
         #        break
         #    pthCntr += 1
 #print 'pathlist:', sys.path
+
 
