@@ -84,6 +84,7 @@ class TemplateConstants(object):
     ConfFileSection_global = 'global'
     ConfFileSection_global_key_rootDir = 'rootscriptdir'
     ConfFileSection_global_key_outDir = 'outputsbasedir'
+    ConfFileSection_global_key_kirkOutDir = 'kirkoutdir'
     ConfFileSection_global_key_pidDir = 'pid_dir'
     ConfFileSection_global_key_govComputers = 'gov_computers'
     ConfFileSection_global_key_govFmeServer = 'gov_fmeservernodes'
@@ -163,22 +164,22 @@ class TemplateConstants(object):
     emailer_smtpPort = 'smtpport'
     emailer_fromAddress = 'emailfrom'
     defaultEmailOnFailure = 'DataBCDA@gov.bc.ca'
-    
+
     # kirk parameters
     kirkSection = 'kirk'
     kirk_url = 'url'
     kirk_token = 'token'
-    
+
     # When creating a connection file the framework will initiate a jenkins job
     # it will then wait for this amount of time before testing to see if the
     # jenkins job has created the sde file.  If it has not it will retry
     # ___ number of times
     sdeConnFileMaxRetries = 20
     sdeConnFilePollWaitTimeSeconds = 10
-    
+
     # published parameters - for kirk
     FMWParams_KirkJobId = 'KIRK_JOBID'
-    
+
     # published parameters - destination
     FMWParams_DestKey = 'DEST_DB_ENV_KEY'
     FMWParams_DestSchema = 'DEST_SCHEMA'
@@ -193,7 +194,8 @@ class TemplateConstants(object):
     FMWParams_FailedFeatures = 'FAILED_FEATURES'
 
     # published parameters - source
-    FMWParams_srcDataSet = 'SRC_DATASET_'  # prefix for any file based source dataset
+    # prefix for any file based source dataset
+    FMWParams_srcDataSet = 'SRC_DATASET_' 
     FMWParams_SrcFGDBPrefix = 'SRC_DATASET_FGDB_'
     FMWParams_SrcXLSPrefix = 'SRC_DATASET_XLS_'
     FMWParams_SrcFeaturePrefix = 'SRC_FEATURE_'
@@ -1198,6 +1200,12 @@ class TemplateConfigFileReader(object):
             self.const.ConfFileSection_global_key_outDir)
         return ouptutsDir
 
+    def getKirkOutputsDirectory(self):
+        ouptutsDir = self.parser.get(
+            self.const.ConfFileSection_global,
+            self.const.ConfFileSection_global_key_kirkOutDir)
+        return ouptutsDir
+
     def getPmpAltUrl(self):
         '''
         :return: the alternate pmp url.  PMP has a failover server, this is the
@@ -1299,7 +1307,7 @@ class TemplateConfigFileReader(object):
         return arcGISInstallDir
 
     def getPythonRootDir(self):
-        # defaultArcPythonPath        
+        # defaultArcPythonPath
         pythonRootdir = self.parser.get(
             self.const.ConfFileSection_global,
             self.const.ConfFileSection_global_PythonRootDir)
