@@ -217,6 +217,14 @@ class KIRKParams(object):
         self.getSource()
         srcFc = self.source.getSourceFeatureClass()
         return srcFc
+    
+    def getSourceProjection(self):
+        '''
+        :return: the source projection
+        '''
+        self.getSource()
+        srcProj = self.source.getSourceProjection()
+        return srcProj
 
     def getDestinationSchema(self):
         '''
@@ -402,6 +410,11 @@ class KirkSources(object):
     def getSourceFeatureClass(self):
         return self.sourceData[self.srcConst.sourceTable.name]
 
+    def getSourceProjection(self):
+        '''
+        :return: the projection of the source data... pretty straight forward!
+        '''
+        return self.sourceData[self.srcConst.sourceProjection.name]
 
 class KirkFieldMaps(object):
 
