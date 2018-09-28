@@ -41,5 +41,7 @@ if __name__ == '__main__':
     #deployFmeCust = DeployFrameworkLib.FMECustomizationDeployments(deployConfig=deployConfig)
     #deployFmeCust.copyCustomTransformers(overwrite=True)
 
-    deployConf = DeployFrameworkLib.ConfigsDeployment()
-    deployConf.copyConfig(overwrite=False)
+    #deployConf = DeployFrameworkLib.ConfigsDeployment()
+    #deployConf.copyConfig(overwrite=False)
+    deploySecrets = DeployFrameworkLib.SecretsDeployment()
+    deploySecrets.copyFiles(overwrite=False)

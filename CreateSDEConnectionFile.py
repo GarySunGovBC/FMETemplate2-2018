@@ -12,6 +12,7 @@ import inspect
 import logging.config
 import os.path
 import sys
+
 sys.path.append(r"E:\sw_nt\python27\ArcGIS10.2\Lib\site-packages")
 sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\arcpy')
 sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\ArcToolbox\Scripts')
