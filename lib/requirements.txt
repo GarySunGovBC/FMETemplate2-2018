@@ -12,3 +12,4 @@ git+https://github.com/bcgov/dbc-pylib@v3.0.1#egg=DB&subdirectory=DB
 git+https://github.com/bcgov/dbc-pylib@v3.0.1#egg=BCDCUtil&subdirectory=BCDCUtil
 git+https://github.com/bcgov/dbc-pylib@v3.0.1#egg=DBCSecrets&subdirectory=DBCSecrets
 git+https://github.com/bcgov/dbc-pylib@v3.0.1#egg=FMEUtil&subdirectory=FMEUtil
+git+https://github.com/bcgov/dbc-pylib@v3.0.1#egg=KirkUtil&subdirectory=KirkUtil

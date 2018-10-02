@@ -53,31 +53,30 @@ Issues to keep track of:
 @author: kjnether
 '''
 
-import json
-# import logging.config @IgnorePep8
 import logging
 import os.path
 import posixpath
 import time
-import urllib
 import datetime
 import pytz
 
-import DBCSecrets.GetSecrets
-
-from DBCFMEConstants import TemplateConstants
-# import DataBCFMWTemplate @IgnorePep8
-import DeployConstants
+import util.FrameworkDeployment.DeployConstants as DeployConstants
+import util.FrameworkDeployment.DeployConfigReader as DeployConfigReader
 import FMEUtil.PyFMEServerV2 as PyFMEServer
-# import DeployConfigReader.DeploymentConfig as DeploymentConfig
-import DeployConfigReader
-# Move this to its own module
+
+# pylint: disable=no-self-use, invalid-name
 
 
 class DirectoryCache(object):
     '''
-    used to keep track of FME resource cache, to reduce the number of times
-    the deploy needs to communicate with fme server.
+    FME Resources (where we want to deploy to) has a rest api that is used
+    to manage files associated with the framework.)
+
+    This class caches the contents of what exists already in the resources
+    section of FME Server.  The cache is used to determine if a file
+    already exists on FME server.  Using this cache speeds up the process
+    significantly compared to previous approach which saw a query for each
+    file that was to be uploaded.
     '''
 
     def __init__(self, deployObj):
@@ -89,6 +88,16 @@ class DirectoryCache(object):
         self.load(deployObj)
 
     def loadDeployment(self, deployObj):
+        '''
+        Called by the load method.  load() determines if the data has
+        already been loaded.  If it has not then this method is called.
+
+        It will do the actual loading of information from fme server that
+        corresponds with the given deployObj
+
+        :param deployObj: loads the directories defined by this object
+        :type deployObj: Deployment
+        '''
         # fmeResources = dplyObj.resource
         # dplyObj.destDirList[0] is grabbing the first directory in
         # the list, so if the list was ['plugins', 'python', 'python27']
@@ -96,8 +105,8 @@ class DirectoryCache(object):
         # doing this cause don't want to load the root directory
         # as it would contain too much data.
 
-        resourceData = self.fmeResources.getDirectory(deployObj.destDirType,
-                                                      [deployObj.destDirList[0]])
+        resourceData = self.fmeResources.getDirectory(
+            deployObj.destDirType, [deployObj.destDirList[0]])
         self.parseResourceData(resourceData, deployObj.destDirType)
         self.logger.debug("resourceData: %s", resourceData)
         rootDir = resourceData['name']
@@ -110,8 +119,20 @@ class DirectoryCache(object):
             self.rootDirList.append(rootDir)
 
     def isSourceNewer(self, deployObj):
+        '''
+        :param deployObj: reads the properties in this object to identify
+                          the source file and the destination fme server
+                          resource.  Using the cached information gets
+                          the file change date from fme server and compares
+                          with the modification time stamp of the source.
+                          returns true of source is newer.
+        :type deployObj: Deployment
+        :return: is the source newer?
+        :rtype: bool
+        '''
         self.load(deployObj)
         retVal = True
+        self.logger.debug("src file: %s", deployObj.srcFile)
         srcModTime = time.ctime(os.path.getmtime(deployObj.srcFile))
         self.logger.debug("srcModTime: %s", srcModTime)
 
@@ -135,36 +156,71 @@ class DirectoryCache(object):
 
     def load(self, deployObj):
         '''
-        makes sure the data has been loaded to memory
+        the cache does not load every single directory that exists on
+        FME server.  Instead it loads each top level directory of the
+        'Engine' directory  With
+        a default configuration on fme server this would be:
+            - CoordinateSystemExceptions
+            - CoordinateSystemGridOverrides
+            - CoordinateSystems
+            - CsmapTransformationExceptions
+            - Formats
+            - Plugins
+            - Transformers
+
+        The contents of each of those top level directories is loaded on
+        an as needed basis.  This method verifies that the information
+        required by the provided deploy object has already been loaded,
+        and updates the data structure so that it can keep track of what
+        has been loaded and what has not
+
+        :param deployObj: the deployment object, read the information in
+                          this object to ensure the resource cache associated
+                          with this object has been loaded
+        :type deployObj: Deployment
         '''
         rootDir = deployObj.destDirList[0]
         rootDir = self.fixPath(rootDir)
-        
+
         # make sure the root dir was loaded.
-        if not rootDir in self.rootDirList:
+        if rootDir not in self.rootDirList:
             msg = 'The root dir: {0} is not in the list {1} loading the dir'
-            self.logger.debug(msg.format(rootDir, self.rootDirList))
+            msg = msg.format(rootDir, self.rootDirList)
+            self.logger.debug(msg)
             self.loadDeployment(deployObj)
 
     def fixPath(self, inPath):
         '''
         makes sure the path starts with a posix sep
+          - ie converts somepath/another into /somepath/another
+
+        :param inPath: the input path that should start with a posix path
+                       separator
+        :type inPath: str (path)
         '''
         if inPath[0] != posixpath.sep:
             inPath = posixpath.sep + inPath
         return inPath
 
     def exists(self, deployObj):
+        '''
+        Used to test if a deploy object already exists on fme server
+
+        :param deployObj: tests if the given deployment object already
+                          exists on fme server
+        :type deployObj: Deployment
+        '''
         self.load(deployObj)
         dirType = deployObj.destDirType
         fullFilePath = deployObj.destFileFullPathStr
         fullFilePath = self.fixPath(fullFilePath)
         exists = False
-        
+
         # make sure the root dir was loaded.
         if dirType in self.resourceCache:
             self.logger.debug("found dir type: %s", dirType)
-            self.logger.debug("looking for %s in %s", fullFilePath, self.resourceCache[dirType])
+            self.logger.debug("looking for %s in %s",
+                              fullFilePath, self.resourceCache[dirType])
             if fullFilePath in self.resourceCache[dirType]:
                 exists = True
         return exists
@@ -184,10 +240,22 @@ class DirectoryCache(object):
             u'path': u'/Plugins/',
             u'size': 0,
             u'type': u'DIR'}, ...
+
+        parses that information into the property self.resourceCache.  Further
+        operations like getting the modification or existence of an object
+        then extracts that information from the self.resourceCache property
+
+        :param resourceData: a resource directory object returned from fme
+                             server.  Corresponds with the schema sample
+                             above.
+        :type resourceData: str
+        :param dirType: FME Server resources have directory type.  All the
+                        interactions so far are FME_SHAREDRESOURCE_ENGINE,
+                        however there are different types available
+        :type dirType: str
         '''
         if self.resourceCache is None:
             self.resourceCache = {dirType: {}}
-        pntr = self.resourceCache[dirType]
         if isinstance(resourceData, dict) and resourceData['type'] == 'DIR':
             if 'contents' in resourceData:
                 self.parseResourceData(resourceData['contents'], dirType)
@@ -198,8 +266,8 @@ class DirectoryCache(object):
                                                   '%Y-%m-%dT%H:%M:%S')
             pacific = pytz.timezone('Canada/Pacific')
             fileDate = fileDate.replace(tzinfo=pacific)
-            verifyDate = fileDate.strftime('%Y-%m-%dT%H:%M:%S')
-            #self.logger.debug("original date / new date: %s/%s",
+            # verifyDate = fileDate.strftime('%Y-%m-%dT%H:%M:%S')
+            # self.logger.debug("original date / new date: %s/%s",
             #                  resourceData['date'], verifyDate)
             self.resourceCache[dirType][fullPath] = fileDate
         elif isinstance(resourceData, list):
@@ -218,7 +286,8 @@ class BaseDeployment(object):
         self.logger = logging.getLogger(__name__)
         fmeParams = DeployConstants.FMEResourcesParams()
         self.templateDestDir = str(posixpath.sep).join(fmeParams.pythonDirs)
-        self.dplyConfig = DeployConfigReader.DeploymentConfig(configFile=deployConfig)
+        self.dplyConfig = DeployConfigReader.DeploymentConfig(
+            configFile=deployConfig)
         self.resourceCache = None
 
     def deploymentExists(self, dplyObj):
@@ -231,27 +300,38 @@ class BaseDeployment(object):
         # exists
         if self.resourceCache is None:
             # load the initial resource
-            fmeResources = dplyObj.resource
+            # fmeResources = dplyObj.resource
             # dplyObj.destDirList[0] is grabbing the first directory in
             # the list, so if the list was ['plugins', 'python', 'python27']
             # the directory passed will be plugins
             # doing this cause don't want to load the root directory
             # as it would contain too much data.
-            
-            #contents = fmeResources.getDirectory(dplyObj.destDirType,
+
+            # contents = fmeResources.getDirectory(dplyObj.destDirType,
             #                                     [dplyObj.destDirList[0]])
             self.resourceCache = DirectoryCache(dplyObj)
         return self.resourceCache.exists(dplyObj)
 
     def isSourceNewer(self, dplyObj):
         '''
+        Identifies if the source in the given deployment object is newer
+        then the version on fme server.
+
+        :param dplyObj: the deployment object that contains the source and
+                        destination information
+        :type dplyObj: Deployment
         '''
         return self.resourceCache.isSourceNewer(dplyObj)
 
     def deploy(self, deploymentList, overWrite):
         '''
-        a generic deployment class, gets a list of files that need to be
-        deployed to fme server.
+        a generic deployment class, gets a list of Deployment objects that
+        describe the files that need to be deployed to fme server.
+
+        :param deploymentList: list of deployment objects to be evaluated
+        :type deploymentList: list(Deployment)
+        :param overWrite: identifies whether to force overwrite on destination
+        :type overWrite: bool
         '''
         self.logger.debug("deploy overwrite param: %s", overWrite)
         self.logger.debug("deployment list: %s", deploymentList)
@@ -287,7 +367,7 @@ class Deployment(object):
                  destDirList=None):
         # if using destDirStr parameter, MAKE CERTAIN The path delimiter is
         # UNIX/POSIX forward slash, ala... '/'  NOT \
-
+        self.posixSep = posixpath.sep
         self.dplyConfig = dplyConfig
 
         # logging setup ...
@@ -310,8 +390,8 @@ class Deployment(object):
             msg = msg.format(self.__class__.__name__)
             raise ValueError(msg)
         if destDirStr and destDirList:
-            tmpDestDirStr_winPathList = destDirStr.split('\\')
-            tmpDestDirStr_posixPathList = destDirStr.split('/')
+            tmpDestDirStr_winPathList = destDirStr.split(os.path.sep)
+            tmpDestDirStr_posixPathList = destDirStr.split(self.posixSep)
             if not (tmpDestDirStr_winPathList == destDirList or
                     tmpDestDirStr_posixPathList == destDirList):
                 msg = '{0} - You supplied values for both destDirList and  ' + \
@@ -324,11 +404,11 @@ class Deployment(object):
                                  destDirList)
                 raise ValueError(msg)
             else:
-                destDirStr = '/'.join(destDirList)
+                destDirStr = self.posixSep.join(destDirList)
         elif destDirList:
-            destDirStr = '/'.join(destDirStr)
+            destDirStr = self.posixSep.join(destDirStr)
         elif destDirStr:
-            destDirList = destDirStr.split('/')
+            destDirList = destDirStr.split(self.posixSep)
             self.logger.debug("destDirList: %s", destDirList)
 
         # fme resource type example FME_SHAREDRESOURCE_ENGINE
@@ -340,7 +420,7 @@ class Deployment(object):
         self.srcFile = srcFile
         # fme directory list without the file reference
         self.destDirList = self.destFileFullPathList[:-1]
-        self.destDirStr = '/'.join(self.destDirList)
+        self.destDirStr = self.posixSep.join(self.destDirList)
 
     def exists(self):
         '''
@@ -354,19 +434,20 @@ class Deployment(object):
             self.getFMEResourceDirectoryType(), self.destFileFullPathList)
 
     def getResource(self):
-        ''' returns a python fme server resource object
+        '''
+        :return: a python fme server resource object
         '''
         return self.resource
 
     def getFMEResourceDirectoryType(self):
         '''
-        returns the destination directory type
+        :return: the destination directory type
         '''
         return self.destDirType
 
     def getSourceFileString(self):
         '''
-        gets the source file path
+        :return: the source file path
         '''
         return self.srcFile
 
@@ -376,7 +457,6 @@ class Deployment(object):
         Server side if they do not exist, and then copies files to that
         directory.
         '''
-
         self.logger.debug("Writing the source file to fme server %s",
                           self.srcFile)
         tmp = self.destDirList[0:]
@@ -411,181 +491,12 @@ class Deployment(object):
         return retVal
 
 
-class PythonDeployment(BaseDeployment):
-    '''
-    The python deployment class.  Used to deploy the python modules that make
-    up the fme framework
-    '''
-
-    def __init__(self, deployConfig=None):
-        BaseDeployment.__init__(self, deployConfig=deployConfig)
-        self.logger = logging.getLogger(__name__)
-
-        self.templatePythonFiles = self.dplyConfig.getFrameworkPythonFiles()
-
-        self.logger.debug("template destination dir is %s",
-                          self.templateDestDir)
-
-        # external dependencies dir to be synced to fme server
-        # self.depsDir = os.path.join(self.params.templateSourceDir,
-        #                             self.params.depsDir)
-
-    def deployPython(self, update=False):
-        '''
-        Deploys all the python code required by the fme template.
-        This method will call all the other submethods necessary to
-        copy the template module, external dependencies, dataBC library
-        python modules so they are globally available to python on
-        the fme server that they are deployed to.
-
-        :param update: if a python module already exists on fme server the
-                       default behaviour is to not overwrite it.  If you need
-                       to update the contents of fme server switch this
-                       parameter to True.
-        '''
-        self.copyPythonDependencies(overwrite=update)
-        self.copyDataBCModules(overwrite=update)
-
-    def getDirList(self, inputDir):
-        '''
-        Reads an input directory and assembles the files in that directory
-        that need to be copied up to fme server.  Returns a list that is in
-        turn passed onto another method to actually do the copying.
-        :param inputDir: the input directory to get the file list from.
-        :return: a list of files found in the input directory.
-        :rtype: list(str)
-        '''
-        self.logger.info("getting the directory parts for: %s", inputDir)
-        allparts = []
-        while 1:
-            parts = os.path.split(inputDir)
-            if parts[0] == inputDir:  # sentinel for absolute paths
-                allparts.insert(0, parts[0])
-                break
-            elif parts[1] == inputDir:  # sentinel for relative paths
-                allparts.insert(0, parts[1])
-                break
-            else:
-                inputDir = parts[0]
-                allparts.insert(0, parts[1])
-        return allparts
-
-    def copyPythonDependencies(self, overwrite=False):
-        '''
-        Copies the contents of the external depencies directory to fme
-        server.  The directory that self.depsDir contains. Copy is
-        recursive.
-
-        If unmodified since the writing of this comment its the lib_ext dir
-
-        :param  overwrite: param description
-        :type overwrite: enter type
-        '''
-        ignoreList = self.dplyConfig.getDependencyFileIgnoreList()
-        depsDir = self.dplyConfig.getDBCFMEFrameworkDependencyDirectory()
-        depsDir64 = depsDir + u'64'
-        is64 = self.dplyConfig.isDeploy64Bit()
-        directoryIgnore = self.dplyConfig.getDependencyDirectoryIgnoreList()
-        FME_SHAREDRESOURCE_ENGINE = \
-            DeployConstants.DeploymentConstants.FME_SHAREDRESOURCE_ENGINE.name
-
-        self.logger.info("files that are configured to be skipped: %s",
-                         ignoreList)
-        self.logger.debug("depsDir: %s", depsDir)
-        deploymentList = []
-        for dirName, subdirList, fileList in os.walk(depsDir):
-            del subdirList
-            dirList = self.getDirList(dirName)
-            ignore = False
-            for dir2Ignore in directoryIgnore:
-                if dir2Ignore in dirList:
-                    ignore = True
-                    self.logger.debug("skipping %s", dirName)
-                    break
-            if not ignore:
-                for curFile in fileList:
-                    if curFile not in ignoreList:
-                        # writeFile = False
-                        # if 64 is enabled and same file exists in 64 then
-                        # deploy it
-                        dirName64 = dirName.replace(depsDir, depsDir64)
-                        curFile64 = os.path.join(dirName64, curFile)
-                        if os.path.exists(curFile64) and is64:
-                            srcFile = curFile64
-                            relpath = os.path.relpath(dirName64, depsDir64)
-                        else:
-                            srcFile = os.path.join(dirName, curFile)
-                            relpath = os.path.relpath(dirName, depsDir)
-                        self.logger.debug("srcFile: %s", srcFile)
-                        self.logger.debug("relpath: %s", relpath)
-
-                        curFileEncoded = urllib.quote(curFile)
-                        relpath = relpath.replace('\\', '/')
-                        destPath = posixpath.join(self.templateDestDir,
-                                                  relpath)
-                        destPathWthFile = posixpath.join(destPath,
-                                                         curFileEncoded)
-                        # destPathList = destPath.split('/')
-                        self.logger.debug("adding %s", srcFile)
-                        deployment = Deployment(FME_SHAREDRESOURCE_ENGINE,
-                                                srcFile,
-                                                dplyConfig=self.dplyConfig,
-                                                destDirStr=destPathWthFile)
-                        deploymentList.append(deployment)
-        self.deploy(deploymentList, overwrite)
-
-    def copyDataBCModules(self, overwrite=False):
-        '''
-        Describe your method and what it does here ( if multiple
-        lines make sure they are aligned to this margin)
-
-        :param  overwrite: Be default the method will only overwrite if the
-        file on the source side is newer then the destination, but setting
-        this parameter to true the modules will always be overwritten.
-        :type overwrite: bool
-        '''
-        dataBCModules = self.dplyConfig.getDataBCPyModules()
-        dataBCModulesDir = \
-            self.dplyConfig.getDBCFMEFrameworkDependencyDirectory()
-        FME_SHAREDRESOURCE_ENGINE = \
-            DeployConstants.DeploymentConstants.FME_SHAREDRESOURCE_ENGINE.name
-        deploymentList = []
-        for DataBCMod in dataBCModules:
-            modPath = os.path.join(dataBCModulesDir, DataBCMod)
-            if os.path.isfile(modPath):
-                destPathWithFile = posixpath.join(self.templateDestDir,
-                                                  DataBCMod)
-                deployment = Deployment(FME_SHAREDRESOURCE_ENGINE,
-                                        modPath,
-                                        dplyConfig=self.dplyConfig,
-                                        destDirStr=destPathWithFile)
-                deploymentList.append(deployment)
-
-            for dirName, subdirList, fileList in os.walk(modPath):
-                del subdirList
-                for curFile in fileList:
-                    junk, suffix = os.path.splitext(curFile)
-                    del junk
-                    if suffix != '.pyc':
-                        srcFile = os.path.join(dirName, curFile)
-                        relPath = os.path.relpath(modPath, dataBCModulesDir)
-                        relPath = relPath.replace('\\', '/')
-                        destPath = posixpath.join(self.templateDestDir,
-                                                  relPath)
-                        destPathWithFile = posixpath.join(destPath, curFile)
-                        # dirList = destPath.split('/')
-
-                        deployment = Deployment(FME_SHAREDRESOURCE_ENGINE,
-                                                srcFile,
-                                                dplyConfig=self.dplyConfig,
-                                                destDirStr=destPathWithFile)
-                        deploymentList.append(deployment)
-        self.deploy(deploymentList, overwrite)
-
-
 class FMECustomizationDeployments(BaseDeployment):
     '''
     Methods used to deploy any FME Customizations to fme server.
+    This one is a little different from the other deployments.  It
+    copies to a different locations.  Its working so not messing with it
+    for now.
     '''
 
     def __init__(self, deployConfig=None):
@@ -615,7 +526,7 @@ class FMECustomizationDeployments(BaseDeployment):
         fmeServerResourcesEngineDirType = \
             DeployConstants.DeploymentConstants.FME_SHAREDRESOURCE_ENGINE.name
         for srcPath in [srcPath1, srcPath2]:
-            self.logger.debug("srcpath: {0}".format(srcPath))
+            self.logger.debug("srcpath: %s", srcPath)
             for dirName, subdirList, fileList in os.walk(srcPath):
                 del subdirList
                 for file2Copy in fileList:
@@ -623,7 +534,8 @@ class FMECustomizationDeployments(BaseDeployment):
                     relPath = os.path.relpath(
                         srcFile,
                         os.path.join(templateSourceDir, customizationDir))
-                    relPath = relPath.replace("\\", '/')
+                    relPath = relPath.replace(os.path.sep, posixpath.sep)
+
                     self.logger.debug('srcFile: %s', srcFile)
                     deploy = Deployment(fmeServerResourcesEngineDirType,
                                         srcFile,
@@ -634,6 +546,10 @@ class FMECustomizationDeployments(BaseDeployment):
 
 
 class GenericFileDeployment(BaseDeployment):
+    '''
+    A base class that gets inherited.  This class supports deployment of
+    named individual files
+    '''
 
     def __init__(self, deployConfig=None):
 
@@ -641,7 +557,7 @@ class GenericFileDeployment(BaseDeployment):
         # srcDir is 'config'
         self.srcDir = None
         self.destDirList = None
-        self.files2Deploy = self.dplyConfig.getConfigFileList()
+        self.files2Deploy = None
         self.fmeObjType = \
             DeployConstants.DeploymentConstants.FME_SHAREDRESOURCE_ENGINE.name
 
@@ -698,14 +614,17 @@ class GenericFileDeployment(BaseDeployment):
         extracted from the config file.  You only need to specify the section.
 
         self.files2Deploy <- DeployConstants.DeploySubKeys.files
-        self.destDirList <- DeployConstants.DeploySubKeys.destinationFMEServerDirectory  # @IgnorePep8
+        self.destDirList <- DeployConstants.DeploySubKeys.destinationFMEServerDirectory  # @IgnorePep8  #pylint: disable=line-too-long
         self.srcDir <- DeployConstants.DeploySubKeys.sourceDirectory
         '''
+        # ideally this and the same named method in the deploy directories
+        # should be in a subclass that this class inherits from, allowing
+        # more code re-use
         if not self.dplyConfig.paramExists(sectionName):
             msg = 'The section: %s does not exist in the deployment config ' + \
                   'file %s'
 
-            msg = msg.format(sectionName, self.dplyConfig.confFile)
+            msg = msg.format(sectionName, self.dplyConfig.configFile)
             raise ValueError(msg)
         self.deploySection = sectionName
 
@@ -787,13 +706,41 @@ class GenericFileDeployment(BaseDeployment):
 
 
 class GenericDirectoryDeployment(GenericFileDeployment):
+    '''
+    functionality to deploy directories.  Supports the following sub
+    sections in the config file:
+     - ignoreFilesList: list of specific files to ignore
+     - ignoreDirectories: list of directories to ignore
+     - ignoreSuffixes: list of file suffixes to ignore
+
+    :ivar destDirList: populated with a list that describes where in the
+                       fme server resources paths the files should be
+                       deployed to.
+    :ivar ignoreFileList: populated with a list of files that should
+                          be ignored
+    :ivar ignoreDirList: list of files that will will be ignored
+    :ivar ignoreDirList: list of directories that will be ignored
+    :ivar ignoreSuffixes: you get the picture
+    :ivar srcDirList: list of source directories that should be copied to
+                      fme server
+    :ivar deploySection: the section in the config file that describes
+                      what needs to be deployed, the source of most of this
+                      classes properties
+    :ivar srcRootDir: the source directory for where files are to be
+                      sourced from. Default value is calculated relative
+                      to the location of this file.
+    :ivar dirType: the directory type, that is used when copying to fme
+                   server.  Currently this remains static
+    '''
 
     def __init__(self, deployConfig=None):
         GenericFileDeployment.__init__(self, deployConfig=deployConfig)
         self.destDirList = None
         self.ignoreFileList = []
         self.ignoreDirList = []
+        self.ignoreSuffixes = []
         self.srcDirList = None
+        self.deploySection = None
         self.srcRootDir = self.dplyConfig.getFrameworkRootDirectory()
         self.dirType = \
             DeployConstants.DeploymentConstants.FME_SHAREDRESOURCE_ENGINE.name
@@ -816,8 +763,7 @@ class GenericDirectoryDeployment(GenericFileDeployment):
         if not self.dplyConfig.paramExists(sectionName):
             msg = 'The section: %s does not exist in the deployment config ' + \
                   'file %s'
-
-            msg = msg.format(sectionName, self.dplyConfig.confFile)
+            msg = msg.format(sectionName, self.dplyConfig.configFile)
             raise ValueError(msg)
         self.deploySection = sectionName
 
@@ -834,6 +780,7 @@ class GenericDirectoryDeployment(GenericFileDeployment):
                 msg = msg.format(expectedSubSection, self.deploySection,
                                  self.dplyConfig.configFile)
                 raise ValueError(msg)
+
         # Getting required values
         # --------------------------------------------------
         self.srcDirList = self.dplyConfig.getSectionSubSectionValue(
@@ -845,9 +792,10 @@ class GenericDirectoryDeployment(GenericFileDeployment):
 
         # Getting optional values
         # --------------------------------------------------
+
         # if the ignoreFilesList exists then get its value
         if self.dplyConfig.subParamExists(
-            sectionName,
+                sectionName,
                 DeployConstants.DeploySubKeys.ignoreFilesList.name):
             self.ignoreFileList = self.dplyConfig.getSectionSubSectionValue(
                 sectionName,
@@ -855,11 +803,19 @@ class GenericDirectoryDeployment(GenericFileDeployment):
 
         # if the ignoreDirectories exists then get its value
         if self.dplyConfig.subParamExists(
-            sectionName,
+                sectionName,
                 DeployConstants.DeploySubKeys.ignoreDirectories.name):
             self.ignoreDirList = self.dplyConfig.getSectionSubSectionValue(
                 sectionName,
                 DeployConstants.DeploySubKeys.ignoreDirectories.name)
+
+        # if the ignoreSuffixes exists then get its value
+        if self.dplyConfig.subParamExists(
+                sectionName,
+                DeployConstants.DeploySubKeys.ignoreSuffixes.name):
+            self.ignoreSuffixes = self.dplyConfig.getSectionSubSectionValue(
+                sectionName,
+                DeployConstants.DeploySubKeys.ignoreSuffixes.name)
 
     def verifyParams(self):
         '''
@@ -873,10 +829,12 @@ class GenericDirectoryDeployment(GenericFileDeployment):
         # making sure the specified source directories exist
         for srcDir in self.srcDirList:
             fullSrcDirPath = os.path.join(self.srcRootDir, srcDir)
+            fullSrcDirPath = os.path.normpath(fullSrcDirPath)
             if not os.path.isdir(fullSrcDirPath):
-                msg = 'The source directory %s specified in the source ' + \
-                      'directory list does not exist, in the root directory %s'
-                msg = msg.format(srcDir, fullSrcDirPath)
+                msg = 'The source directory: {0} (full path: {1}) ' + \
+                      'does not exist, in the root ' + \
+                      'directory {1}'
+                msg = msg.format(srcDir, fullSrcDirPath, self.srcRootDir)
                 raise ValueError(msg)
 
     def isDirectoryInIgnoreList(self, inDir):
@@ -895,11 +853,41 @@ class GenericDirectoryDeployment(GenericFileDeployment):
                 break
         return retVal
 
+    def isSrcFileInIgnoreSuffixes(self, srcFile):
+        '''
+        evaluates the srcFile to determine whether the suffix associated with
+        the source file is in the ignore list
+        :param srcFile: the source file to be tested
+        :type srcFile:str
+        :return: is the source file a type that should be ignored?
+        :rtype: bool
+        '''
+        retVal = False
+        self.logger.debug("ignoreSuffixes list: %s", self.ignoreSuffixes)
+        if self.ignoreSuffixes:
+            # evalute case insensitive
+            ignoreLowerCaseList = [x.lower() for x in self.ignoreSuffixes]
+            srcFileSuffix = os.path.splitext(srcFile)[1].lower()
+            if srcFileSuffix in ignoreLowerCaseList:
+                retVal = True
+                msg = "Ignoring the file: {0} due to suffix being in " + \
+                      "list {1}"
+                msg = msg.format(srcFile, self.ignoreSuffixes)
+                self.logger.debug(msg)
+        return retVal
+
     def copyFiles(self, overwrite=False):
         '''
+        iterates over all the files defined in the configuration,
+        created deployment objects for each of them,
+        puts deployment objects in a list,
+        does the actual deploy, which does the actual copying.
 
-        :param overwrite:
-        :type overwrite:
+        :param overwrite: if the file already exists and the source is older
+                          then the destination, normally no copy will take
+                          place.  If the overwrite parameter is set to tru
+                          then the file will be copied regardless.
+        :type overwrite: bool
         '''
         self.verifyParams()
         destDir = self.destDirList[0:]
@@ -907,6 +895,7 @@ class GenericDirectoryDeployment(GenericFileDeployment):
         for srcDir in self.srcDirList:
             srcDirFullPath = os.path.join(self.srcRootDir,
                                           srcDir)
+            srcDirFullPath = os.path.normpath(srcDirFullPath)
             self.logger.debug('srcDirFullPath: %s', srcDirFullPath)
             destDir = self.destDirList[0:]
             self.logger.debug('destDir: %s', destDir)
@@ -915,7 +904,8 @@ class GenericDirectoryDeployment(GenericFileDeployment):
                 destDirInLoop = destDir[0:]
                 del subdirList
                 for file2Copy in fileList:
-                    srcFile = os.path.join(dirName, file2Copy)
+                    srcFile = os.path.normpath(os.path.join(dirName,
+                                                            file2Copy))
                     # self.logger.debug('srcDirFullPath: %s', srcDirFullPath)
                     # self.logger.debug('destDir: %s', destDir)
                     # self.logger.debug('destDirInLoop: %s', destDirInLoop)
@@ -924,15 +914,21 @@ class GenericDirectoryDeployment(GenericFileDeployment):
                     # source directory,  now cutting up the directory into
                     # a list so we can verify that it is not in the ignore
                     # list
-                    relPath = os.path.dirname(os.path.relpath(srcFile, srcDirFullPath))
-                    if not self.isDirectoryInIgnoreList(relPath):
+                    relPath = os.path.normpath(
+                        os.path.dirname(os.path.relpath(srcFile,
+                                                        srcDirFullPath)))
+                    if not self.isDirectoryInIgnoreList(relPath) and \
+                            not self.isSrcFileInIgnoreSuffixes(srcFile):
                         if file2Copy not in self.ignoreFileList:
                             # copy file
                             destDirForDeploy = os.path.join(*destDirInLoop)
-                            destDirForDeploy = os.path.join(destDirForDeploy, relPath, file2Copy)
-                            destDirForDeploy = destDirForDeploy.replace(os.sep, '/')
-                            # destDirForDeploy = posixpath.normpath(destDirForDeploy)
-                            self.logger.debug("destDirForDeploy: %s", destDirForDeploy)
+                            destDirForDeploy = os.path.normpath(
+                                os.path.join(destDirForDeploy, relPath,
+                                             file2Copy))
+                            destDirForDeploy = destDirForDeploy.replace(
+                                os.sep, posixpath.sep)
+                            self.logger.debug("destDirForDeploy: %s",
+                                              destDirForDeploy)
                             self.logger.debug('srcFile: %s', srcFile)
                             self.logger.debug('self.dirType: %s', self.dirType)
                             deploy = Deployment(self.dirType,
@@ -940,11 +936,14 @@ class GenericDirectoryDeployment(GenericFileDeployment):
                                                 dplyConfig=self.dplyConfig,
                                                 destDirStr=destDirForDeploy)
                             deployList.append(deploy)
-
         self.deploy(deployList, overwrite)
 
 
 class PythonDependencies(GenericDirectoryDeployment):
+    '''
+    reads the deployment config file, extracts the section that defines
+    deployments for Secret files that make up the FME Framework
+    '''
 
     def __init__(self, deployConfig=None):
         GenericDirectoryDeployment.__init__(self, deployConfig=deployConfig)
@@ -952,7 +951,33 @@ class PythonDependencies(GenericDirectoryDeployment):
             DeployConstants.DeploySections.pythonDependencies.name)
 
 
+class DBCPyLibDependencies(GenericDirectoryDeployment):
+    '''
+    reads the deployment config file, extracts the section that defines
+    deployments for individual DBCPyLib packages that are used by FME
+    Framework.
+
+    All the files that get deployed by this module are also depolyed by the
+    PythonDependencies class.  This class depolys on the DBCpyLib subset.
+
+    Kept the code here in case we need to do quick deployment of these
+    dependencies
+    '''
+
+    def __init__(self, deployConfig=None):
+        GenericDirectoryDeployment.__init__(self, deployConfig=deployConfig)
+        self.setConfigFileSection(
+            DeployConstants.DeploySections.dataBCModules.name)
+
+
 class SecretsDeployment(GenericFileDeployment):
+    '''
+    reads the deployment config file, extracts the section that defines
+    deployments for Secret files that make up the FME Framework
+
+    Secrets are deployed as a git submodule, on the location where the
+    framework gets deployed.
+    '''
 
     def __init__(self, deployConfig=None):
         GenericFileDeployment.__init__(self, deployConfig=deployConfig)
@@ -960,7 +985,11 @@ class SecretsDeployment(GenericFileDeployment):
             DeployConstants.DeploySections.secretFiles.name)
 
 
-class PythonGeneric(GenericFileDeployment):
+class PythonFMEFramework(GenericFileDeployment):
+    '''
+    reads the deployment config file, extracts the section that defines
+    deployments for python files that make up the FME Framework
+    '''
 
     def __init__(self, deployConfig=None):
         GenericFileDeployment.__init__(self, deployConfig=deployConfig)
@@ -969,6 +998,10 @@ class PythonGeneric(GenericFileDeployment):
 
 
 class ConfigsDeployment(GenericFileDeployment):
+    '''
+    reads the deployment config file, extracts the section that defines
+    deployments for config files
+    '''
 
     def __init__(self, deployConfig=None):
         GenericFileDeployment.__init__(self, deployConfig=deployConfig)
@@ -977,9 +1010,16 @@ class ConfigsDeployment(GenericFileDeployment):
 
 
 class BinaryDeployments(GenericFileDeployment):
+    '''
+    reads the deployment config file, extracts the section that defines
+    deployments for binary executable files that make up the FME Framework
+
+    This is not used at the moment, was implemented to support ssh and thus
+    the requirement to have putty.exe available.  In the end did not
+    implement ssh tunnels as part of the framework.
+    '''
 
     def __init__(self, deployConfig=None):
         GenericFileDeployment.__init__(self, deployConfig=deployConfig)
         self.setConfigFileSection(
             DeployConstants.DeploySections.binaries.name)
-

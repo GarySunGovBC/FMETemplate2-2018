@@ -6,30 +6,37 @@ defined in the file:
 '''
 import site
 import os.path
-curDir = os.path.dirname(__file__)
-curDir = os.path.abspath(curDir)
-print 'curDir', curDir
-site.addsitedir(curDir)
-#libdir
-libDir = os.path.join(curDir,
-                      '..',
-                      '..',
-                      'lib')
-libDir = os.path.normpath(libDir)
-print 'libDir', libDir
-site.addsitedir(libDir)
-site.addsitedir(os.path.dirname(libDir))
-
-
-import logging.config
-import DeployFrameworkLib
 import warnings
-import sys
+import logging.config
+# curDir = os.path.dirname(__file__)
+# curDir = os.path.abspath(curDir)
+# print 'curDir', curDir
+# site.addsitedir(curDir)
+# # libdir
+# libDir = os.path.join(curDir,
+#                       '..',
+#                       '..',
+#                       'lib')
+# libDir = os.path.normpath(libDir)
+# print 'libDir', libDir
+# site.addsitedir(libDir)
+# site.addsitedir(os.path.dirname(libDir))
 
-warnings.filterwarnings("ignore", message='Unverified HTTPS request is being made. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings')
+import util.FrameworkDeployment.DeployFrameworkLib as DeployFrameworkLib
+
+
+# pylint: disable=no-self-use, invalid-name
+
+filterMessage = 'Unverified HTTPS request is being made. Adding ' + \
+                'certificate verification is strongly advised. ' + \
+                'See: https://urllib3.readthedocs.io/en/latest/a' + \
+                'dvanced-usage.html#ssl-warnings'
+warnings.filterwarnings("ignore", message=filterMessage)
 
 if __name__ == '__main__':
-    # ---------- configuring logging ----------
+    # ------------------------------------------
+    # ---------- Configuring Logging ----------
+    # ------------------------------------------
     logConfFile = 'DeploymentLogging.config'
     logConfFilePath = os.path.join(os.path.dirname(__file__), logConfFile)
 
@@ -38,38 +45,57 @@ if __name__ == '__main__':
         'logfilename': str(outputLogFile)})
 
     logging.debug("testing first log message")
-    # configure deployment
 
-    # ---------- deployment config file ----------
+    # ---------- reading deployment config file  ----------
     deployConfig = os.path.join(os.path.dirname(__file__),
                                 '..', '..', 'config',
                                 'FMEServerDeployment.json')
 
-    # deployPy = DeployFrameworkLib.PythonDeployment(deployConfig=deployConfig)
-    # deployPy.copyPythonFiles(overwrite=False)
-    # deployPy.copyPythonDependencies(overwrite=False)
-    # deployPy.copyDataBCModules(overwrite=False)
-    
-    # leave commented out as we don't use the binary stuff anymore
-    #deployBin = DeployFrameworkLib.BinaryDeployments(deployConfig=deployConfig)
-    #deployBin.copyBinaries(overwrite=False)
-    
-    #deployFmeCust = DeployFrameworkLib.FMECustomizationDeployments(deployConfig=deployConfig)
-    #deployFmeCust.copyCustomTransformers(overwrite=True)
+    #          START ACTUAL DEPLOYMENTS
+    # ----------------------------------------------------
+    # Custom Transformers, etc
+    #  Copies the fme customizations
+    # ----------------------------------------------------
+    deployFmeCust = DeployFrameworkLib.FMECustomizationDeployments(deployConfig=deployConfig)
+    deployFmeCust.copyCustomTransformers(overwrite=True)
 
-    #deployConf = DeployFrameworkLib.ConfigsDeployment()
-    #deployConf.copyFiles(overwrite=False)
-    
-    
-    #pyDepDeploy = DeployFrameworkLib.PythonDependencies()
-    #pyDepDeploy.copyFiles(overwrite=False)
-    
-    
-    
-    
-#     binDeploy = DeployFrameworkLib.BinaryDeployments()
-#     binDeploy.copyFiles()
-    deployPy = DeployFrameworkLib.PythonGeneric()
+    # ----------------------------------------------------
+    # Configs
+    #  logging config and other config file
+    # ----------------------------------------------------
+    deployConf = DeployFrameworkLib.ConfigsDeployment()
+    deployConf.copyFiles(overwrite=False)
+
+    # ----------------------------------------------------
+    # binary Deployment
+    #   leave commented out as we don't use the binary stuff anymore
+    # ----------------------------------------------------
+    binDeploy = DeployFrameworkLib.BinaryDeployments()
+    binDeploy.copyFiles()
+
+    # ----------------------------------------------------
+    # Python (framework)
+    # copies the python libs that are in the framework root directory
+    # and defined in the section frameworkPython
+    # ----------------------------------------------------
+    deployPy = DeployFrameworkLib.PythonFMEFramework()
     deployPy.copyFiles(overwrite=False)
-#     deploySecrets = DeployFrameworkLib.SecretsDeployment()
-#     deploySecrets.copyFiles(overwrite=False)
+
+    # ----------------------------------------------------
+    # Python Dependencies
+    # copies the pythonDependencies section.  This is a section
+    # that can be commented out as it is also deployed when you
+    # deploy
+    # ----------------------------------------------------
+    pyDepDeploy = DeployFrameworkLib.PythonDependencies()
+    pyDepDeploy.copyFiles(overwrite=False)
+    # This deployment can stay commented out, provides the option
+    # of deploying only the DBCpyLib modules used by the framework
+    dbcPyLibDly = DeployFrameworkLib.DBCPyLibDependencies()
+    dbcPyLibDly.copyFiles(overwrite=False)
+
+    # ----------------------------------------------------
+    # Secrets deploy
+    # ----------------------------------------------------
+    deploySecrets = DeployFrameworkLib.SecretsDeployment()
+    deploySecrets.copyFiles(overwrite=False)

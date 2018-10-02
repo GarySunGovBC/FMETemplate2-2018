@@ -20,15 +20,16 @@ class DeploySubKeys(Enum):
     files = 1
     ignoreFilesList = 2
     ignoreDirectories = 3
-    dependencyDirectory32 = 4
-    dependencyDirectory64 = 5
-    directoryList = 6
-    customizationRootDirectory = 7
-    transformersDirectory = 8
-    pluginsDirectory = 9
-    sourceDirectory = 10
-    destinationFMEServerDirectory = 11
-    sourceDirectoryList = 12
+    ignoreSuffixes = 4
+    dependencyDirectory32 = 5
+    dependencyDirectory64 = 6
+    directoryList = 7
+    customizationRootDirectory = 8
+    transformersDirectory = 9
+    pluginsDirectory = 10
+    sourceDirectory = 11
+    destinationFMEServerDirectory = 12
+    sourceDirectoryList = 13
 
 
 class FMEResourcesParams():

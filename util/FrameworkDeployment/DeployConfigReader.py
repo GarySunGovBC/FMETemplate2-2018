@@ -219,9 +219,9 @@ class DeploymentConfig(object):
             if subsection in self.conf[section]:
                 retVal = True
             else:
-                msg = 'The section %s exists however there is no ' + \
-                      'subsection named %s under that section in the file' + \
-                      ' %s'
+                msg = 'The section {0} exists however there is no ' + \
+                      'subsection named {1} under that section in the file' + \
+                      ' {2}'
                 msg = msg.format(section, subsection, self.configFile)
                 self.logger.warning(msg)
         return retVal

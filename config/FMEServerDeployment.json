@@ -1,6 +1,7 @@
 {
 	"__cmt0__": "This is the label in the secrets file that corresponds with", 
 	"__cmt1__": "information about the fme server to deploy to",
+	"__cmt11_": "other options fmeprd",
 	"DESTFMESERVER": "fmetst",
 	"__cmt2__": "set USE64 to true if deploying from a 32 bit env to a 64 bit env", 
 	"USE64BIT": true,
@@ -36,6 +37,7 @@
 	"pythonDependencies": {
 	   "ignoreFilesList": [".gitignore", "requirements.txt", "GMT+0"],
 	   "ignoreDirectories": ["pytz-2018.5.dist-info", "pytz"],
+	   "ignoreSuffixes" : [".pyc"],
        "__cmt1__": "specifying lib first, the files in there will get copied then",
        "__cmt2__": "files in the second directory will get copied",
 	   "sourceDirectoryList": ["lib", "lib64"],
@@ -44,8 +46,8 @@
 	"dataBCModules": {
 	   "__cmt1__": "This section is tied to the method DeployDBCDeps.  It is ",
        "__cmt2__": "already addressed by the  pythondependencies section",
-	   "directoryList": ["DB", "Misc", "BCDCUtil", "PMP", "FMEUtil", "KirkUtil"],
-       "sourceDirectory": "",
+       "ignoreSuffixes" : [".pyc"],
+	   "sourceDirectoryList": ["lib/DB", "lib/Misc", "lib/BCDCUtil", "lib/PMP", "lib/FMEUtil", "lib/KirkUtil"],
        "destinationFMEServerDirectory": ["Plugins", "Python", "python27", "config"]
 	},
 	"configFiles": {
