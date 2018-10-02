@@ -30,30 +30,34 @@
 			"FFSReader.py", 
 			"KIRKParams.py"
 		],
-		"destinationFMEServerDirectory": ["Plugins", "python", "python27"],
+		"destinationFMEServerDirectory": ["Plugins", "Python", "python27"],
 		"sourceDirectory" : ""
 	},
 	"pythonDependencies": {
-	    "ignoreFilesList": [".gitignore", "requirements.txt", "GMT+0"], 
-	    "ignoreDirectories": ["pytz-2016.10.dist-info", "pytz"],
-	    "dependencyDirectory32": "lib",
-        "dependencyDirectory64": "lib64"
+	   "ignoreFilesList": [".gitignore", "requirements.txt", "GMT+0"],
+	   "ignoreDirectories": ["pytz-2018.5.dist-info", "pytz"],
+       "__cmt1__": "specifying lib first, the files in there will get copied then",
+       "__cmt2__": "files in the second directory will get copied",
+	   "sourceDirectoryList": ["lib", "lib64"],
+	   "destinationFMEServerDirectory": ["Plugins", "Python", "python27"]
 	},
 	"dataBCModules": {
-	   "directoryList": ["DB", "Misc", "BCDCUtil", "PMP", "psutil", "FMEUtil", "KirkUtil"],
+	   "__cmt1__": "This section is tied to the method DeployDBCDeps.  It is ",
+       "__cmt2__": "already addressed by the  pythondependencies section",
+	   "directoryList": ["DB", "Misc", "BCDCUtil", "PMP", "FMEUtil", "KirkUtil"],
        "sourceDirectory": "",
-       "destinationFMEServerDirectory": ["Plugins", "python", "python27", "config"]
+       "destinationFMEServerDirectory": ["Plugins", "Python", "python27", "config"]
 	},
 	"configFiles": {
 	   "__cmt1__": "templateDefaults.config will come from a secrets repo",
 	   "files": ["templateLogging.config"],
 	   "sourceDirectory": "config",
-       "destinationFMEServerDirectory": ["Plugins", "python", "python27", "config"]
+       "destinationFMEServerDirectory": ["Plugins", "Python", "python27", "config"]
 	},
 	"secretFiles": {
 	   "files": ["templateDefaults.config"],
 	   "sourceDirectory": "secrets",
-	   "destinationFMEServerDirectory": ["Plugins", "python", "python27", "secrets"]
+	   "destinationFMEServerDirectory": ["Plugins", "Python", "python27", "secrets"]
 	},
 	"fmeCustomizations": {
         "__cmt1__": "fmeCustomizations contains the various directories that", 
@@ -73,7 +77,7 @@
 	"binaries": {
 	   "files": ["putty.exe"],
        "sourceDirectory": "bin",
-       "destinationFMEServerDirectory": ["Plugins", "python", "python27", "bin"]
+       "destinationFMEServerDirectory": ["Plugins", "Python", "python27", "bin"]
 	}
 }
                 

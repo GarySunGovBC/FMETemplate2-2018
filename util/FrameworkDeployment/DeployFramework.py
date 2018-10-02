@@ -4,11 +4,27 @@ defined in the file:
   ../../config/FMEServerDeployment.json
 
 '''
-
+import site
 import os.path
+curDir = os.path.dirname(__file__)
+curDir = os.path.abspath(curDir)
+print 'curDir', curDir
+site.addsitedir(curDir)
+#libdir
+libDir = os.path.join(curDir,
+                      '..',
+                      '..',
+                      'lib')
+libDir = os.path.normpath(libDir)
+print 'libDir', libDir
+site.addsitedir(libDir)
+site.addsitedir(os.path.dirname(libDir))
+
+
 import logging.config
 import DeployFrameworkLib
 import warnings
+import sys
 
 warnings.filterwarnings("ignore", message='Unverified HTTPS request is being made. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings')
 
@@ -42,6 +58,18 @@ if __name__ == '__main__':
     #deployFmeCust.copyCustomTransformers(overwrite=True)
 
     #deployConf = DeployFrameworkLib.ConfigsDeployment()
-    #deployConf.copyConfig(overwrite=False)
-    deploySecrets = DeployFrameworkLib.SecretsDeployment()
-    deploySecrets.copyFiles(overwrite=False)
+    #deployConf.copyFiles(overwrite=False)
+    
+    
+    #pyDepDeploy = DeployFrameworkLib.PythonDependencies()
+    #pyDepDeploy.copyFiles(overwrite=False)
+    
+    
+    
+    
+#     binDeploy = DeployFrameworkLib.BinaryDeployments()
+#     binDeploy.copyFiles()
+    deployPy = DeployFrameworkLib.PythonGeneric()
+    deployPy.copyFiles(overwrite=False)
+#     deploySecrets = DeployFrameworkLib.SecretsDeployment()
+#     deploySecrets.copyFiles(overwrite=False)

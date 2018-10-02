@@ -28,6 +28,7 @@ class DeploySubKeys(Enum):
     pluginsDirectory = 9
     sourceDirectory = 10
     destinationFMEServerDirectory = 11
+    sourceDirectoryList = 12
 
 
 class FMEResourcesParams():

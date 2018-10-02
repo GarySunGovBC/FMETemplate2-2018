@@ -4,7 +4,7 @@ Created on Sep 28, 2018
 @author: kjnether
 '''
 
-import Secrets.GetSecrets
+import DBCSecrets.GetSecrets
 import logging
 import os.path
 import json
@@ -141,7 +141,7 @@ class DeploymentConfig(object):
             # comes from the secrets
             paramName = DeployConstants.DeploymentConstants.DESTFMESERVER.name
             label = self.conf[paramName]
-            creds = Secrets.GetSecrets.CredentialRetriever()
+            creds = DBCSecrets.GetSecrets.CredentialRetriever()
             secrets = creds.getSecretsByLabel(label)
             host = secrets.getHost()
             url = 'http://{0}'.format(host)
@@ -157,7 +157,7 @@ class DeploymentConfig(object):
         if self.fmeToken is None:
             paramName = DeployConstants.DeploymentConstants.DESTFMESERVER.name
             label = self.conf[paramName]
-            creds = Secrets.GetSecrets.CredentialRetriever()
+            creds = DBCSecrets.GetSecrets.CredentialRetriever()
             secrets = creds.getSecretsByLabel(label)
             token = secrets.getAPI()
             self.fmeToken = token

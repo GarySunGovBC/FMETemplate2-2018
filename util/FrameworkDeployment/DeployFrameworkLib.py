@@ -52,6 +52,7 @@ Issues to keep track of:
 
 @author: kjnether
 '''
+
 import json
 # import logging.config @IgnorePep8
 import logging
@@ -59,6 +60,8 @@ import os.path
 import posixpath
 import time
 import urllib
+import datetime
+import pytz
 
 import DBCSecrets.GetSecrets
 
@@ -69,6 +72,139 @@ import FMEUtil.PyFMEServerV2 as PyFMEServer
 # import DeployConfigReader.DeploymentConfig as DeploymentConfig
 import DeployConfigReader
 # Move this to its own module
+
+
+class DirectoryCache(object):
+    '''
+    used to keep track of FME resource cache, to reduce the number of times
+    the deploy needs to communicate with fme server.
+    '''
+
+    def __init__(self, deployObj):
+        self.logger = logging.getLogger(__name__)
+        self.fmeResources = deployObj.resource
+
+        self.resourceCache = None
+        self.rootDirList = []
+        self.load(deployObj)
+
+    def loadDeployment(self, deployObj):
+        # fmeResources = dplyObj.resource
+        # dplyObj.destDirList[0] is grabbing the first directory in
+        # the list, so if the list was ['plugins', 'python', 'python27']
+        # the directory passed will be plugins
+        # doing this cause don't want to load the root directory
+        # as it would contain too much data.
+
+        resourceData = self.fmeResources.getDirectory(deployObj.destDirType,
+                                                      [deployObj.destDirList[0]])
+        self.parseResourceData(resourceData, deployObj.destDirType)
+        self.logger.debug("resourceData: %s", resourceData)
+        rootDir = resourceData['name']
+        rootDir = self.fixPath(rootDir)
+
+        self.logger.debug("root dir: %s", rootDir)
+
+        if rootDir not in self.rootDirList:
+            self.logger.debug("adding the root dir: %s", rootDir)
+            self.rootDirList.append(rootDir)
+
+    def isSourceNewer(self, deployObj):
+        self.load(deployObj)
+        retVal = True
+        srcModTime = time.ctime(os.path.getmtime(deployObj.srcFile))
+        self.logger.debug("srcModTime: %s", srcModTime)
+
+        dirType = deployObj.destDirType
+        fullFilePath = deployObj.destFileFullPathStr
+        fullFilePath = self.fixPath(fullFilePath)
+        if dirType in self.resourceCache:
+            self.logger.debug('dirType: %s', dirType)
+            self.logger.debug("fullFilePath: %s", fullFilePath)
+            if fullFilePath in self.resourceCache[dirType]:
+                self.logger.debug("found it")
+                destDateTime = self.resourceCache[dirType][fullFilePath]
+        destTimeStr = destDateTime.strftime('%Y-%m-%dT%H:%M:%S')
+        destModTime = time.strptime(destTimeStr, '%Y-%m-%dT%H:%M:%S')
+        self.logger.debug("destModTime: %s", destModTime)
+        self.logger.debug("srcModTime: %s", srcModTime)
+
+        if srcModTime < destModTime:
+            retVal = False
+        return retVal
+
+    def load(self, deployObj):
+        '''
+        makes sure the data has been loaded to memory
+        '''
+        rootDir = deployObj.destDirList[0]
+        rootDir = self.fixPath(rootDir)
+        
+        # make sure the root dir was loaded.
+        if not rootDir in self.rootDirList:
+            msg = 'The root dir: {0} is not in the list {1} loading the dir'
+            self.logger.debug(msg.format(rootDir, self.rootDirList))
+            self.loadDeployment(deployObj)
+
+    def fixPath(self, inPath):
+        '''
+        makes sure the path starts with a posix sep
+        '''
+        if inPath[0] != posixpath.sep:
+            inPath = posixpath.sep + inPath
+        return inPath
+
+    def exists(self, deployObj):
+        self.load(deployObj)
+        dirType = deployObj.destDirType
+        fullFilePath = deployObj.destFileFullPathStr
+        fullFilePath = self.fixPath(fullFilePath)
+        exists = False
+        
+        # make sure the root dir was loaded.
+        if dirType in self.resourceCache:
+            self.logger.debug("found dir type: %s", dirType)
+            self.logger.debug("looking for %s in %s", fullFilePath, self.resourceCache[dirType])
+            if fullFilePath in self.resourceCache[dirType]:
+                exists = True
+        return exists
+
+    def parseResourceData(self, resourceData, dirType):
+        '''
+        expecting a recursive structure that looks something like this:
+        {u'contents': [
+            {u'contents': [
+               {u'date': u'2018-09-27T18:21:32',
+                u'name': u'sqljdbc41.jar',
+                u'path': u'/Plugins/Java/',
+                u'size': 593632,
+                u'type': u'FILE'}],
+            u'date': u'2018-09-27T18:21:32',
+            u'name': u'Java',
+            u'path': u'/Plugins/',
+            u'size': 0,
+            u'type': u'DIR'}, ...
+        '''
+        if self.resourceCache is None:
+            self.resourceCache = {dirType: {}}
+        pntr = self.resourceCache[dirType]
+        if isinstance(resourceData, dict) and resourceData['type'] == 'DIR':
+            if 'contents' in resourceData:
+                self.parseResourceData(resourceData['contents'], dirType)
+        elif isinstance(resourceData, dict) and resourceData['type'] == 'FILE':
+            fullPath = posixpath.join(resourceData['path'],
+                                      resourceData['name'])
+            fileDate = datetime.datetime.strptime(resourceData['date'],
+                                                  '%Y-%m-%dT%H:%M:%S')
+            pacific = pytz.timezone('Canada/Pacific')
+            fileDate = fileDate.replace(tzinfo=pacific)
+            verifyDate = fileDate.strftime('%Y-%m-%dT%H:%M:%S')
+            #self.logger.debug("original date / new date: %s/%s",
+            #                  resourceData['date'], verifyDate)
+            self.resourceCache[dirType][fullPath] = fileDate
+        elif isinstance(resourceData, list):
+            for nextStruct in resourceData:
+                self.parseResourceData(nextStruct, dirType)
 
 
 class BaseDeployment(object):
@@ -83,6 +219,34 @@ class BaseDeployment(object):
         fmeParams = DeployConstants.FMEResourcesParams()
         self.templateDestDir = str(posixpath.sep).join(fmeParams.pythonDirs)
         self.dplyConfig = DeployConfigReader.DeploymentConfig(configFile=deployConfig)
+        self.resourceCache = None
+
+    def deploymentExists(self, dplyObj):
+        '''
+        :param dplyObj: The Deployment object who's existence is to be
+                        tested
+        :type dplyObj: Deployment
+        '''
+        # resource cache is what is used to determine if the deployment
+        # exists
+        if self.resourceCache is None:
+            # load the initial resource
+            fmeResources = dplyObj.resource
+            # dplyObj.destDirList[0] is grabbing the first directory in
+            # the list, so if the list was ['plugins', 'python', 'python27']
+            # the directory passed will be plugins
+            # doing this cause don't want to load the root directory
+            # as it would contain too much data.
+            
+            #contents = fmeResources.getDirectory(dplyObj.destDirType,
+            #                                     [dplyObj.destDirList[0]])
+            self.resourceCache = DirectoryCache(dplyObj)
+        return self.resourceCache.exists(dplyObj)
+
+    def isSourceNewer(self, dplyObj):
+        '''
+        '''
+        return self.resourceCache.isSourceNewer(dplyObj)
 
     def deploy(self, deploymentList, overWrite):
         '''
@@ -92,16 +256,19 @@ class BaseDeployment(object):
         self.logger.debug("deploy overwrite param: %s", overWrite)
         self.logger.debug("deployment list: %s", deploymentList)
         for deployment in deploymentList:
+
             writeFile = False
             if overWrite:
                 self.logger.debug("overwrite parameter set")
                 writeFile = True
-            elif not deployment.exists():
+            # elif not deployment.exists():
+            elif not self.deploymentExists(deployment):
                 self.logger.debug("object %s does not exist",
                                   deployment.destFileFullPathStr)
                 writeFile = True
             else:
-                if deployment.isSourceNewer():
+                # if deployment.isSourceNewer():
+                if self.isSourceNewer(deployment):
                     self.logger.debug("source is newer! %s",
                                       deployment.getSourceFileString())
                     writeFile = True
@@ -162,6 +329,7 @@ class Deployment(object):
             destDirStr = '/'.join(destDirStr)
         elif destDirStr:
             destDirList = destDirStr.split('/')
+            self.logger.debug("destDirList: %s", destDirList)
 
         # fme resource type example FME_SHAREDRESOURCE_ENGINE
         self.destDirType = dirType
@@ -219,6 +387,7 @@ class Deployment(object):
 
         if not self.resource.exists(self.destDirType, self.destDirList):
             self.resource.createDirectory(self.destDirType, tmp, dir2Create)
+            self.logger.debug("dir2Create: %s", dir2Create)
         # srcFile = urllib.quote(self.srcFile)
         self.logger.debug("srcFile: %s", self.srcFile)
         self.resource.copyFile(self.destDirType,
@@ -274,40 +443,8 @@ class PythonDeployment(BaseDeployment):
                        to update the contents of fme server switch this
                        parameter to True.
         '''
-        self.copyPythonFiles(overwrite=update)
         self.copyPythonDependencies(overwrite=update)
         self.copyDataBCModules(overwrite=update)
-
-    def copyPythonFiles(self, overwrite=False):
-        '''
-        Copies the files described in the list self.templatePythonFiles
-        to fme server.
-
-        Checks to see if the files already exist, and if they do they do not
-        get copied.
-
-        :param  overwrite: This boolean parameter can be set to true to
-                           overwrite if the files already exist.
-        :type overwrite: enter type
-
-        '''
-        templateSourceDir = self.dplyConfig.getFrameworkRootDirectory()
-        logging.debug("got here now in %s", __name__)
-        fileDeploymentList = []
-        FME_SHAREDRESOURCE_ENGINE = \
-            DeployConstants.DeploymentConstants.FME_SHAREDRESOURCE_ENGINE.name
-        for pyFile in self.templatePythonFiles:
-            src = os.path.join(templateSourceDir, pyFile)
-            dest = posixpath.join(self.templateDestDir, pyFile)
-            self.logger.debug("src: %s", src)
-            self.logger.debug("dest: %s", dest)
-            deployment = Deployment(FME_SHAREDRESOURCE_ENGINE,
-                                    src,
-                                    dplyConfig=self.dplyConfig,
-                                    destDirStr=dest)
-
-            fileDeploymentList.append(deployment)
-        self.deploy(fileDeploymentList, overwrite)
 
     def getDirList(self, inputDir):
         '''
@@ -446,57 +583,6 @@ class PythonDeployment(BaseDeployment):
         self.deploy(deploymentList, overwrite)
 
 
-class BinaryDeployments(BaseDeployment):
-    '''
-    used to deploy any binary file requirements.  Need to pay particular care
-    when using this method with 64 bit binaries.
-
-    :ivar ignoreList: any files described in here will never be copied to fme
-                      server.
-    '''
-
-    def __init__(self, deployConfig=None):
-        BaseDeployment.__init__(self, deployConfig=deployConfig)
-        self.ignoreList = ['readme.txt']
-        # self.srcDir = 'bin'
-        self.dplyConfig = DeployConfigReader.DeploymentConfig(
-            configFile=deployConfig)
-        self.srcDir = self.dplyConfig.getBinaryExecutableDirectory()
-
-    def copyBinaries(self, overwrite=False):
-        '''
-        Copies the binary dependencies found in the bin directory to fme
-        server. ignores anything in the self.ignoreList parameter
-
-        :param overwrite: Controls whether files that already exist in fme
-                          server are overwritten or not
-        '''
-        binDirName = os.path.basename(self.srcDir)
-        destDir = posixpath.join(self.templateDestDir, binDirName)
-        fmeServerResourcesEngineDirType = \
-            DeployConstants.DeploymentConstants.FME_SHAREDRESOURCE_ENGINE.name
-        deploymentList = []
-        for dirName, subdirList, fileList in os.walk(self.srcDir):
-            del subdirList
-            for curFile in fileList:
-                if curFile not in self.ignoreList:
-                    self.logger.debug("curFile: %s", curFile)
-
-                    srcFile = os.path.join(dirName, curFile)
-                    destFile = posixpath.join(destDir, curFile)
-                    destFile = posixpath.normpath(destFile)
-                    deployment = Deployment(fmeServerResourcesEngineDirType,
-                                            srcFile,
-                                            dplyConfig=self.dplyConfig,
-                                            destDirStr=destFile)
-                    deploymentList.append(deployment)
-                    self.logger.debug("srcFile: %s", srcFile)
-                    self.logger.debug("destDir: %s", destFile)
-
-        self.logger.debug("overwrite param : %s", overwrite)
-        self.deploy(deploymentList, overwrite)
-
-
 class FMECustomizationDeployments(BaseDeployment):
     '''
     Methods used to deploy any FME Customizations to fme server.
@@ -550,6 +636,7 @@ class FMECustomizationDeployments(BaseDeployment):
 class GenericFileDeployment(BaseDeployment):
 
     def __init__(self, deployConfig=None):
+
         BaseDeployment.__init__(self, deployConfig=deployConfig)
         # srcDir is 'config'
         self.srcDir = None
@@ -655,9 +742,11 @@ class GenericFileDeployment(BaseDeployment):
         proceed, are actually populated with values.
         '''
         if not self.srcDir:
-            msg = 'The source directory has not been set, define the source' + \
-                  "directory using the method 'setSourceDirectory()'"
-            raise ValueError(msg)
+            msg = 'The source directory has not been set, assuming the ' + \
+                  "source directory is the framework root directory " + \
+                  "if this is incorrect use the method " + \
+                  "'setSourceDirectory()' to define the correct source"
+            self.logger.warning(msg)
         if not self.files2Deploy:
             msg = 'you have not defined the list of files that need to be' + \
                   'deployed.  You can define these files through the ' + \
@@ -697,6 +786,172 @@ class GenericFileDeployment(BaseDeployment):
         self.deploy(deploymentList, overwrite)
 
 
+class GenericDirectoryDeployment(GenericFileDeployment):
+
+    def __init__(self, deployConfig=None):
+        GenericFileDeployment.__init__(self, deployConfig=deployConfig)
+        self.destDirList = None
+        self.ignoreFileList = []
+        self.ignoreDirList = []
+        self.srcDirList = None
+        self.srcRootDir = self.dplyConfig.getFrameworkRootDirectory()
+        self.dirType = \
+            DeployConstants.DeploymentConstants.FME_SHAREDRESOURCE_ENGINE.name
+        # self.destDirList
+
+    def setConfigFileSection(self, sectionName):
+        '''
+        define a section name that describes the deployment, a directory
+        deployment must have the following subsection in it.
+
+        optional subsections:
+          - ignoreFilesList
+          - ignoreDirectories
+
+        required subsections:
+          - sourceDirectoryList
+          - destinationFMEServerDirectory
+        '''
+        # make sure that the section exists
+        if not self.dplyConfig.paramExists(sectionName):
+            msg = 'The section: %s does not exist in the deployment config ' + \
+                  'file %s'
+
+            msg = msg.format(sectionName, self.dplyConfig.confFile)
+            raise ValueError(msg)
+        self.deploySection = sectionName
+
+        # now verify that the required sub sections exist
+        # currently expecting it to be files and sourceDirectory
+        expectedSubSections = [
+            DeployConstants.DeploySubKeys.destinationFMEServerDirectory.name,
+            DeployConstants.DeploySubKeys.sourceDirectoryList.name]
+        for expectedSubSection in expectedSubSections:
+            if not self.dplyConfig.subParamExists(sectionName,
+                                                  expectedSubSection):
+                msg = 'The expected sub section %s is not defined in the ' + \
+                      'section %s in the config file %s'
+                msg = msg.format(expectedSubSection, self.deploySection,
+                                 self.dplyConfig.configFile)
+                raise ValueError(msg)
+        # Getting required values
+        # --------------------------------------------------
+        self.srcDirList = self.dplyConfig.getSectionSubSectionValue(
+            sectionName,
+            DeployConstants.DeploySubKeys.sourceDirectoryList.name)
+        self.destDirList = self.dplyConfig.getSectionSubSectionValue(
+            sectionName,
+            DeployConstants.DeploySubKeys.destinationFMEServerDirectory.name)
+
+        # Getting optional values
+        # --------------------------------------------------
+        # if the ignoreFilesList exists then get its value
+        if self.dplyConfig.subParamExists(
+            sectionName,
+                DeployConstants.DeploySubKeys.ignoreFilesList.name):
+            self.ignoreFileList = self.dplyConfig.getSectionSubSectionValue(
+                sectionName,
+                DeployConstants.DeploySubKeys.ignoreFilesList.name)
+
+        # if the ignoreDirectories exists then get its value
+        if self.dplyConfig.subParamExists(
+            sectionName,
+                DeployConstants.DeploySubKeys.ignoreDirectories.name):
+            self.ignoreDirList = self.dplyConfig.getSectionSubSectionValue(
+                sectionName,
+                DeployConstants.DeploySubKeys.ignoreDirectories.name)
+
+    def verifyParams(self):
+        '''
+        performing checks that the provided parameters make sense
+        '''
+        if self.srcDirList is None:
+            msg = 'You have not specified the source directory, source ' + \
+                  'directory can be specified using the ' + \
+                  ' setConfigFileSection() method'
+            raise ValueError(msg)
+        # making sure the specified source directories exist
+        for srcDir in self.srcDirList:
+            fullSrcDirPath = os.path.join(self.srcRootDir, srcDir)
+            if not os.path.isdir(fullSrcDirPath):
+                msg = 'The source directory %s specified in the source ' + \
+                      'directory list does not exist, in the root directory %s'
+                msg = msg.format(srcDir, fullSrcDirPath)
+                raise ValueError(msg)
+
+    def isDirectoryInIgnoreList(self, inDir):
+        '''
+        Gets a in directory, breaks it up into its components if any of the
+        directories is in the ignore list then it returns true
+        :param inDir: the input directory
+        :type inDir: str (a file path)
+        '''
+        retVal = False
+        inDir = os.path.normpath(inDir)
+        dirList = inDir.split(os.sep)
+        for curDir in dirList:
+            if curDir in self.ignoreDirList:
+                retVal = True
+                break
+        return retVal
+
+    def copyFiles(self, overwrite=False):
+        '''
+
+        :param overwrite:
+        :type overwrite:
+        '''
+        self.verifyParams()
+        destDir = self.destDirList[0:]
+        deployList = []
+        for srcDir in self.srcDirList:
+            srcDirFullPath = os.path.join(self.srcRootDir,
+                                          srcDir)
+            self.logger.debug('srcDirFullPath: %s', srcDirFullPath)
+            destDir = self.destDirList[0:]
+            self.logger.debug('destDir: %s', destDir)
+
+            for dirName, subdirList, fileList in os.walk(srcDirFullPath):
+                destDirInLoop = destDir[0:]
+                del subdirList
+                for file2Copy in fileList:
+                    srcFile = os.path.join(dirName, file2Copy)
+                    # self.logger.debug('srcDirFullPath: %s', srcDirFullPath)
+                    # self.logger.debug('destDir: %s', destDir)
+                    # self.logger.debug('destDirInLoop: %s', destDirInLoop)
+                    # self.logger.debug('dirName: %s', dirName)
+                    # relPath is the directory relative to the input
+                    # source directory,  now cutting up the directory into
+                    # a list so we can verify that it is not in the ignore
+                    # list
+                    relPath = os.path.dirname(os.path.relpath(srcFile, srcDirFullPath))
+                    if not self.isDirectoryInIgnoreList(relPath):
+                        if file2Copy not in self.ignoreFileList:
+                            # copy file
+                            destDirForDeploy = os.path.join(*destDirInLoop)
+                            destDirForDeploy = os.path.join(destDirForDeploy, relPath, file2Copy)
+                            destDirForDeploy = destDirForDeploy.replace(os.sep, '/')
+                            # destDirForDeploy = posixpath.normpath(destDirForDeploy)
+                            self.logger.debug("destDirForDeploy: %s", destDirForDeploy)
+                            self.logger.debug('srcFile: %s', srcFile)
+                            self.logger.debug('self.dirType: %s', self.dirType)
+                            deploy = Deployment(self.dirType,
+                                                srcFile,
+                                                dplyConfig=self.dplyConfig,
+                                                destDirStr=destDirForDeploy)
+                            deployList.append(deploy)
+
+        self.deploy(deployList, overwrite)
+
+
+class PythonDependencies(GenericDirectoryDeployment):
+
+    def __init__(self, deployConfig=None):
+        GenericDirectoryDeployment.__init__(self, deployConfig=deployConfig)
+        self.setConfigFileSection(
+            DeployConstants.DeploySections.pythonDependencies.name)
+
+
 class SecretsDeployment(GenericFileDeployment):
 
     def __init__(self, deployConfig=None):
@@ -705,48 +960,26 @@ class SecretsDeployment(GenericFileDeployment):
             DeployConstants.DeploySections.secretFiles.name)
 
 
-class ConfigsDeployment(BaseDeployment):
-    '''
-    Copies the configurations to fme server.  Class has a property
-
-    :ivar ignoreList: a list of files that will never get copied to fme server
-                      even if Trump does get elected.
-    '''
+class PythonGeneric(GenericFileDeployment):
 
     def __init__(self, deployConfig=None):
-        BaseDeployment.__init__(self, deployConfig=deployConfig)
-        # srcDir is 'config'
-        self.srcDir = self.dplyConfig.getConfigSourceDirectory()
-        self.files2Deploy = self.dplyConfig.getConfigFileList()
+        GenericFileDeployment.__init__(self, deployConfig=deployConfig)
+        self.setConfigFileSection(
+            DeployConstants.DeploySections.frameworkPython.name)
 
-    def copyConfig(self, overwrite=False):
-        '''
-        Copies the configuration files in the config directory that are not
-        mentioned in the 'ignoreList' to fme server.  Currently this only
-        contains the logging config, may contain more at some other time.
-        '''
-        # configDirName = 'config'
-        templateSourceDir = self.dplyConfig.getFrameworkRootDirectory()
-        srcDir = os.path.join(templateSourceDir, self.srcDir)
-        destDir = posixpath.join(self.templateDestDir, self.srcDir)
-        fmeServerResourcesEngineDirType = \
-            DeployConstants.DeploymentConstants.FME_SHAREDRESOURCE_ENGINE.name
-        deploymentList = []
-        for curFile in self.files2Deploy:
-            self.logger.debug("curFile/dir: %s/%s", curFile, srcDir)
 
-            srcFile = os.path.join(srcDir, curFile)
-            destFile = posixpath.join(destDir, curFile)
-            destFile = posixpath.normpath(destFile)
-            self.logger.debug('srcFile: %s', srcFile)
-            self.logger.debug('destFile: %s', destFile)
-            deployment = Deployment(fmeServerResourcesEngineDirType,
-                                    srcFile,
-                                    dplyConfig=self.dplyConfig,
-                                    destDirStr=destFile)
-            deploymentList.append(deployment)
-            self.logger.debug("srcFile: %s", srcFile)
-            self.logger.debug("destDir: %s", destFile)
+class ConfigsDeployment(GenericFileDeployment):
 
-        self.logger.debug("overwrite param : %s", overwrite)
-        self.deploy(deploymentList, overwrite)
+    def __init__(self, deployConfig=None):
+        GenericFileDeployment.__init__(self, deployConfig=deployConfig)
+        self.setConfigFileSection(
+            DeployConstants.DeploySections.configFiles.name)
+
+
+class BinaryDeployments(GenericFileDeployment):
+
+    def __init__(self, deployConfig=None):
+        GenericFileDeployment.__init__(self, deployConfig=deployConfig)
+        self.setConfigFileSection(
+            DeployConstants.DeploySections.binaries.name)
+
