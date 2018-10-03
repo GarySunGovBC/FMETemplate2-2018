@@ -56,6 +56,7 @@ import BCDCUtil.BCDCRestQuery  # @UnresolvedImport
 import requests
 import pytz
 
+
 class Constants(object):
     '''
     class used to emulate enumerations.  Contain constants that may be referenced
@@ -83,6 +84,7 @@ class Constants(object):
 
     LocalTimeZone = 'US/Pacific'
 
+
 class ChangeDetect(object):
     '''
     This will be the public interface to this class.
@@ -98,6 +100,7 @@ class ChangeDetect(object):
     feature that enters this class, and keeps track of how many features
     from each feature class are put through this class
     '''
+
     def __init__(self, changeLogPath):
         # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
@@ -205,7 +208,7 @@ class ChangeDetect(object):
         for srcData in self.sourceDataCollection.sourceDataList:
             self.logger.debug('srcData: %s', srcData)
             changeDate = srcData.getUTCTimeStamp()
-            #self.logger.debug('')
+            # self.logger.debug('')
             wasChanged = srcData.getWasChanged()
             newRecord = srcData.getChangeLogRecord(fmwName, wasChanged, changeDate)
             self.logger.debug("record 2 write %s", newRecord)
@@ -228,6 +231,7 @@ class ChangeDetect(object):
         '''
         self.const.dateFormatStr = dateFormatStr
 
+
 class ChangeLogFilePath(object):
     '''
     Dealing with the change log file path seems to be complex
@@ -249,6 +253,7 @@ class ChangeLogFilePath(object):
                                      the directory for change log files
 
     '''
+
     def __init__(self, changeLogRootDir, changeLogFileName, fmwFilePath, changeLogDirParameterName):
         self.logger = logging.getLogger(__name__)
 
@@ -311,12 +316,14 @@ class ChangeLogFilePath(object):
             fh.close()
         self.logger.debug("change log file is: %s", self.fullPathToChangeLog)
 
+
 class ChangeLogFile(object):
     '''
     The interface to the change log file.  This method
     can read the change log, returns a ChangeEventCollection
 
     '''
+
     def __init__(self, chngLogFilePath, const=None):
         # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
@@ -377,12 +384,14 @@ class ChangeLogFile(object):
         fh.write(logRecordStr)
         fh.close()
 
+
 class ChangeEventCollection(object):
     '''
     When the change log is read it creates one of these objects
     which will contain all the information contained in the
     change log, with an api for analyzing it.
     '''
+
     def __init__(self):
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
@@ -412,6 +421,7 @@ class ChangeEventCollection(object):
                         retVal = event
         return retVal
 
+
 class ChangeEvent(object):
     '''
     each line in the change log can be represented by one of
@@ -422,6 +432,7 @@ class ChangeEvent(object):
       1 -
 
     '''
+
     def __init__(self, logLineString, const=None):
         # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
@@ -481,6 +492,7 @@ class ChangeEvent(object):
         timeStamp = timeStamp.replace(microsecond=0)
         return timeStamp
 
+
 class SourceDataCollection(object):
     '''
     The change transformer will funnel each and every feature that
@@ -488,6 +500,7 @@ class SourceDataCollection(object):
     When this happens there can be more than one source data set.
     This object keeps track of the collection of source data.
     '''
+
     def __init__(self, const):
         # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
@@ -560,6 +573,7 @@ class SourceDataCollection(object):
             srcFile.incrementFeatureCount()
             self.addSourceDataSet(srcFile)
 
+
 class SourceFileData(object):
     '''
     Each source feature class in the fmw, will have one  of these objects
@@ -567,6 +581,7 @@ class SourceFileData(object):
     date for this object, as well as keeping track of the number of features
     that are in this object etc.
     '''
+
     def __init__(self, srcPath, destDbEnv, const=None):
         # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
@@ -683,6 +698,7 @@ class SourceFileData(object):
         self.logger.debug("setting the change flag to %s", changeFlag)
         self.changeParam = changeFlag
 
+
 class Util:
 
     @staticmethod
@@ -744,6 +760,7 @@ class Util:
         dateTimeAsLocalStr = dateTimeAsLocal.strftime(datetimeStringFormat)
         return dateTimeAsLocalStr
 
+
 class ChangeDetectBCDC(ChangeDetect):
 
     def __init__(self, changeLogPath):
@@ -759,6 +776,7 @@ class ChangeDetectBCDC(ChangeDetect):
     def addFeatureChange(self, srcDataPath, destDbEnvKey):
         self.logger.debug("adding feature change for %s", srcDataPath)
         self.sourceDataCollection.incrementFeatureCount(srcDataPath, destDbEnvKey)
+
 
 class SourceDataCollectionBCDC(SourceDataCollection):
 
@@ -797,6 +815,7 @@ class SourceDataCollectionBCDC(SourceDataCollection):
             srcFile = SourceBCDC(srcDataPath, destEnvDbKey, self.const)
             srcFile.incrementFeatureCount()
             self.addSourceDataSet(srcFile)
+
 
 class SourceBCDC(SourceFileData):
 
@@ -847,7 +866,7 @@ class SourceBCDC(SourceFileData):
         # by the query above, and instead we need to extract the revision
         # id and make a separate query to get the timestamp
         # just in case timestamp is already there...
-        #if 'timestamp' in  revision['result']
+        # if 'timestamp' in  revision['result']
         revisionDate = revision['result']['timestamp']
         # example format: u'2015-07-24T19:57:35.259549'},
         # Convert to datetime and return the datetime object.

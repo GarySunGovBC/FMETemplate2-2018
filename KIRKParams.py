@@ -217,7 +217,7 @@ class KIRKParams(object):
         self.getSource()
         srcFc = self.source.getSourceFeatureClass()
         return srcFc
-    
+
     def getSourceProjection(self):
         '''
         :return: the source projection
@@ -415,6 +415,7 @@ class KirkSources(object):
         :return: the projection of the source data... pretty straight forward!
         '''
         return self.sourceData[self.srcConst.sourceProjection.name]
+
 
 class KirkFieldMaps(object):
 

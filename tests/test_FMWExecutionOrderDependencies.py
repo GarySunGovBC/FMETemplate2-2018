@@ -6,6 +6,7 @@ Created on May 25, 2017
 import unittest
 import FMWExecutionOrderDependencies
 import DataBCFMWTemplate
+import DBCFMEConstants
 import json
 import logging
 import datetime
@@ -190,7 +191,7 @@ class Test_FMWExecutionOrder(unittest.TestCase):
         
         
     def test_hasJobBeenSeen(self):
-        const = DataBCFMWTemplate.TemplateConstants()
+        const = DBCFMEConstants.TemplateConstants()
         # test if the job has been seen, should not
         retVal = self.execOrder.hasJobBeenSeen(self.jobData)
         msg = "The job has been reported as been seen incorrectly"

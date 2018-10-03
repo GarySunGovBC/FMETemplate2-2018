@@ -20,7 +20,6 @@ sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\bin')
 sys.path.append(r"E:\sw_nt\python27\ArcGIS10.2\Lib")
 
 
-
 class CreateConnectionFile(object):
     '''
     simple class used to help create arcgis .sde connection files
@@ -116,14 +115,13 @@ if __name__ == '__main__':
     # sys.argv.append(r'idwdlvr1.bcgov')
 
     # logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
-    
-    #sys.path.append(r"E:\sw_nt\python27\ArcGIS10.2\Lib\site-packages")
-    #sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\arcpy')
-    #sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\ArcToolbox\Scripts')
-    #sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\bin')
-    #sys.path.append(r"E:\sw_nt\python27\ArcGIS10.2\Lib")
 
-    
+    # sys.path.append(r"E:\sw_nt\python27\ArcGIS10.2\Lib\site-packages")
+    # sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\arcpy')
+    # sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\ArcToolbox\Scripts')
+    # sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\bin')
+    # sys.path.append(r"E:\sw_nt\python27\ArcGIS10.2\Lib")
+
     connFile2Create = sys.argv[1]
     host = sys.argv[2]
     servNm = sys.argv[3]

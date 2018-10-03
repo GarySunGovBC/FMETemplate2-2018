@@ -23,8 +23,8 @@ class TemplateConstants(object):
     AppConfigSdeConnFileExtension = '.sde'
     AppConfigLogDir = 'log'
     AppConfigAppLogFileName = 'applogconfigfilename'
-    
-    #fmeServer configuration deployment file
+
+    # fmeServer configuration deployment file
     FrameworkFMEServDeploymentFile = 'FMEServerDeployment.json'
 
     # when a script requires the

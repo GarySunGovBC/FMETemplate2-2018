@@ -13,6 +13,7 @@ c) put the customized steps for your startup in the
  
 '''
 import DataBCFMWTemplate
+import DBCFMEConstants
 import sys
 import os
 import logging
@@ -26,7 +27,7 @@ class Start(DataBCFMWTemplate.DefaultStart):
         # constants available in self.const. then using to contruct the extended
         # startup logger.  Name of the logger is important as the name is what 
         # ties it to the log configuration in the log config file.
-        self.const= DataBCFMWTemplate.TemplateConstants()
+        self.const= DBCFMEConstants.TemplateConstants()
         self.logger = logging.getLogger(self.const.LoggingExtendedLoggerName)
         
         self.fme = fme
@@ -50,7 +51,7 @@ class Shutdown():
         # constants available in self.const. then using to contruct the extended
         # startup logger.  Name of the logger is important as the name is what 
         # ties it to the log configuration in the log config file.
-        self.const= DataBCFMWTemplate.TemplateConstants()
+        self.const = DBCFMEConstants.TemplateConstants()
         self.logger = logging.getLogger(self.const.LoggingExtendedLoggerName)
         
         self.fme = fme

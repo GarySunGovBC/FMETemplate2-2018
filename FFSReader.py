@@ -108,7 +108,7 @@ class Reader(object):
 
         '''
         param = DataBCFMWTemplate.TemplateConfigFileReader('DLV')
-        #frameworkRootDir = param.getTemplateRootDirectory()
+        # frameworkRootDir = param.getTemplateRootDirectory()
         try:
             # this will get the arcpy paths, and add them to the sys.path
             # parameter which should then allow for use of arcpy using the
@@ -142,7 +142,7 @@ class Reader(object):
 
         # making sure all the template files are available
         curDir = os.path.dirname(__file__)
-        #libDir = os.path.join(curDir, 'lib')
+        # libDir = os.path.join(curDir, 'lib')
         self.logger.debug("syspath %s", sys.path)
 
         # make sure all of sys.path is a regular string
@@ -200,12 +200,12 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         usage = 'FFSReader <ffs file to read>'
         raise ValueError, usage
-    
-    # TODO: Modify this to use the logging config file to retrieve the 
+
+    # TODO: Modify this to use the logging config file to retrieve the
     #       logger when called as its own script
-    #logger = logging.getLogger(__name__)
-    #logger.addHandler(logging.StreamHandler())
-    #logger.setLevel(logging.DEBUG)
+    # logger = logging.getLogger(__name__)
+    # logger.addHandler(logging.StreamHandler())
+    # logger.setLevel(logging.DEBUG)
 
     ffsFile = sys.argv[1]
     rdr = Reader(ffsFile)

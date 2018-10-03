@@ -59,8 +59,7 @@ import DataBCDbMethods
 import FMWExecutionOrderDependencies
 from DBCFMEConstants import TemplateConstants
 
-
-#pylint: disable=invalid-name
+# pylint: disable=invalid-name
 
 
 class Start(object):
@@ -1189,7 +1188,7 @@ class TemplateConfigFileReader(object):
         self.logger.debug(msg)
         return retVal
 
-    def isFMEServerNode(self):  
+    def isFMEServerNode(self):
         '''
         reads the config file and gets the names of databc node names (computer
         names).  Compares that list against the name of the node that the code

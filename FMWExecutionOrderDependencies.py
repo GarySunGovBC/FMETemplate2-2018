@@ -4,6 +4,7 @@ Created on May 16, 2017
 @author: kjnether
 '''
 import DataBCFMWTemplate
+import DBCFMEConstants
 import logging
 import FMEUtil.PyFMEServerV2
 import os.path
@@ -14,6 +15,7 @@ import datetime
 class ExecutionOrderConstants(object):
     # make sure the statuses are in upper case
     successStatus = ['SUCCESS']
+
 
 class ExecutionOrder(object):
     '''
@@ -41,12 +43,11 @@ class ExecutionOrder(object):
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
 
-        self.const = DataBCFMWTemplate.TemplateConstants()
+        self.const = DBCFMEConstants.TemplateConstants()
         self.execConst = ExecutionOrderConstants()
 
         # first retrieve the parameters:
         # self.params = DataBCFMWTemplate.GetPublishedParams(self.fme.macroValues)
-
 
         self.dependentFMW = dependencyList
         self.depStruct = {}
@@ -133,7 +134,6 @@ class ExecutionOrder(object):
                 u'timeSubmitted': u'2017-05-30T02:30:00'},
     175855: {   u'description': u'',
         '''
-
 
     def parseDependencies(self):
         '''
@@ -332,6 +332,4 @@ class ExecutionOrder(object):
     def isParentsComplete(self):
         depsSatisfied = self.checkForDependencies()
         return depsSatisfied
-
-
 

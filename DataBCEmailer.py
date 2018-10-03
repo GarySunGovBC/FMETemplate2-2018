@@ -22,7 +22,7 @@ import re
 import smtplib
 
 # import DataBCFMWTemplate
-
+# import DBCFMEConstants
 
 class EmailFrameworkBridge(object):
     '''
@@ -54,7 +54,7 @@ class EmailFrameworkBridge(object):
         self.params = params  # calcparamsbase
         self.config = config  # templateconfigfile
 
-        # self.const = DataBCFMWTemplate.TemplateConstants()
+        # self.const = DBCFMEConstants.TemplateConstants()
         # self.params = DataBCFMWTemplate.TemplateConfigFileReader(
         #    self.fmeObj.macroValues[self.const.FMWParams_DestKey])
         self.email = None
