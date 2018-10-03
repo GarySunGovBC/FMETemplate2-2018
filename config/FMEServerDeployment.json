@@ -1,8 +1,9 @@
 {
 	"__cmt0__": "This is the label in the secrets file that corresponds with", 
 	"__cmt1__": "information about the fme server to deploy to",
-	"__cmt11_": "other options fmeprd",
-	"DESTFMESERVER": "fmetst",
+	"__cmt11_": "other options fmeprd, this is a default value. This value is",
+    "__cmt12_": "when no label is provided as an arguement",
+	"DESTFMESERVER": "fme_tst",
 	"__cmt2__": "set USE64 to true if deploying from a 32 bit env to a 64 bit env", 
 	"USE64BIT": true,
 	"__cmt3__": "The directory where the dependencies are installed",
@@ -36,7 +37,7 @@
 	},
 	"pythonDependencies": {
 	   "ignoreFilesList": [".gitignore", "requirements.txt", "GMT+0"],
-	   "ignoreDirectories": ["pytz-2018.5.dist-info", "pytz"],
+	   "ignoreDirectories": ["pytz-2018.5.dist-info", "pytz", "lxml", "lxml-4.2.5.dist-info", "mock", "mock-2.0.0.dist-info"],
 	   "ignoreSuffixes" : [".pyc"],
        "__cmt1__": "specifying lib first, the files in there will get copied then",
        "__cmt2__": "files in the second directory will get copied",

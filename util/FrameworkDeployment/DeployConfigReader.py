@@ -23,9 +23,10 @@ class DeploymentConfig(object):
        to the directory where this .py file is found.
     '''
 
-    def __init__(self, configFile=None):
+    def __init__(self, configFile=None, env=None):
         self.logger = logging.getLogger(__name__)
-
+        self.env = env
+        self.logger.debug("env is %s", self.env)
         self.configFile = configFile
         if not self.configFile:
             self.configFile = os.path.join(
@@ -129,6 +130,12 @@ class DeploymentConfig(object):
         rootDirForFramework = os.path.normpath(rootDirForFramework)
         return rootDirForFramework
 
+    def getTargetEnv(self):
+        if self.env is None:
+            paramName = DeployConstants.DeploymentConstants.DESTFMESERVER.name
+            self.env = paramName
+        self.logger.info('destination target key word: %s', self.env)
+    
     def getFMEServerUrl(self):
         '''
         communicates with pmp and retrieves the fme server url associated
@@ -139,10 +146,10 @@ class DeploymentConfig(object):
         '''
         if self.fmeUrl is None:
             # comes from the secrets
-            paramName = DeployConstants.DeploymentConstants.DESTFMESERVER.name
-            label = self.conf[paramName]
+            #paramName = DeployConstants.DeploymentConstants.DESTFMESERVER.name
+            #label = self.conf[paramName]
             creds = DBCSecrets.GetSecrets.CredentialRetriever()
-            secrets = creds.getSecretsByLabel(label)
+            secrets = creds.getSecretsByLabel(self.env)
             host = secrets.getHost()
             url = 'http://{0}'.format(host)
             self.fmeUrl = url
@@ -155,10 +162,10 @@ class DeploymentConfig(object):
         :return: fme server api token
         '''
         if self.fmeToken is None:
-            paramName = DeployConstants.DeploymentConstants.DESTFMESERVER.name
-            label = self.conf[paramName]
+            #paramName = DeployConstants.DeploymentConstants.DESTFMESERVER.name
+            #label = self.conf[paramName]
             creds = DBCSecrets.GetSecrets.CredentialRetriever()
-            secrets = creds.getSecretsByLabel(label)
+            secrets = creds.getSecretsByLabel(self.env)
             token = secrets.getAPI()
             self.fmeToken = token
         return self.fmeToken

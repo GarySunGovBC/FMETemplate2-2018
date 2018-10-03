@@ -282,12 +282,12 @@ class BaseDeployment(object):
     deploy method.
     '''
 
-    def __init__(self, deployConfig=None):
+    def __init__(self, deployConfig=None, env=None):
         self.logger = logging.getLogger(__name__)
         fmeParams = DeployConstants.FMEResourcesParams()
         self.templateDestDir = str(posixpath.sep).join(fmeParams.pythonDirs)
         self.dplyConfig = DeployConfigReader.DeploymentConfig(
-            configFile=deployConfig)
+            configFile=deployConfig, env=env)
         self.resourceCache = None
 
     def deploymentExists(self, dplyObj):
@@ -499,8 +499,8 @@ class FMECustomizationDeployments(BaseDeployment):
     for now.
     '''
 
-    def __init__(self, deployConfig=None):
-        BaseDeployment.__init__(self, deployConfig=deployConfig)
+    def __init__(self, deployConfig=None, env=None):
+        BaseDeployment.__init__(self, deployConfig=deployConfig, env=env)
 
     def copyCustomTransformers(self, overwrite=False):
         '''
@@ -551,9 +551,9 @@ class GenericFileDeployment(BaseDeployment):
     named individual files
     '''
 
-    def __init__(self, deployConfig=None):
+    def __init__(self, deployConfig=None, env=None):
 
-        BaseDeployment.__init__(self, deployConfig=deployConfig)
+        BaseDeployment.__init__(self, deployConfig=deployConfig, env=env)
         # srcDir is 'config'
         self.srcDir = None
         self.destDirList = None
@@ -945,8 +945,9 @@ class PythonDependencies(GenericDirectoryDeployment):
     deployments for Secret files that make up the FME Framework
     '''
 
-    def __init__(self, deployConfig=None):
-        GenericDirectoryDeployment.__init__(self, deployConfig=deployConfig)
+    def __init__(self, deployConfig=None, env=None):
+        GenericDirectoryDeployment.__init__(self, deployConfig=deployConfig,
+                                            env=env)
         self.setConfigFileSection(
             DeployConstants.DeploySections.pythonDependencies.name)
 
@@ -964,8 +965,9 @@ class DBCPyLibDependencies(GenericDirectoryDeployment):
     dependencies
     '''
 
-    def __init__(self, deployConfig=None):
-        GenericDirectoryDeployment.__init__(self, deployConfig=deployConfig)
+    def __init__(self, deployConfig=None, env=None):
+        GenericDirectoryDeployment.__init__(self, deployConfig=deployConfig,
+                                            env=env)
         self.setConfigFileSection(
             DeployConstants.DeploySections.dataBCModules.name)
 
@@ -979,8 +981,9 @@ class SecretsDeployment(GenericFileDeployment):
     framework gets deployed.
     '''
 
-    def __init__(self, deployConfig=None):
-        GenericFileDeployment.__init__(self, deployConfig=deployConfig)
+    def __init__(self, deployConfig=None, env=None):
+        GenericFileDeployment.__init__(self, deployConfig=deployConfig,
+                                       env=env)
         self.setConfigFileSection(
             DeployConstants.DeploySections.secretFiles.name)
 
@@ -991,8 +994,9 @@ class PythonFMEFramework(GenericFileDeployment):
     deployments for python files that make up the FME Framework
     '''
 
-    def __init__(self, deployConfig=None):
-        GenericFileDeployment.__init__(self, deployConfig=deployConfig)
+    def __init__(self, deployConfig=None, env=None):
+        GenericFileDeployment.__init__(self, deployConfig=deployConfig,
+                                       env=env)
         self.setConfigFileSection(
             DeployConstants.DeploySections.frameworkPython.name)
 
@@ -1003,8 +1007,9 @@ class ConfigsDeployment(GenericFileDeployment):
     deployments for config files
     '''
 
-    def __init__(self, deployConfig=None):
-        GenericFileDeployment.__init__(self, deployConfig=deployConfig)
+    def __init__(self, deployConfig=None, env=None):
+        GenericFileDeployment.__init__(self, deployConfig=deployConfig,
+                                       env=env)
         self.setConfigFileSection(
             DeployConstants.DeploySections.configFiles.name)
 
@@ -1019,7 +1024,8 @@ class BinaryDeployments(GenericFileDeployment):
     implement ssh tunnels as part of the framework.
     '''
 
-    def __init__(self, deployConfig=None):
-        GenericFileDeployment.__init__(self, deployConfig=deployConfig)
+    def __init__(self, deployConfig=None, env=None):
+        GenericFileDeployment.__init__(self, deployConfig=deployConfig,
+                                       env=env)
         self.setConfigFileSection(
             DeployConstants.DeploySections.binaries.name)
