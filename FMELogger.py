@@ -26,6 +26,7 @@ class FMELogHandler(logging.Handler):
         self.fmeLogger = fmeobjects.FMELogFile()  # @UndefinedVariable
         # self.fmeLogger.logMessageString('starting the startup object, writing to the log')
         severityDict = {logging.DEBUG: fmeobjects.FME_STATISTIC,
+                        logging.INFO: fmeobjects.FME_INFORM,
                         logging.NOTSET: fmeobjects.FME_INFORM}
         print 'finished'
 
@@ -44,6 +45,8 @@ class FMELogHandler(logging.Handler):
 
         severity = fmeobjects.FME_INFORM
         if logLevel == logging.DEBUG:
+            severity = fmeobjects.FME_INFORM
+        if logLevel == logging.INFO:
             severity = fmeobjects.FME_INFORM
         elif logLevel == logging.WARNING:
             severity = fmeobjects.FME_WARN

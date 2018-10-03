@@ -131,6 +131,9 @@ class TemplateConstants(object):
 
     # published parameters - for kirk
     FMWParams_KirkJobId = 'KIRK_JOBID'
+    FMWParams_KirkFldMapCnt = 'KIRK_FLDMAPCNT'
+    FMWParams_KirkCounterAttribute = 'KIRK_COUNTERATTRIBUTE'
+    FMWParams_KirkCounterTmpAttribute = 'KIRK_TMP_COUNTER_ATTRIBUTE'
 
     # published parameters - destination
     FMWParams_DestKey = 'DEST_DB_ENV_KEY'

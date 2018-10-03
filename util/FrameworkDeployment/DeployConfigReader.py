@@ -26,7 +26,6 @@ class DeploymentConfig(object):
     def __init__(self, configFile=None, env=None):
         self.logger = logging.getLogger(__name__)
         self.env = env
-        self.logger.debug("env is %s", self.env)
         self.configFile = configFile
         if not self.configFile:
             self.configFile = os.path.join(
@@ -41,6 +40,10 @@ class DeploymentConfig(object):
 
         with open(self.configFile) as f:
             self.conf = json.load(f)
+
+        self.getTargetEnv()
+        self.logger.debug("env is %s", self.env)
+
         # caching these parameter so they don't have to be retrieved from
         # pmp every time they are requested
         self.fmeUrl = None
@@ -131,11 +134,15 @@ class DeploymentConfig(object):
         return rootDirForFramework
 
     def getTargetEnv(self):
+        '''
+        checks to see the environment key that was provided.  If none was
+        provided then gets a default value from the deployment file.
+        '''
         if self.env is None:
             paramName = DeployConstants.DeploymentConstants.DESTFMESERVER.name
-            self.env = paramName
+            self.env = self.conf[paramName]
         self.logger.info('destination target key word: %s', self.env)
-    
+
     def getFMEServerUrl(self):
         '''
         communicates with pmp and retrieves the fme server url associated
@@ -146,8 +153,8 @@ class DeploymentConfig(object):
         '''
         if self.fmeUrl is None:
             # comes from the secrets
-            #paramName = DeployConstants.DeploymentConstants.DESTFMESERVER.name
-            #label = self.conf[paramName]
+            # paramName = DeployConstants.DeploymentConstants.DESTFMESERVER.name
+            # label = self.conf[paramName]
             creds = DBCSecrets.GetSecrets.CredentialRetriever()
             secrets = creds.getSecretsByLabel(self.env)
             host = secrets.getHost()
@@ -162,8 +169,8 @@ class DeploymentConfig(object):
         :return: fme server api token
         '''
         if self.fmeToken is None:
-            #paramName = DeployConstants.DeploymentConstants.DESTFMESERVER.name
-            #label = self.conf[paramName]
+            # paramName = DeployConstants.DeploymentConstants.DESTFMESERVER.name
+            # label = self.conf[paramName]
             creds = DBCSecrets.GetSecrets.CredentialRetriever()
             secrets = creds.getSecretsByLabel(self.env)
             token = secrets.getAPI()

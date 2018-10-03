@@ -320,6 +320,7 @@ class KIRKParams(object):
             jobFieldmaps = kirkJobs.getJobFieldMaps(jobId)
             fldMaps = KirkFieldMaps(jobFieldmaps)
             self.fieldMap = fldMaps
+        return self.fieldMap
 
     def getFieldMapCount(self):
         '''
@@ -443,6 +444,17 @@ class KirkFieldMaps(object):
                     lineList.append(fldMap[colName])
                 csvStruct.append(lineList)
         return csvStruct
+    
+    def getFieldMapAsDict(self):
+        returnStruct = {}
+        if self.fieldMaps:
+            cols2Include = [self.fmConst.sourceColumnName.name,
+                            self.fmConst.destColumnName.name]
+            for fldMap in self.fieldMaps:
+                srcCol = fldMap[self.fmConst.sourceColumnName.name]
+                destCol = fldMap[self.fmConst.destColumnName.name]
+                returnStruct[srcCol] = destCol
+        return returnStruct
 
     def __len__(self):
         return len(self.fieldMaps)

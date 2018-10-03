@@ -733,8 +733,8 @@ class GenericDirectoryDeployment(GenericFileDeployment):
                    server.  Currently this remains static
     '''
 
-    def __init__(self, deployConfig=None):
-        GenericFileDeployment.__init__(self, deployConfig=deployConfig)
+    def __init__(self, deployConfig=None, env=None):
+        GenericFileDeployment.__init__(self, deployConfig=deployConfig, env=env)
         self.destDirList = None
         self.ignoreFileList = []
         self.ignoreDirList = []
