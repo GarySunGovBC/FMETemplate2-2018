@@ -48,3 +48,4 @@ class DeploymentConstants(Enum):
     DEPENDENCYDIR = 3
     FME_SHAREDRESOURCE_ENGINE = 4
     BINARYDIR = 5
+    

@@ -4,6 +4,7 @@ defined in the file:
   ../../config/FMEServerDeployment.json
 
 '''
+import argparse
 import os.path
 import warnings
 import logging.config
@@ -40,43 +41,66 @@ if __name__ == '__main__':
     # ------------------------------------------
     #   retrieving the args
     # ------------------------------------------
-    env = None
-    if len(sys.argv) > 1:
-        env = sys.argv[1]
+    import argparse
+    validSections = ['all', 'config', 'dbcdeps', 'bins', 'py', 'pydep',
+                     'secrets', 'fmecust']
+    parser = argparse.ArgumentParser()
+    envHelp = 'Key word that describes the destination fme server to deploy to'
+    parser.add_argument('--env', help=envHelp, choices=['fme_tst', 'fme_prd'])
+    destHelp = 'What exactly do you want to deploy, options include: {0}'
+    destHelp = destHelp.format(destHelp)
+    parser.add_argument('--dest', help=destHelp, choices=validSections)
+    args = parser.parse_args()
+    if args.dest:
+        msg = "using the destination key sent as an arg: %s", args.dest
+        logging.debug(msg)
+        section = args.dest
+
+    if args.env:
+        msg = "the destination keyword is: %s", args.env
+        logging.debug(msg)
+        env = args.env
+
+    # evaluate args:
+    # acceptable section values
 
     #          START ACTUAL DEPLOYMENTS
     # ----------------------------------------------------
     # Custom Transformers, etc
     #  Copies the fme customizations
     # ----------------------------------------------------
-    deployFmeCust = DeployFrameworkLib.FMECustomizationDeployments(
-        deployConfig=deployConfig, env=env)
-    deployFmeCust.copyCustomTransformers(overwrite=True)
+    if section == 'fmecust' or section == 'all':
+        deployFmeCust = DeployFrameworkLib.FMECustomizationDeployments(
+            deployConfig=deployConfig, env=env)
+        deployFmeCust.copyCustomTransformers(overwrite=True)
 
     # ----------------------------------------------------
     # Configs
     #  logging config and other config file
     # ----------------------------------------------------
-    deployConf = DeployFrameworkLib.ConfigsDeployment(
-        deployConfig=deployConfig, env=env)
-    deployConf.copyFiles(overwrite=False)
+    if section == 'config' or section == 'all':
+        deployConf = DeployFrameworkLib.ConfigsDeployment(
+            deployConfig=deployConfig, env=env)
+        deployConf.copyFiles(overwrite=False)
 
     # ----------------------------------------------------
     # binary Deployment
     #   leave commented out as we don't use the binary stuff anymore
     # ----------------------------------------------------
-    binDeploy = DeployFrameworkLib.BinaryDeployments(
-        deployConfig=deployConfig, env=env)
-    binDeploy.copyFiles()
+    if section == 'bins' or section == 'all':
+        binDeploy = DeployFrameworkLib.BinaryDeployments(
+            deployConfig=deployConfig, env=env)
+        binDeploy.copyFiles()
 
     # ----------------------------------------------------
     # Python (framework)
     # copies the python libs that are in the framework root directory
     # and defined in the section frameworkPython
     # ----------------------------------------------------
-    deployPy = DeployFrameworkLib.PythonFMEFramework(
-        deployConfig=deployConfig, env=env)
-    deployPy.copyFiles(overwrite=False)
+    if section == 'py' or section == 'all':
+        deployPy = DeployFrameworkLib.PythonFMEFramework(
+            deployConfig=deployConfig, env=env)
+        deployPy.copyFiles(overwrite=False)
 
     # ----------------------------------------------------
     # Python Dependencies
@@ -84,18 +108,25 @@ if __name__ == '__main__':
     # that can be commented out as it is also deployed when you
     # deploy
     # ----------------------------------------------------
-    pyDepDeploy = DeployFrameworkLib.PythonDependencies(
-        deployConfig=deployConfig, env=env)
-    pyDepDeploy.copyFiles(overwrite=False)
-    # This deployment can stay commented out, provides the option
+    if section == 'pydep' or section == 'all':
+        pyDepDeploy = DeployFrameworkLib.PythonDependencies(
+            deployConfig=deployConfig, env=env)
+        pyDepDeploy.copyFiles(overwrite=False)
+
+    # This deployment does a subset of the previous one 'pydep'  it will
+    # deploy the dependencies that make up the dbcpylib.  Not called
+    # when all is specified as everything that is deployed here gets
+    # deployed also by the 'pydep' section
     # of deploying only the DBCpyLib modules used by the framework
-    dbcPyLibDly = DeployFrameworkLib.DBCPyLibDependencies(
-        deployConfig=deployConfig, env=env)
-    dbcPyLibDly.copyFiles(overwrite=False)
+    if section == 'pydep':
+        dbcPyLibDly = DeployFrameworkLib.DBCPyLibDependencies(
+            deployConfig=deployConfig, env=env)
+        dbcPyLibDly.copyFiles(overwrite=False)
 
     # ----------------------------------------------------
     # Secrets deploy
     # ----------------------------------------------------
-    deploySecrets = DeployFrameworkLib.SecretsDeployment(
-        deployConfig=deployConfig, env=env)
-    deploySecrets.copyFiles(overwrite=False)
+    if section == 'secrets' or section == 'all':
+        deploySecrets = DeployFrameworkLib.SecretsDeployment(
+            deployConfig=deployConfig, env=env)
+        deploySecrets.copyFiles(overwrite=False)

@@ -145,15 +145,29 @@ class FeatureProcessor(object):
         :param feature: the input feature to apply the renaming to
         :type feature: fmeobjects.FMEFeature
         '''
-        outputCounterAttributeName = \
+        # the published parameter with the name of the temporary attribute
+        pubparamWithCounterName = \
             self.tmpltConstants.FMWParams_KirkCounterAttribute
-        self.kirkCounterTmpAttrib
-
+        # now get the actual attribute name
+        outputCounterAttributeName = \
+            self.fme.macroValues[pubparamWithCounterName]
+        # the value associated with the current tmp attribute that is
+        # statically defined in the counter.  (based on framework standard
+        # nameing, expecting it to be called: KIRK_TMP_COUNTER_ATTRIBUTE
         value = feature.getAttribute(self.kirkCounterTmpAttrib)
         feature.setAttribute(outputCounterAttributeName, value)
         feature.removeAttribute(self.kirkCounterTmpAttrib)
+        if self.isFirstFeature:
+            msg = "pub param name: {0} and actual new column name: {1}"
+            msg = msg.format(pubparamWithCounterName,
+                             outputCounterAttributeName)
+            self.logger.debug(msg)
+
+            msg = 'remapping the temporary field to {0} to {1}'
+            msg = msg.format(self.kirkCounterTmpAttrib,
+                             outputCounterAttributeName)
+            self.logger.info(msg)
         return feature
 
     def close(self):
         pass
-

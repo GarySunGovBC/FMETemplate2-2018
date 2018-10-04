@@ -30,7 +30,8 @@
 			"InstallPaths.py",
 			"CreateSDEConnectionFile.py",
 			"FFSReader.py", 
-			"KIRKParams.py"
+			"KIRKParams.py",
+			"DBCFMEConstants.py"
 		],
 		"destinationFMEServerDirectory": ["Plugins", "Python", "python27"],
 		"sourceDirectory" : ""

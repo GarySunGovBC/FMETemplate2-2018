@@ -377,6 +377,7 @@ class Deployment(object):
         fmeServerToken = self.dplyConfig.getFMEServerToken()
         # create fme server rest api obj...
         self.logger.debug("deploying to: %s", fmeServerUrl)
+        self.logger.debug("deploying using: %s", fmeServerToken[0:4] + ' ...')
         self.fmeServ = PyFMEServer.FMEServer(fmeServerUrl, fmeServerToken)
 
         self.resource = self.fmeServ.getResources()
