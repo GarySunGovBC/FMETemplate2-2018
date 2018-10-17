@@ -88,7 +88,9 @@ class Params(object):
         '''
         self.const = DataBCFMWTemplate.TemplateConstants
         self.configFile = self.calcConfigFileAbsPath()
-        self.configRdr = DataBCFMWTemplate.TemplateConfigFileReader('DLV', self.configFile)
+        self.configRdr = DataBCFMWTemplate.TemplateConfigFileReader(
+            'DLV',
+            self.configFile)
         self.configRdr.readConfigFile()
         self.fmeServerHost = self.configRdr.getFMEServerHost()
         self.fmeServerRootDir = self.configRdr.getFMEServerRootDir()
@@ -96,7 +98,7 @@ class Params(object):
 
         self.currentFMWRepository = 'BCGW_REP_SCHEDULED'
         self.destinationFMWRepository = 'BCGW_SCHEDULED'
-        self.srcTemplate2FMWDirectory = ''  # r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\templateImplementation\BCGW_REP_SCHEDULED'
+        self.srcTemplate2FMWDirectory = ''
 
     def calcConfigFileAbsPath(self):
         curdir = os.path.dirname(__file__)
@@ -756,13 +758,6 @@ class Schedules(T1T2ConversionConstants):
         return scheds
 
 if __name__ == '__main__':
-    # sourceDir = r'\\data.bcgov\work\Projects\FYE2017\DWACT-497_RMP_WHSE\fmws\converted\TEST'
-    # sourceDir = r'\\data.bcgov\work\Projects\FYE2017\DWAACT-667_GRY\fmw'
-    # sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2017\2_working\abms_counties_sp_staging_gdb_bcgw'
-    # sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2017\3_fix'
-    # sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2018\04_staging'
-    # sourceDir = 'Z:\Projects\FYE2018\DWACT-630_FMWConversions\Completed\grp6'
-    # sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateRevision\data\implementation2018\04_staging'
     sourceDir = r'Z:\Workspace\kjnether\proj\FMETemplateTransition\04_staging'
     #currentFMEServerRepo = 'BCGW_REP_SCHEDULED'
     currentFMEServerRepo = 'BCGW_SCHEDULED'

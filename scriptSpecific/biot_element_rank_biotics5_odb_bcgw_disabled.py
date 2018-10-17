@@ -21,6 +21,7 @@ will take precedence.
 @author: kjnether
 '''
 import DataBCFMWTemplate
+import DBCFMEConstants
 import logging
 import SSHTunnelling
 import os.path
@@ -31,7 +32,7 @@ class Start(DataBCFMWTemplate.DefaultStart):
         # inheriting from the default startup
         DataBCFMWTemplate.DefaultStart.__init__(self, fme)
         
-        self.const= DataBCFMWTemplate.TemplateConstants()
+        self.const= DBCFMEConstants.TemplateConstants()
 
         # going to use the same logger as the DataBCFMWTemplate
         #modDotClass = '{0}'.format('CustomStartupShutdown')

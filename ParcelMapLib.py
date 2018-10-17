@@ -16,6 +16,7 @@ import urlparse
 import zipfile
 
 import DataBCFMWTemplate
+import DBCFMEConstants
 import pytz
 import requests
 
@@ -172,10 +173,12 @@ class Constants(object):
     def __init__(self):
         pass
 
+
 class RestBase(object):
     '''
     Manages interaction with the rest api.  Lower level generic.
     '''
+
     def __init__(self, url, userName, passWord):
         self.logger = logging.getLogger(__name__)
         self.logger.debug(u"first log message")
@@ -317,10 +320,12 @@ class RestBase(object):
         self.logger.debug("fixed url path: %s", url)
         return url
 
+
 class ParcelMapAPI(RestBase, Constants):
     '''
     class provides a python wrapper to the parcel map rest api.
     '''
+
     def __init__(self, url, userName, passWord, destDir, orderStatusFileName=None):
         # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
@@ -1016,6 +1021,7 @@ class ParcelMapAPI(RestBase, Constants):
 
         shutil.move(destFGDB, finalFGDBFullPath)
 
+
 class FingerPrinting(Constants):
     '''
     Misc methods that help with working with the md5 checksum files
@@ -1116,6 +1122,7 @@ class FingerPrinting(Constants):
             retVal = False
         return retVal
 
+
 class ParcelMapUtil(object):
     '''
     Miscellaneous utility methods
@@ -1123,7 +1130,7 @@ class ParcelMapUtil(object):
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.const = DataBCFMWTemplate.TemplateConstants()
+        self.const = DBCFMEConstants.TemplateConstants()
 
     def getPMPRestToken(self, fmeMacros):
         '''
@@ -1199,6 +1206,7 @@ class ParcelMapUtil(object):
             struct = json.load(data_file)
         parcelMapOrder = ParcelMapOrder(struct)
         return parcelMapOrder
+
 
 class ParcelMapOrder(Constants):
     '''

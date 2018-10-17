@@ -1,0 +1,87 @@
+{
+	"__cmt0__": "This is the label in the secrets file that corresponds with", 
+	"__cmt1__": "information about the fme server to deploy to",
+	"__cmt11_": "other options fmeprd, this is a default value. This value is",
+    "__cmt12_": "when no label is provided as an arguement",
+	"DESTFMESERVER": "fme_tst",
+	"__cmt2__": "set USE64 to true if deploying from a 32 bit env to a 64 bit env", 
+	"USE64BIT": true,
+	"__cmt3__": "The directory where the dependencies are installed",
+	"DEPENDENCYDIR": "lib",
+	"__cmt4__": "Directory where binary executable files used by the framework",
+    "__cmt5__": "are kept.  Is a relative directory to the Framework root", 
+    "__cmt6__": "Not really used at the moment, was put here to support ssh",
+    "__cmt7__": "using putty.exe",
+	"BINARYDIR": "bin", 
+	"__cmt8__": "This section is identifies the files that will be deployed ",
+	"__cmt9__": "to fme server",
+	"frameworkPython": {
+		"files": [
+			"DataBCFMWTemplate.py",
+			"ChangeDetectLib.py",
+			"FMELogger.py",
+			"ParcelMapLib.py",
+			"ChangeDetectLib2.py",
+			"DataBCFMWTemplateTesterLib.py",
+			"DataBCEmailer.py",
+			"FMWExecutionOrderDependencies.py",
+			"DataBCDbMethods.py",
+			"SSHTunnelling.py",
+			"InstallPaths.py",
+			"CreateSDEConnectionFile.py",
+			"FFSReader.py", 
+			"KIRKParams.py",
+			"DBCFMEConstants.py"
+		],
+		"destinationFMEServerDirectory": ["Plugins", "Python", "python27"],
+		"sourceDirectory" : ""
+	},
+	"pythonDependencies": {
+	   "ignoreFilesList": [".gitignore", "requirements.txt", "GMT+0"],
+	   "ignoreDirectories": ["pytz-2018.5.dist-info", "pytz", "lxml", "lxml-4.2.5.dist-info", "mock", "mock-2.0.0.dist-info"],
+	   "ignoreSuffixes" : [".pyc"],
+       "__cmt1__": "specifying lib first, the files in there will get copied then",
+       "__cmt2__": "files in the second directory will get copied",
+	   "sourceDirectoryList": ["lib", "lib64"],
+	   "destinationFMEServerDirectory": ["Plugins", "Python", "python27"]
+	},
+	"dataBCModules": {
+	   "__cmt1__": "This section is tied to the method DeployDBCDeps.  It is ",
+       "__cmt2__": "already addressed by the  pythondependencies section",
+       "ignoreSuffixes" : [".pyc"],
+	   "sourceDirectoryList": ["lib/DB", "lib/Misc", "lib/BCDCUtil", "lib/PMP", "lib/FMEUtil", "lib/KirkUtil"],
+       "destinationFMEServerDirectory": ["Plugins", "Python", "python27", "config"]
+	},
+	"configFiles": {
+	   "__cmt1__": "templateDefaults.config will come from a secrets repo",
+	   "files": ["templateLogging.config"],
+	   "sourceDirectory": "config",
+       "destinationFMEServerDirectory": ["Plugins", "Python", "python27", "config"]
+	},
+	"secretFiles": {
+	   "files": ["templateDefaults.config"],
+	   "sourceDirectory": "secrets",
+	   "destinationFMEServerDirectory": ["Plugins", "Python", "python27", "secrets"]
+	},
+	"fmeCustomizations": {
+        "__cmt1__": "fmeCustomizations contains the various directories that", 
+        "__cmt2__": "fme uses for different customizations, including: custom ",
+        "__cmt3__": "transformers, projections, formats, coorindate systems, etc",
+        "__cmt4__": "The databc fme framework uses the customization feature ", 
+        "__cmt5__": "of fme to make the various custom transformers available ",
+        "__cmt6__": "to fme.  Also the jar required for jdbc / sql server",
+        "__cmt7__": "communication is included in the plugins directory",
+        "__cmt8__": "",
+        "__cmt9__": "customizationRootDirectory: the root directory where ",
+        "__cmt10_": "customizatiions  ",
+        "customizationRootDirectory": "fmeCustomizations", 
+        "transformersDirectory": "Transformers", 
+        "pluginsDirectory": "Plugins"
+	},
+	"binaries": {
+	   "files": ["putty.exe"],
+       "sourceDirectory": "bin",
+       "destinationFMEServerDirectory": ["Plugins", "Python", "python27", "bin"]
+	}
+}
+                

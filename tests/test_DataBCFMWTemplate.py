@@ -18,6 +18,7 @@ import unittest
 import site
 import pprint
 import DataBCFMWTemplate
+import DBCFMEConstants
 import logging
 
 
@@ -563,7 +564,7 @@ class Test_CalcParams(unittest.TestCase):
             srcSDEDC = self.calcParams.getSrcDatabaseConnectionFilePath()
         except:
             print 'failed'
-        #print 'srcSDEDC', srcSDEDC
+        # print 'srcSDEDC', srcSDEDC
 
 
 class Test_CalcParamsDevel(unittest.TestCase):
@@ -641,7 +642,7 @@ class Test_CalcParamsDevel(unittest.TestCase):
 
     def test_getSourcePassword(self):
         expectedPassword = 'thisIsNotThePassword'
-        const = DataBCFMWTemplate.TemplateConstants()
+        const = DBCFMEConstants.TemplateConstants()
 
         dummyFMWDir = os.path.join(os.path.dirname(__file__), 'testData', 'config')
         self.logger.debug("dummyFMWDir {0}".format(dummyFMWDir))
@@ -698,7 +699,7 @@ class Test_CalcParamsDevel(unittest.TestCase):
 
     def test_getDestinationPassword(self):
         expectedPassword = 'thisIsNotThePassword'
-        const = DataBCFMWTemplate.TemplateConstants()
+        const = DBCFMEConstants.TemplateConstants()
         calcParams = DataBCFMWTemplate.CalcParams(self.fmeMacroValues, True)
         develDestPass = calcParams.getDestinationPassword()
         print 'develDestPass', develDestPass
@@ -742,7 +743,7 @@ class Test_CalcParamsDevel(unittest.TestCase):
         # should raise an error.
         self.assertRaises(ValueError, lambda: self.calcParams.getSrcSqlServerPassword())
         fmeMacroValues = self.fmeMacroValues
-        const = DataBCFMWTemplate.TemplateConstants()
+        const = DBCFMEConstants.TemplateConstants()
         # update the macros for this test
         fmeMacroValues[const.FMWParams_SrcHost] = 'databaseHost'
         fmeMacroValues[const.FMWParams_SrcSSDbName] = 'nameOfSqlServerDB'
@@ -790,7 +791,7 @@ class Test_CalcParamsDevel(unittest.TestCase):
 
     def test_getSrcSqlConnectStr(self):
         fmeMacroValues = self.fmeMacroValues
-        const = DataBCFMWTemplate.TemplateConstants()
+        const = DBCFMEConstants.TemplateConstants()
         # update the macros for this test
         fmeMacroValues[const.FMWParams_SrcHost] = 'databaseHost'
         fmeMacroValues[const.FMWParams_SrcSSDbName] = 'nameOfSqlServerDB'
@@ -1166,8 +1167,8 @@ if __name__ == "__main__":
     # sys.argv = ['','Test_Shutdown.test_shutdown']
 
     # sys.argv = ['', 'Test_TemplateConfigFileReader.test_isDataBCNode', 'Test_TemplateConfigFileReader.test_getFMEServerNode']
-    #sys.argv = ['', 'Test_CalcParams.test_getSrcDatabaseConnectionFilePath']
-    #sys.argv = ['']
+    # sys.argv = ['', 'Test_CalcParams.test_getSrcDatabaseConnectionFilePath']
+    # sys.argv = ['']
     # 'Test_CalcParams.test_getFailedFeaturesFile',
     #
 

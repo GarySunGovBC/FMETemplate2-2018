@@ -20,6 +20,7 @@ import psutil
 import logging
 import time
 import DataBCFMWTemplate
+import DBCFMEConstants
 
 class SSHTunnel(object):
 
@@ -131,7 +132,7 @@ class SSHTunnelHelper(object):
         self.logger.debug("macro values {0}".format(fme.macroValues))
 
 
-        self.const = DataBCFMWTemplate.TemplateConstants()
+        self.const = DBCFMEConstants.TemplateConstants()
         self.params = DataBCFMWTemplate.GetPublishedParams(self.fme.macroValues)
         
         

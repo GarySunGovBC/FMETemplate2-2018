@@ -34,27 +34,13 @@ in lieu of having another place to put it which the template was under
 development.  Eventually the goal is to move everything in 
 this document into appendices in the User Documentation.
 
-https://docs.google.com/document/d/1U31K0jl9dTwqbNZJuajbLf-dhmNlrCzpXZBrfxKlgJY/edit?usp=sharing
+(https://docs.google.com/document/d/1U31K0jl9dTwqbNZJuajbLf-dhmNlrCzpXZBrfxKlgJY/edit?usp=sharing)
 
 Much of this documentation is getting merged with the user docs
 referenced above
 
-## Template Development Project Plan
-Project plan re-iterating in more detail the goals of the the 
-new template:
-https://docs.google.com/document/d/13j919H17UV_g4VQFi4Z3Yjhw8NXBs7OLuSMCc2OkL1Y/edit
+## [FME Development and Deployment](https://wiki.pathfinder.gov.bc.ca/delta-ops/ETL/FME/fme-template-administration)
 
-## Template Parameter Standard:
-Description of the published and private parameters necessary for 
-the an FMW to implement the template is included in the 'Parameter 
-Standard' section of the user documentation
-
-Inlcluded in the user documentation now.
-
-## Template Implementation Plan
-Oveview of steps to be taken to implement the fme template on our 
-production fmw scripts.
-http://test.apps.bcgov/guide/intdocs/fme-template-implementation-plan/
 
 # Description
 What follows is a description of the various directories and scripts 
