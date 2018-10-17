@@ -82,11 +82,13 @@ class Start(object):
         # fmwName = fme.macroValues[self.const.FMWMacroKey_FMWName]
         # destKey = fme.macroValues[self.const.FMWParams_DestKey]
         # set up logging
-        ModuleLogConfig(fmwDir, fmwName, destKey)
-        modDotClass = '{0}.{1}'.format(__name__, 'shutdown')
-        self.logger = logging.getLogger(modDotClass)
+#         ModuleLogConfig(fmwDir, fmwName, destKey)
+#         modDotClass = '{0}.{1}'.format(__name__, 'shutdown')
+#         self.logger = logging.getLogger(modDotClass)
+        self.logger = logging.getLogger(__name__)
 
-        self.logger.info('running the framework startup')
+        self.logger.info('running the framework startup, on fmw: %s', fmwName)
+        self.logger.debug('source fmw dir: %s', fmwDir)
         # Reading the global paramater config file
 
         # self.paramObj = TemplateConfigFileReader(destKey)
@@ -112,6 +114,9 @@ class Start(object):
         elif os.path.exists(customScriptFullPath):
             startupScriptDirPath = customScriptDir
 
+        # if there is a startup script associated with the current fmw that
+        # is being run then import that script and run the startup code
+        # in that script if it exists, vs the default startup code.
         if startupScriptDirPath:
             # looking for custom module to load.  If one is found that
             # startup will take precidence
@@ -133,6 +138,7 @@ class Start(object):
                 self.logger.debug('using the generic template startup')
                 self.startupObj = DefaultStart(self.fme)
         else:
+            # setting the statup object to be the default one
             self.logger.debug('using the generic template startup')
             self.startupObj = DefaultStart(self.fme)
 
@@ -159,8 +165,9 @@ class DefaultStart(object):
 
     def __init__(self, fme):
         self.fme = fme
-        modDotClass = '{0}.{1}'.format(__name__, 'shutdown')
-        self.logger = logging.getLogger(modDotClass)
+#         modDotClass = '{0}.{1}'.format(__name__, 'shutdown')
+#         self.logger = logging.getLogger(modDotClass)
+        self.logger = logging.getLogger(__name__)
 
     def startup(self):
         '''
@@ -174,6 +181,7 @@ class DefaultStart(object):
         envKey = params.getDestDatabaseEnvKey()
         config = TemplateConfigFileReader(envKey)
         const = TemplateConstants()
+        self.logger.info("running default startup")
 
         # possible statuses:
         #  - SUCCESS - most common
@@ -187,6 +195,10 @@ class DefaultStart(object):
         #  - DELETED
         #  - ABORTED
         #  - PULLED
+
+        # code associated with dependency of fmw's (these need to be defined
+        # in the published parameters, example:
+        # https://docs.google.com/document/d/1WXUMN-2RDC_7u3OgtbG-NYFevKqZcZlxwF4PEB_lpu4/edit#heading=h.sszw3nkwygkb @IgnorePep8
         if params.existsDependentFMWSs():
             msg = 'The script has dependencies defined.'
             self.logger.info(msg)
@@ -274,6 +286,8 @@ class Shutdown(object):
 
         # logging configuration
         ModuleLogConfig(fmwDir, fmwName, destKey)
+        # leaving this as is so we have more control over toggling shutdown
+        # code logging levels
         modDotClass = '{0}.{1}'.format(__name__, 'shutdown')
         self.logger = logging.getLogger(modDotClass)
         self.logger.info("Shutdown has been called...")
@@ -1030,6 +1044,24 @@ class TemplateConfigFileReader(object):
         self.logger.debug("Got the python root directory from the config" +
                           " file: %s", pythonRootdir)
         return pythonRootdir
+
+    def getFMERootDirTmplt(self):
+        '''
+        Retrieves the path to the the standardized location of an FME install.
+        The year release of the install path is parameterized for string
+        format() function.
+
+        Example:
+           C:\Program File\FME{0}
+
+        where the {0} is where the install version would be inserted
+        '''
+        fmeRootDirTmplt = self.parser.get(
+            self.const.ConfFileSection_global,
+            self.const.ConfFileSection_global_FMERootDirTmplt)
+        self.logger.debug("FME install path tmplt string from config" +
+                          " file: %s", fmeRootDirTmplt)
+        return fmeRootDirTmplt
 
     def getSourcePmpResources(self):
         '''
@@ -4849,11 +4881,29 @@ class DWMWriter(object):
             self.logger.debug("creating and FFReader object")
             ffs = FFSReader.Reader(ffsFileName)
             if subprocess:
-                retVal = ffs.getFeatureCountSeparateProcess()
+                # in order to configure the paths we need to send it the
+                # product number ie, 2012, 2013, 2015, 2017, etc.
+                productNum = self.getFMEProductNumber()
+                retVal = ffs.getFeatureCountSeparateProcess(productNum)
             else:
                 retVal = ffs.getFeatureCountSameProcess()
             self.logger.debug("failed features read from ffs file: %s", retVal)
         return retVal
+
+    def getFMEProductNumber(self):
+        '''
+        extracts the current product string from the macro value
+        FME_BUILD_DATE which looks something like:
+        '20170731'
+
+        This method will extract the first 4 characters from this string
+        '''
+        curProductStr = self.fme.macroValues['FME_BUILD_DATE']
+        curProductStr = curProductStr.strip()
+        self.logger.debug("FME_BUILD_DATE: %s", curProductStr)
+        productNumber = curProductStr[0:4]
+        self.logger.debug('fme product number: %s', productNumber)
+        return productNumber
 
     def getNotificationEmail(self):  # pylint: disable=no-self-use
         '''

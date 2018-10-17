@@ -105,6 +105,7 @@ class FeatureProcessor(object):
             kirkParams = KIRKParams.KIRKParams(self.fme.macroValues)
             fldMap = kirkParams.getFieldMap()
             self.kirkFldMap = fldMap.getFieldMapAsDict()
+            self.logger.debug("kirk field map as dict: %s", self.kirkFldMap)
         return self.kirkFldMap
 
     def attributeExists(self, attribute2Test):

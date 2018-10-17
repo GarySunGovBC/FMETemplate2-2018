@@ -55,6 +55,7 @@ class KIRKParams(object):
         '''
         if self.jobId is None:
             self.jobId = self.pubParams.getKirkJobId()
+        self.logger.info("job id: %s", self.jobId)
         return self.jobId
 
     def readFrameworkConfig(self):
@@ -83,6 +84,7 @@ class KIRKParams(object):
             kirkUrl = self.fmeFrameworkConfig.getKirkUrl()
             kirkToken = self.fmeFrameworkConfig.getKirkToken()
             self.kirk = KirkUtil.PyKirk.Kirk(kirkUrl, kirkToken)
+            self.logger.debug("created kirk api obj to: %s", kirkUrl)
 
     def getJob(self):
         '''
@@ -99,6 +101,7 @@ class KIRKParams(object):
             kirkJobs = self.kirk.getJobs()
             jobData = kirkJobs.getJob(jobId)
             self.job = KirkJob(jobData)
+            self.logger.debug("created kirk job obj")
 
     def getDestDbEnvKey(self):
         '''
@@ -179,6 +182,7 @@ class KIRKParams(object):
         # in this method we are populating the template config reader
         # with the correct value for the current job.
         self.fmeFrameworkConfig.setDestinationDatabaseEnvKey(destDbEnv)
+        self.logger.info("destination Database Env. Key: %s", destDbEnv)
         return destDbEnv
 
     def getSource(self):
@@ -201,6 +205,7 @@ class KIRKParams(object):
                 raise ValueError(msg)
             src = KirkSources(jobSources[0])
             self.source = src
+            self.logger.debug('retrieved the kirk src obj')
 
     def getSourceFilePath(self):
         '''
@@ -208,6 +213,7 @@ class KIRKParams(object):
         '''
         self.getSource()
         srcPath = self.source.getSourcePath()
+        self.logger.info("Source file path: %s", srcPath)
         return srcPath
 
     def getSourceFeatureClass(self):
@@ -216,6 +222,7 @@ class KIRKParams(object):
         '''
         self.getSource()
         srcFc = self.source.getSourceFeatureClass()
+        self.logger.info("source feature class: %s", srcFc)
         return srcFc
 
     def getSourceProjection(self):
@@ -224,6 +231,7 @@ class KIRKParams(object):
         '''
         self.getSource()
         srcProj = self.source.getSourceProjection()
+        self.logger.info("retrieved the source projection: %s", srcProj)
         return srcProj
 
     def getDestinationSchema(self):
@@ -232,6 +240,7 @@ class KIRKParams(object):
         '''
         self.getJob()
         destSchema = self.job.getDestSchema()
+        self.logger.info("destination schema: %s", destSchema)
         return destSchema
 
     def getDestFeatureClass(self):
@@ -240,6 +249,7 @@ class KIRKParams(object):
         '''
         self.getJob()
         destFeatureClass = self.job.getDestTable()
+        self.logger.info("The destination Featurc class: %s", destFeatureClass)
         return destFeatureClass
 
     def getFieldMapCSVPath(self):
@@ -274,6 +284,7 @@ class KIRKParams(object):
             self.logger.info(msg, jobDir)
         csvFileName = KirkUtil.constants.FIELDMAP_CSV.format(jobid)
         csvFileFullPath = os.path.join(jobDir, csvFileName)
+        self.logger.info("fieldmap csv file: %s", csvFileFullPath)
         return csvFileFullPath
 
     def getFieldMapAsCSV(self, includeHeader=False, refresh=True):
@@ -316,10 +327,13 @@ class KIRKParams(object):
         if not self.fieldMap:
             self.getKirk()
             jobId = self.getJobId()
+            self.logger.debug("jobid: %s", jobId)
             kirkJobs = self.kirk.getJobs()
             jobFieldmaps = kirkJobs.getJobFieldMaps(jobId)
+            self.logger.debug("jobFieldmaps: %s", jobFieldmaps)
             fldMaps = KirkFieldMaps(jobFieldmaps)
             self.fieldMap = fldMaps
+
         return self.fieldMap
 
     def getFieldMapCount(self):
@@ -327,6 +341,7 @@ class KIRKParams(object):
         :return: the number of fieldmaps that exist for the current job
         '''
         self.getFieldMapAsCSV()
+        self.logger.info("fieldmap count: %s", len(self.fieldMap))
         return len(self.fieldMap)
 
     def getCounterTransformers(self):
@@ -339,6 +354,7 @@ class KIRKParams(object):
             kirkJobs = self.kirk.getJobs()
             jobId = self.getJobId()
             self.counterTransformers = kirkJobs.getCounterTransfomers(jobId)
+            self.logger.debug("retrieved the counter transformers")
 
     def getCounterTransformersCount(self):
         '''
@@ -346,6 +362,8 @@ class KIRKParams(object):
                  for this job
         '''
         self.getCounterTransformers()
+        self.logger.debug("number of counter transformers: %s",
+                          len(self.counterTransformers))
         return len(self.counterTransformers)
 
     def getCounterTransformerParameters(self, paramType):
@@ -444,12 +462,12 @@ class KirkFieldMaps(object):
                     lineList.append(fldMap[colName])
                 csvStruct.append(lineList)
         return csvStruct
-    
+
     def getFieldMapAsDict(self):
         returnStruct = {}
         if self.fieldMaps:
-            cols2Include = [self.fmConst.sourceColumnName.name,
-                            self.fmConst.destColumnName.name]
+            # cols2Include = [self.fmConst.sourceColumnName.name,
+            #                self.fmConst.destColumnName.name]
             for fldMap in self.fieldMaps:
                 srcCol = fldMap[self.fmConst.sourceColumnName.name]
                 destCol = fldMap[self.fmConst.destColumnName.name]
@@ -458,6 +476,10 @@ class KirkFieldMaps(object):
 
     def __len__(self):
         return len(self.fieldMaps)
+
+    def __str__(self):
+        fldMap = self.getFieldMapAsDict()
+        return unicode(fldMap)
 
 
 class KirkJob(object):

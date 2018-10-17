@@ -52,6 +52,7 @@ class TemplateConstants(object):
         'directconnect_ss_clientstring'
     ConfFileSection_global_ARCGISDesktopRootDir = 'defaultArcRootInstall'
     ConfFileSection_global_PythonRootDir = 'defaultArcPythonPath'
+    ConfFileSection_global_FMERootDirTmplt = 'defaultFMERootInstallTmplt'
 
     ConfFileSection_destKeywords = 'dest_param_keywords'
 

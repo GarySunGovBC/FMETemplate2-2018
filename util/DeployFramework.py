@@ -55,6 +55,8 @@ if __name__ == '__main__':
         msg = "using the destination key sent as an arg: %s", args.dest
         logging.debug(msg)
         section = args.dest
+    else:
+        section = 'all'
 
     if args.env:
         msg = "the destination keyword is: %s", args.env
@@ -118,7 +120,7 @@ if __name__ == '__main__':
     # when all is specified as everything that is deployed here gets
     # deployed also by the 'pydep' section
     # of deploying only the DBCpyLib modules used by the framework
-    if section == 'pydep':
+    if section == 'dbcpydep':
         dbcPyLibDly = DeployFrameworkLib.DBCPyLibDependencies(
             deployConfig=deployConfig, env=env)
         dbcPyLibDly.copyFiles(overwrite=False)

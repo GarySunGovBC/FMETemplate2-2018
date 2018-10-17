@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import datetime
 
 import DataBCFMWTemplate
 
@@ -94,25 +95,20 @@ class Reader(object):
                 os.remove(ffsFile)
         return featureCnt
 
-    def getFeatureCountSeparateProcess(self):
+    def getPythonInstallRootDirectory(self, param):
         '''
-        This method will spawn a separate subprocess calling this module using its
-        command line interface.
-
-        This functionality exists as the fme.exe crashes in the shutdown when
-        using the ffs file reader (fmeobjects) is attempted.
-
-        To work around this limitation this method will create a subprocess and
-        execute the ffs file reader on that subprocess, capturing and parsing the
-        output from the ffs file
-
+        starts by querying the registry to find the python install path.
+        if it can't read the registry then it attempts to get hard coded
+        paths from the template config file.  If can't get it there then
+        raises and error.
         '''
-        param = DataBCFMWTemplate.TemplateConfigFileReader('DLV')
-        # frameworkRootDir = param.getTemplateRootDirectory()
+        pythonRootDir = None
         try:
             # this will get the arcpy paths, and add them to the sys.path
             # parameter which should then allow for use of arcpy using the
             # fme python default interpreter
+
+            # starting by trying to retrieve from the registry
             pyPaths = DataBCFMWTemplate.InstallPaths.PythonInstallPaths()
             pythonRootDir = pyPaths.getInstallDir()
             self.logger.debug("pythonpath: %s", pythonRootDir)
@@ -127,11 +123,13 @@ class Reader(object):
             self.logger.exception(e)
             self.logger.error('re-raising the exception ')
             raise
-        my_env = os.environ.copy()
-        pythonExe = os.path.join(pythonRootDir, 'python')
-        self.logger.debug("executing this script in separate subprocess")
+        return pythonRootDir
 
-        # making sure we are calling the .py file and not the pyc file
+    def getThisFileAsPy(self):
+        '''
+        gets __file__ if the suffix is .pyc then switches to .py and
+        returns
+        '''
         thisFileList = os.path.splitext(__file__)
         thisFileList = list(thisFileList)
         self.logger.debug("thisFileList1: %s", thisFileList)
@@ -139,31 +137,141 @@ class Reader(object):
             thisFileList[1] = '.py'
         thisFileString = ''.join(thisFileList)
         self.logger.debug("thisFileString: %s", thisFileString)
+        return thisFileString
 
-        # making sure all the template files are available
-        curDir = os.path.dirname(__file__)
-        # libDir = os.path.join(curDir, 'lib')
+    def getFMEInstallPath(self, param, fmeVersion=None):
+        '''
+        If fmeVersion is specified will append this number to the end of the
+        install path template retreived from the config file.
+
+        If no fmeVersion is provided then the method will start with 2015 and
+        increment by 1 until it finds a install path that exists.  If one
+        is found it is returned.  If it is not returned an error will be
+        raised.
+
+        :param param: a reference to TemplateConfigFileReader object used
+                      to retrieve information from the conf file.
+        :param fmeVersion: (optional) The FME Version (4 digit year) to
+                           append to the fme template install path that
+                           gets retrieved from the config file.
+        '''
+        # verify the fmeVersion if provided was a 4 digit number
+        if fmeVersion:
+            fmeVersionStr = '{0}'.format(fmeVersion)
+            if len(fmeVersionStr) != 4 or not fmeVersionStr.isdigit():
+                msg = 'fmeVersion provided: {0} is an invalid value.  Must' + \
+                      'be a 4 digit number'
+                msg = msg.format(fmeVersion)
+                raise ValueError(msg)
+
+        fmeInstallPathTmplt = param.getFMERootDirTmplt()
+
+        fmeInstallDir = None
+        if fmeVersion:
+            fmeInstallDir = fmeInstallPathTmplt.format(fmeVersion)
+        else:
+            now = datetime.datetime.now()
+            for testFMEVersion in range(2015, now.year + 1):
+                curPath = fmeInstallPathTmplt.format(testFMEVersion)
+                if os.path.exists(curPath):
+                    fmeInstallDir = curPath
+                    break
+            if not os.path.exists(fmeInstallDir):
+                msg = 'unable to find an install path to FME.  Path ' + \
+                      'template that was tested: %s'
+                self.logger.error(msg, fmeInstallPathTmplt)
+                raise IOError(msg)
+        return fmeInstallDir
+
+    def getExecEnv(self, param, fmeVersion=None):
+        '''
+        assembles environment variables necessary to run this script on a
+        separate process.
+
+        :param fmeVersion: if this parameter is specified it must be the 4
+                           digit year of the FME release that should be
+                           used for the fmeobjects imports.  If not
+                           specified then it will use whatever is
+                           configured in the current environment variables.
+                           If it is specified it will do a search for paths
+                           with FME<4 digit year> and change them to the
+                           specified <fmeVersion> ie FME<fmeVersion>
+
+        '''
+        libPath = os.path.join(os.path.dirname(__file__), 'lib')
+
+        fmeRootDir = self.getFMEInstallPath(param, fmeVersion)
+        fmePythonDir = os.path.join(fmeRootDir, 'fmepython27')
+        fmeObjDir = os.path.join(fmeRootDir, 'fmeobjects', 'python27')
+        self.logger.debug("fmeRootDir: {0}".format(fmeRootDir))
+        self.logger.debug("fmePythonDir: {0}".format(fmePythonDir))
+        self.logger.debug("fmeObjDir: {0}".format(fmeObjDir))
+
+        # versionRegex = re.compile('^[a-zA-Z]{1}:.\\FME\d{4}.')
         self.logger.debug("syspath %s", sys.path)
+        my_env = os.environ.copy()
 
+        pythonPath = []
+        pythonPath.append(libPath)
+        pythonPath.append(fmeRootDir)
+        pythonPath.append(fmePythonDir)
+        pythonPath.append(fmeObjDir)
         # make sure all of sys.path is a regular string
         sysPathStrList = []
+        sysPathStrList.append(libPath)
+
+        # iterate through existing path list and swap the fme versions.
         for pth in sys.path:
-            sysPathStrList.append(str(pth))
+            fixedPath = os.path.realpath(pth)
+            fixedPath = os.path.normpath(fixedPath)
+            if fmeVersion:
+                searchString = r'\\FME\d{4}'
+                fixedPath = re.sub(searchString, '\\FME{0}'.format(
+                    fmeVersion), pth)
+            self.logger.debug("adding path: {0}".format(fixedPath))
+            sysPathStrList.append(str(fixedPath))
+            # print '   ', fixedPath
+
+        # insert the FME Paths to the start of the path string:
+        sysPathStrList.insert(0, fmeRootDir)
+        sysPathStrList.insert(0, fmePythonDir)
+        sysPathStrList.insert(0, fmeObjDir)
 
         syspathString = ';'.join(sysPathStrList)
-        self.logger.debug("syspath string %s, %s", syspathString, type(syspathString))
-        # my_env['PYTHONPATH'] = curDir + ';' + libDir + ';' + syspathString + ';' + my_env['PATH']
-        # my_env['PATH']       = curDir + ';' + libDir + ';' +  syspathString + ';' + my_env['PATH']
+        self.logger.debug("syspath string %s, %s", syspathString,
+                          type(syspathString))
+        my_env['PATH'] = syspathString
+        my_env['PYTHONPATH'] = ';'.join(pythonPath)
 
-        my_env['PYTHONPATH'] = r'\\data.bcgov\work\scripts\python\DataBCFmeTemplate2\lib'
-        # not using this for anything in the template reader that has to do with keys
-        # so hard coding the 'DLV' key.
-        DataBCFMWTemplate.TemplateConfigFileReader('DLV')
         self.logger.debug("myenv: %s", my_env)
+        return my_env
+
+    def getFeatureCountSeparateProcess(self, fmeVersion=None):
+        '''
+        This method will spawn a separate subprocess calling this module
+        using its command line interface.
+
+        This functionality exists as the fme.exe crashes in the shutdown when
+        using the ffs file reader (fmeobjects) is attempted.
+
+        To work around this limitation this method will create a subprocess and
+        execute the ffs file reader on that subprocess, capturing and parsing
+        the output from the ffs file
+
+        '''
+        self.logger.debug("fmeVersion: %s", fmeVersion)
+        param = DataBCFMWTemplate.TemplateConfigFileReader('DLV')
+        pythonRootDir = self.getPythonInstallRootDirectory(param)
+        pythonExe = os.path.join(pythonRootDir, 'python')
+        self.logger.debug("executing this script in separate subprocess")
+        # making sure we are calling the .py file and not the pyc file
+        thisFileString = self.getThisFileAsPy()
+
+        execEnv = self.getExecEnv(param, fmeVersion=fmeVersion)
 
         commandList = [pythonExe, thisFileString, self.ffsFile]
         self.logger.debug("command being executed: %s", ' '.join(commandList))
-        out = subprocess.check_output(commandList, env=my_env)
+        out = subprocess.check_output(commandList, env=execEnv)
         self.logger.debug("out is: %s", out)
         regexFfsFeatures = re.compile(r'{0}\s*\d+'.format(self.stdoutIDStr), re.IGNORECASE)
         for outLine in out.split('\n'):
