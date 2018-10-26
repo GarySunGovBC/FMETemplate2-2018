@@ -47,7 +47,7 @@ if __name__ == '__main__':
                      'secrets', 'fmecust']
     parser = argparse.ArgumentParser()
     envHelp = 'Key word that describes the destination fme server to deploy to'
-    parser.add_argument('--env', help=envHelp, choices=['fme_tst', 'fme_prd'])
+    parser.add_argument('--env', help=envHelp, choices=['fme_tst', 'fme_prd'], required=True)
     destHelp = 'What exactly do you want to deploy, options include: {0}'
     destHelp = destHelp.format(destHelp)
     parser.add_argument('--dest', help=destHelp, choices=validSections)
