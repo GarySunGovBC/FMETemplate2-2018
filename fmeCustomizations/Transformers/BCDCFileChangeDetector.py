@@ -2,6 +2,16 @@
 Created on Sep 21, 2016
 
 @author: kjnether
+
+This module that the BCDCFileChangeDetector transformer is linked to.
+The python caller in that linked transformer is tied to the class
+
+BCDCFileChangeDetector.ChangeFlagFetcher
+
+__init__ called on first feature into the transformer
+input() method is called per feature
+close() when the last feature has exited the transformer
+
 '''
 import logging
 import os.path
@@ -22,13 +32,19 @@ class ChangeFlagFetcher(File_Change_DetectorV2.ChangeFlagFetcher):
     '''
 
     def __init__(self):
+        # inherits from the base class
         File_Change_DetectorV2.ChangeFlagFetcher.__init__(self)
 
-        # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
+        # setting up the logging
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
-        self.logger.debug("Logging set up in the module: " + str(os.path.basename(__file__)))
+        self.logger.debug("Logging set up in the module: %s",
+                          os.path.basename(__file__))
 
+        # override / replace the changedetect object defined in the
+        # File_Change_DetectorV2.ChangeFlagFetcher object to
+        # use the BCDC versions. overrides how the change dates are
+        # retrieved
         self.chng = ChangeDetectLib2.ChangeDetectBCDC(self.changeLogFilePath)
         self.chng.setDateStrFormat(self.const.FMELogDateFormatString)
         self.logger.debug("BCDC Change detector object created")

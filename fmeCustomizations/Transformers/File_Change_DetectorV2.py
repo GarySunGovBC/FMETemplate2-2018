@@ -33,8 +33,8 @@ class ChangeFlagFetcher(object):
         #
         # setting up logging
         self.logger = logging.getLogger(__name__)
-        self.logger.debug("Logging set up in the module: " + \
-                          str(os.path.basename(__file__)))
+        self.logger.debug("Logging set up in the module: %s",
+                          os.path.basename(__file__))
 
         # get macro values
         self.fmeMacroValues = fme.macroValues
@@ -48,16 +48,21 @@ class ChangeFlagFetcher(object):
         # make sure there is a change detection parameter, and then
         # capture it
         self.fileChngKey = self.const.FMWParams_FileChangeEnabledParam
-        if not self.fmeMacroValues.has_key(self.fileChngKey):
-            msg = 'File change detection requires you to define a parameter called ' + \
-                  '{0}.  This parameter does not exist.  Add it as a published parameter ' + \
-                  'to your FMW.\nType:   Choice\nprompt:  Whether to use file change ' + \
-                  'detection or not\nConfiguration:   TRUE%FALSE\nDefault Value:  TRUE'
+        # if not self.fmeMacroValues.has_key(self.fileChngKey):
+        if self.fileChngKey not in self.fmeMacroValues:
+            msg = 'File change detection requires you to define a ' + \
+                  'parameter called {0}.  This parameter does not ' + \
+                  'exist.  Add it as a published parameter to your ' + \
+                  'FMW.\nType:   Choice\nprompt:  Whether to use file' + \
+                  ' change detection or not\nConfiguration:   ' + \
+                  'TRUE%FALSE\nDefault Value:  TRUE'
             msg = msg.format(self.fileChngKey)
             self.logger.error(msg)
-            raise ValueError, msg
-        self.changeDetectionEnabledParam = self.fmeMacroValues[self.fileChngKey]
-        self.logger.debug("changeDetectionEnabledParam: %s", self.changeDetectionEnabledParam)
+            raise ValueError(msg)
+        self.changeDetectionEnabledParam = self.fmeMacroValues[
+            self.fileChngKey]
+        self.logger.debug("changeDetectionEnabledParam: %s",
+                          self.changeDetectionEnabledParam)
 
         # create ChangeLogFilePath object
         #   is a databc node?
@@ -67,9 +72,10 @@ class ChangeFlagFetcher(object):
         if self.paramObj.isDataBCNode():
             changeLogRootDir = self.paramObj.getChangeLogsDirFullPath()
         else:
-            changeLogRootDir = self.fmeMacroValues[self.const.FMWMacroKey_FMWDirectory]
-        # This parameter looks strange: self.changeDetectionEnabledParam  should
-        # probably be
+            changeLogRootDir = self.fmeMacroValues[
+                self.const.FMWMacroKey_FMWDirectory]
+        # This parameter looks strange: self.changeDetectionEnabledParam
+        # should probably be
         self.changeLogFilePath = ChangeDetectLib2.ChangeLogFilePath(
             changeLogRootDir, changeLogFileName, self.fmwFileName,
             self.const.ConfFileSection_global_changeLogDir)
@@ -85,7 +91,8 @@ class ChangeFlagFetcher(object):
         # get the run environment (DLV|TST|PRD) from DEST_DB_ENV_KEY
         self.destDbEnvKey = None
         if self.const.FMWParams_DestKey in self.fmeMacroValues:
-            self.destDbEnvKey = self.fmeMacroValues[self.const.FMWParams_DestKey]
+            self.destDbEnvKey = self.fmeMacroValues[
+                self.const.FMWParams_DestKey]
         self.logger.debug("completed the init of the ChangFlagFetcher")
 
     def input(self, feature):

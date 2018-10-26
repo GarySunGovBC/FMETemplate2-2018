@@ -1,6 +1,6 @@
 #! <?xml version="1.0" encoding="utf-8" ?>
 #! <TRANSFORMER
-# TRANSFORMER_BEGIN "BCDC File Change Detector",1,DataBC,4e1e31d3-4d1d-487d-9274-eb831a52bc65,"Linked Always",No,NO_PARALLELISM,,No,15538,YES,No
+# TRANSFORMER_BEGIN "BCDC File Change Detector",1,DataBC,45b04043-2d31-48ea-87fc-2bdd14f97e4b,"Linked Always",No,NO_PARALLELISM,,No,15538,YES,No
 # <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">Used to determine whether the file that is being sourced from BCDC has changed.</p>
 # <p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">
 #     <br/>
@@ -11,39 +11,39 @@
 # <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">- python shutdown script to update the etlAuditLog file. </p>
 # 
 # TRANSFORMER_END
+#! MAX_LOOP_ITERATIONS=""
+#! LAST_SAVE_BUILD="FME(R) 2015.1.2.0 (20150911 - Build 15538 - WIN32)"
+#! PASSWORD=""
+#! FME_PROCESS_GROUPS_ORDERED="No"
+#! CATEGORY="DataBC"
+#! LAST_SAVE_DATE="2018-10-26T09:51:49"
+#! ATTR_TYPE_ENCODING="SDF"
+#! DESCRIPTION="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Used to determine whether the file that is being sourced from BCDC has changed.&lt;/p&gt;&#10;&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Dependencies include:&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- python startup script to detect file change&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- etlAuditLog.txt file to record source file replications. This file will be created if it does not exist.&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- python shutdown script to update the etlAuditLog file. &lt;/p&gt;&#10;"
+#! VIEW_POSITION="102.001 -564.006"
+#! XFORM_DEPRECATED="No"
+#! SHOW_INFO_NODES="true"
+#! FME_DOCUMENT_GUID="45b04043-2d31-48ea-87fc-2bdd14f97e4b"
+#! REQUIREMENTS="&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;"
+#! WORKSPACE_VERSION="1"
+#! FME_LINKED_TRANSFORMER_VERSION="1"
+#! LEGAL_TERMS_CONDITIONS="&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;"
+#! WARN_INVALID_XFORM_PARAM="Yes"
+#! REQUIREMENTS_KEYWORD="none"
+#! FMX_INSERT_MODE="Linked Always"
+#! ITERATION_COUNT_ATTR=""
 #! FME_BUILD_NUM="15538"
-#! LAST_SAVE_DATE="2016-09-22T10:39:58"
-#! FME_DOCUMENT_PRIORGUID="8b186fa5-d4f9-49e8-ae77-536f1fbba175,940a930a-63df-4838-9186-25fc02ef4007,1ca5cdd4-0628-472b-b2e6-0eb76d31976a,af5c1430-3c00-4d6b-b35f-6025f2b5f165,bd78e716-0c37-4158-892d-f34e31ac75f6,5738adea-05d6-45eb-8c41-22cb1e7087a9,d4684772-3fef-4e2a-8a4a-6f6f01a48c68,7c0c6bb4-4ef0-477f-8e28-adf93309af15,3a8ed498-756b-4d45-8ae6-b98a3693615d,bc04c7e0-0873-42f4-850c-8163e6b4dd0f,faf9758b-0f21-44e9-b194-229bb4a6d64e,cef68b7b-0736-4045-8a8e-e8f94b64adf6"
+#! FME_PROCESS_COUNT="NO_PARALLELISM"
+#! DOC_TOP_LEFT="145 -1344"
+#! FME_DOCUMENT_PRIORGUID="8b186fa5-d4f9-49e8-ae77-536f1fbba175,940a930a-63df-4838-9186-25fc02ef4007,1ca5cdd4-0628-472b-b2e6-0eb76d31976a,af5c1430-3c00-4d6b-b35f-6025f2b5f165,bd78e716-0c37-4158-892d-f34e31ac75f6,5738adea-05d6-45eb-8c41-22cb1e7087a9,d4684772-3fef-4e2a-8a4a-6f6f01a48c68,7c0c6bb4-4ef0-477f-8e28-adf93309af15,3a8ed498-756b-4d45-8ae6-b98a3693615d,bc04c7e0-0873-42f4-850c-8163e6b4dd0f,faf9758b-0f21-44e9-b194-229bb4a6d64e,cef68b7b-0736-4045-8a8e-e8f94b64adf6,4e1e31d3-4d1d-487d-9274-eb831a52bc65"
+#! FME_PROCESS_GROUP_BY=""
 #! ZOOM_SCALE="100"
 #! FME_SERVER_SERVICES=""
-#! FME_PROCESS_COUNT="NO_PARALLELISM"
-#! SHOW_ANNOTATIONS="true"
 #! USAGE="&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;"
-#! TITLE="BCDC File Change Detector"
-#! FMX_INSERT_MODE="Linked Always"
-#! WARN_INVALID_XFORM_PARAM="Yes"
-#! ATTR_TYPE_ENCODING="SDF"
-#! REQUIREMENTS_KEYWORD="none"
-#! DESCRIPTION="&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Used to determine whether the file that is being sourced from BCDC has changed.&lt;/p&gt;&#10;&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Dependencies include:&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- python startup script to detect file change&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- etlAuditLog.txt file to record source file replications. This file will be created if it does not exist.&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- python shutdown script to update the etlAuditLog file. &lt;/p&gt;&#10;"
-#! ITERATION_COUNT_ATTR=""
-#! HISTORY=""
-#! PASSWORD=""
-#! MAX_LOOP_ITERATIONS=""
-#! XFORM_DEPRECATED="No"
-#! CATEGORY="DataBC"
-#! FME_PROCESS_GROUP_BY=""
-#! VIEW_POSITION="102.001 -564.006"
-#! BLOCKED_LOOPING="No"
-#! FME_LINKED_TRANSFORMER_VERSION="1"
-#! REQUIREMENTS="&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;"
-#! LAST_SAVE_BUILD="FME(R) 2015.1.2.0 (20150911 - Build 15538 - WIN32)"
-#! FME_PROCESS_GROUPS_ORDERED="No"
-#! LEGAL_TERMS_CONDITIONS="&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;"
-#! SHOW_INFO_NODES="true"
 #! DOC_EXTENTS="3176 1024"
-#! FME_DOCUMENT_GUID="4e1e31d3-4d1d-487d-9274-eb831a52bc65"
-#! WORKSPACE_VERSION="1"
-#! DOC_TOP_LEFT="145 -1344"
+#! TITLE="BCDC File Change Detector"
+#! BLOCKED_LOOPING="No"
+#! SHOW_ANNOTATIONS="true"
+#! HISTORY=""
 #! >
 #! <DATASETS>
 #! </DATASETS>
@@ -168,8 +168,8 @@
 #! <OUTPUT_FEAT NAME="OUTPUT"/>
 #! <FEAT_COLLAPSED COLLAPSED="0"/>
 #! <XFORM_ATTR ATTR_NAME="fme_dataset" IS_USER_CREATED="false" FEAT_INDEX="0" />
-#! <XFORM_PARM PARM_NAME="ATTR_LIST" PARM_VALUE="fme_dataset"/>
 #! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="CD_1:_ExposeFMEDatasetName"/>
+#! <XFORM_PARM PARM_NAME="ATTR_LIST" PARM_VALUE="fme_dataset"/>
 #! </TRANSFORMER>
 #! <TRANSFORMER
 #! IDENTIFIER="2"
@@ -186,8 +186,8 @@
 #! <FEAT_COLLAPSED COLLAPSED="0"/>
 #! <XFORM_ATTR ATTR_NAME="fme_dataset" IS_USER_CREATED="false" FEAT_INDEX="0" />
 #! <XFORM_ATTR ATTR_NAME="CHANGE_DETECTED" IS_USER_CREATED="false" FEAT_INDEX="0" />
-#! <XFORM_PARM PARM_NAME="ATTR_LIST" PARM_VALUE="CHANGE_DETECTED"/>
 #! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="CD_3:_ExposeChangeAttribute"/>
+#! <XFORM_PARM PARM_NAME="ATTR_LIST" PARM_VALUE="CHANGE_DETECTED"/>
 #! </TRANSFORMER>
 #! <TRANSFORMER
 #! IDENTIFIER="3"
@@ -216,10 +216,10 @@
 #! <FEAT_COLLAPSED COLLAPSED="3"/>
 #! <XFORM_ATTR ATTR_NAME="fme_dataset" IS_USER_CREATED="false" FEAT_INDEX="3" />
 #! <XFORM_ATTR ATTR_NAME="CHANGE_DETECTED" IS_USER_CREATED="false" FEAT_INDEX="3" />
-#! <XFORM_PARM PARM_NAME="ATTR_NAME" PARM_VALUE="CHANGE_DETECTED"/>
-#! <XFORM_PARM PARM_NAME="ATTR_GROUP" PARM_VALUE=""/>
 #! <XFORM_PARM PARM_NAME="ATTR_VALUES" PARM_VALUE="TRUE,FALSE"/>
 #! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="CD_4:_FilterOnChangeDetected"/>
+#! <XFORM_PARM PARM_NAME="ATTR_NAME" PARM_VALUE="CHANGE_DETECTED"/>
+#! <XFORM_PARM PARM_NAME="ATTR_GROUP" PARM_VALUE=""/>
 #! </TRANSFORMER>
 #! <TRANSFORMER
 #! IDENTIFIER="4"
@@ -234,11 +234,11 @@
 #! >
 #! <OUTPUT_FEAT NAME="OUTPUT"/>
 #! <FEAT_COLLAPSED COLLAPSED="0"/>
-#! <XFORM_PARM PARM_NAME="LIST_ATTRS" PARM_VALUE=""/>
-#! <XFORM_PARM PARM_NAME="PARAMETERS_GROUP" PARM_VALUE="-"/>
-#! <XFORM_PARM PARM_NAME="TRANSFORMER_GROUP" PARM_VALUE="-"/>
 #! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="CD_5:_CleanAttsFromChanged"/>
 #! <XFORM_PARM PARM_NAME="REMOVE_ATTRS" PARM_VALUE="CHANGE_DETECTED,fme_dataset"/>
+#! <XFORM_PARM PARM_NAME="PARAMETERS_GROUP" PARM_VALUE="-"/>
+#! <XFORM_PARM PARM_NAME="LIST_ATTRS" PARM_VALUE=""/>
+#! <XFORM_PARM PARM_NAME="TRANSFORMER_GROUP" PARM_VALUE="-"/>
 #! </TRANSFORMER>
 #! <TRANSFORMER
 #! IDENTIFIER="5"
@@ -253,11 +253,11 @@
 #! >
 #! <OUTPUT_FEAT NAME="OUTPUT"/>
 #! <FEAT_COLLAPSED COLLAPSED="0"/>
-#! <XFORM_PARM PARM_NAME="LIST_ATTRS" PARM_VALUE=""/>
-#! <XFORM_PARM PARM_NAME="PARAMETERS_GROUP" PARM_VALUE="-"/>
-#! <XFORM_PARM PARM_NAME="TRANSFORMER_GROUP" PARM_VALUE="-"/>
 #! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="CD_6:_CleanAttsFromUnchanged"/>
 #! <XFORM_PARM PARM_NAME="REMOVE_ATTRS" PARM_VALUE="CHANGE_DETECTED,fme_dataset"/>
+#! <XFORM_PARM PARM_NAME="PARAMETERS_GROUP" PARM_VALUE="-"/>
+#! <XFORM_PARM PARM_NAME="LIST_ATTRS" PARM_VALUE=""/>
+#! <XFORM_PARM PARM_NAME="TRANSFORMER_GROUP" PARM_VALUE="-"/>
 #! </TRANSFORMER>
 #! <TRANSFORMER
 #! IDENTIFIER="6"
@@ -273,11 +273,11 @@
 #! <OUTPUT_FEAT NAME="OUTPUT"/>
 #! <FEAT_COLLAPSED COLLAPSED="0"/>
 #! <XFORM_ATTR ATTR_NAME="fme_dataset" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#! <XFORM_PARM PARM_NAME="PYTHONSOURCE" PARM_VALUE="#&lt;space&gt;class&lt;space&gt;to&lt;space&gt;retrieve&lt;space&gt;a&lt;space&gt;flag&lt;space&gt;associated&lt;space&gt;with&lt;space&gt;the&lt;space&gt;input&lt;space&gt;feature&lt;apos&gt;s&lt;space&gt;dataset&lt;lf&gt;#&lt;space&gt;name&lt;space&gt;that&lt;space&gt;indicates&lt;space&gt;whether&lt;space&gt;or&lt;space&gt;not&lt;space&gt;the&lt;space&gt;dataset&lt;space&gt;has&lt;space&gt;changed&lt;space&gt;since&lt;space&gt;the&lt;lf&gt;#&lt;space&gt;last&lt;space&gt;successful&lt;space&gt;replication&lt;lf&gt;#import&lt;space&gt;sys&lt;lf&gt;#for&lt;space&gt;i&lt;space&gt;in&lt;space&gt;sys.path:&lt;lf&gt;#&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;print&lt;space&gt;i&lt;lf&gt;&lt;lf&gt;import&lt;space&gt;fmeobjects&lt;lf&gt;import&lt;space&gt;BCDCFileChangeDetector&lt;lf&gt;import&lt;space&gt;fme&lt;lf&gt;&lt;lf&gt;"/>
+#! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="CD_2:_RetrieveChangeStatus"/>
 #! <XFORM_PARM PARM_NAME="PYTHONSYMBOL" PARM_VALUE="BCDCFileChangeDetector.ChangeFlagFetcher"/>
 #! <XFORM_PARM PARM_NAME="PARAMETERS_GROUP" PARM_VALUE="-"/>
 #! <XFORM_PARM PARM_NAME="TRANSFORMER_GROUP" PARM_VALUE="-"/>
-#! <XFORM_PARM PARM_NAME="PYTHONSOURCE" PARM_VALUE="#&lt;space&gt;class&lt;space&gt;to&lt;space&gt;retrieve&lt;space&gt;a&lt;space&gt;flag&lt;space&gt;associated&lt;space&gt;with&lt;space&gt;the&lt;space&gt;input&lt;space&gt;feature&lt;apos&gt;s&lt;space&gt;dataset&lt;lf&gt;#&lt;space&gt;name&lt;space&gt;that&lt;space&gt;indicates&lt;space&gt;whether&lt;space&gt;or&lt;space&gt;not&lt;space&gt;the&lt;space&gt;dataset&lt;space&gt;has&lt;space&gt;changed&lt;space&gt;since&lt;space&gt;the&lt;lf&gt;#&lt;space&gt;last&lt;space&gt;successful&lt;space&gt;replication&lt;lf&gt;import&lt;space&gt;sys&lt;lf&gt;for&lt;space&gt;i&lt;space&gt;in&lt;space&gt;sys.path:&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;print&lt;space&gt;i&lt;lf&gt;&lt;lf&gt;import&lt;space&gt;fmeobjects&lt;lf&gt;import&lt;space&gt;BCDCFileChangeDetector&lt;lf&gt;import&lt;space&gt;fme&lt;lf&gt;&lt;lf&gt;"/>
-#! <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="CD_2:_RetrieveChangeStatus"/>
 #! </TRANSFORMER>
 #! </TRANSFORMERS>
 #! <SUBDOCUMENT_IOS>
@@ -404,7 +404,7 @@ LOG_FILTER_MASK -1
 DEFAULT_MACRO WB_CURRENT_CONTEXT
 DEFAULT_MACRO BCDC_File_Change_Detector_WORKSPACE_NAME ""
 INCLUDE [puts {MACRO WB_OLD_CONTEXT_$(BCDC_File_Change_Detector_WORKSPACE_NAME) $(WB_CURRENT_CONTEXT)};          puts {MACRO WB_CURRENT_CONTEXT $(BCDC_File_Change_Detector_WORKSPACE_NAME)}]
-FACTORY_DEF * TeeFactory   FACTORY_NAME "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_FILE_SOURCE1474565998 Input Splitter"   INPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_FILE_SOURCE"   OUTPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_FILE_SOURCE"
+FACTORY_DEF * TeeFactory   FACTORY_NAME "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_FILE_SOURCE1540572709 Input Splitter"   INPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_FILE_SOURCE"   OUTPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_FILE_SOURCE"
 # -------------------------------------------------------------------------
 
 # Expose all attributes.  This ensures that if you expose fme_dataset, you will get it.
@@ -417,7 +417,7 @@ FACTORY_DEF * TeeFactory    FACTORY_NAME $(BCDC_File_Change_Detector_WORKSPACE_N
 
 FME_PYTHON_PATH "$(FME_MF_DIR)"
 
-FACTORY_DEF * PythonFactory    FACTORY_NAME $(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_2:_RetrieveChangeStatus    INPUT  FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_1:_ExposeFMEDatasetName_OUTPUT"    SYMBOL_NAME BCDCFileChangeDetector.ChangeFlagFetcher    SOURCE_CODE #<space>class<space>to<space>retrieve<space>a<space>flag<space>associated<space>with<space>the<space>input<space>feature<apos>s<space>dataset<lf>#<space>name<space>that<space>indicates<space>whether<space>or<space>not<space>the<space>dataset<space>has<space>changed<space>since<space>the<lf>#<space>last<space>successful<space>replication<lf>import<space>sys<lf>for<space>i<space>in<space>sys.path:<lf><space><space><space><space>print<space>i<lf><lf>import<space>fmeobjects<lf>import<space>BCDCFileChangeDetector<lf>import<space>fme<lf><lf>    OUTPUT PYOUTPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_2:_RetrieveChangeStatus_OUTPUT"
+FACTORY_DEF * PythonFactory    FACTORY_NAME $(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_2:_RetrieveChangeStatus    INPUT  FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_1:_ExposeFMEDatasetName_OUTPUT"    SYMBOL_NAME BCDCFileChangeDetector.ChangeFlagFetcher    SOURCE_CODE #<space>class<space>to<space>retrieve<space>a<space>flag<space>associated<space>with<space>the<space>input<space>feature<apos>s<space>dataset<lf>#<space>name<space>that<space>indicates<space>whether<space>or<space>not<space>the<space>dataset<space>has<space>changed<space>since<space>the<lf>#<space>last<space>successful<space>replication<lf>#import<space>sys<lf>#for<space>i<space>in<space>sys.path:<lf>#<space><space><space><space>print<space>i<lf><lf>import<space>fmeobjects<lf>import<space>BCDCFileChangeDetector<lf>import<space>fme<lf><lf>    OUTPUT PYOUTPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_2:_RetrieveChangeStatus_OUTPUT"
 
 # -------------------------------------------------------------------------
 
@@ -445,6 +445,6 @@ FACTORY_DEF * TeeFactory    FACTORY_NAME $(BCDC_File_Change_Detector_WORKSPACE_N
 INCLUDE [    set macroLine "MACRO $(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_5:_CleanAttsFromChanged_LIST_EXP ";    foreach attr [split ""] {       set attr [FME_DecodeText $attr];       set attr [regsub "{}$" $attr "{}.*"];       set attr [regsub -all "{}" $attr "{\[0-9\]+}"];       append macroLine ",^$attr$";    };    puts $macroLine; ]
 FACTORY_DEF * TeeFactory    FACTORY_NAME $(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_5:_CleanAttsFromChanged    INPUT  FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_4:_FilterOnChangeDetected_TRUE"    OUTPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_5:_CleanAttsFromChanged_OUTPUT"        @RemoveAttributes(CHANGE_DETECTED,fme_dataset)        @RemoveAttributes(fme_regexp_match"$($(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_5:_CleanAttsFromChanged_LIST_EXP)")
 
-FACTORY_DEF * TeeFactory   FACTORY_NAME "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CHANGES1474565998 Output Collector"   INPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_5:_CleanAttsFromChanged_OUTPUT"   OUTPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CHANGES"
-FACTORY_DEF * TeeFactory   FACTORY_NAME "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_NO_CHANGES1474565998 Output Collector"   INPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_6:_CleanAttsFromUnchanged_OUTPUT"   OUTPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_NO_CHANGES"
+FACTORY_DEF * TeeFactory   FACTORY_NAME "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CHANGES1540572709 Output Collector"   INPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_5:_CleanAttsFromChanged_OUTPUT"   OUTPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CHANGES"
+FACTORY_DEF * TeeFactory   FACTORY_NAME "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_NO_CHANGES1540572709 Output Collector"   INPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_CD_6:_CleanAttsFromUnchanged_OUTPUT"   OUTPUT FEATURE_TYPE "$(BCDC_File_Change_Detector_WORKSPACE_NAME)_NO_CHANGES"
 INCLUDE [puts {MACRO WB_CURRENT_CONTEXT $(WB_OLD_CONTEXT_$(BCDC_File_Change_Detector_WORKSPACE_NAME))}]
