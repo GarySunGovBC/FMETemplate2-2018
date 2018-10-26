@@ -56,6 +56,9 @@ import BCDCUtil.BCDCRestQuery  # @UnresolvedImport
 import requests
 import pytz
 
+# pylint: disable=invalid-name
+# pylint: disable=logging-format-interpolation
+
 
 class Constants(object):
     '''
@@ -284,7 +287,7 @@ class ChangeLogFilePath(object):
         '''
         return self.fullPathToChangeLog
 
-    def calculateAndVerifyChangeLogFilePath(self):  # pylint: disable=invalid-name @IgnorePep8
+    def calculateAndVerifyChangeLogFilePath(self): # @IgnorePep8
         '''
         Verifies the properties provided in the constructor.
           - Verifies that the root directory to use for the log files exist
@@ -413,6 +416,13 @@ class ChangeEventCollection(object):
         self.eventList = []
 
     def addChangeEvent(self, event):
+        '''
+        Adds a change event to the collection.  New change events are
+        generated every time the change detection runs
+        :param event: a change event object that can be associated with a
+                      record in the change log file.
+        :type event: ChangeEvent
+        '''
         self.eventList.append(event)
 
     def getMostRecentEvent(self, path, destDbEnv):
@@ -504,6 +514,10 @@ class ChangeEvent(object):
         return self.wasModified
 
     def getModificationAsUTCTimeStamp(self):
+        '''
+        returns the  lastModifiedUTC as datetime object that is timezone
+        aware
+        '''
         self.logger.debug("utc time stamp raw %s", self.lastModifiedUTC)
         timeStamp = datetime.datetime.utcfromtimestamp(self.lastModifiedUTC)
         timeStamp = pytz.utc.localize(timeStamp)
@@ -511,6 +525,10 @@ class ChangeEvent(object):
         return timeStamp
 
     def getLastTimeRanAsUTCTimeStamp(self):
+        '''
+        returns the date associated with the last time the replication ran
+        as a datetime object
+        '''
         self.logger.debug("utc time stamp raw %s", self.lastChecked)
         timeStamp = datetime.datetime.utcfromtimestamp(self.lastChecked)
         timeStamp = pytz.utc.localize(timeStamp)
@@ -549,10 +567,28 @@ class SourceDataCollection(object):
         self.sourceDataList.append(srcFileObject)
 
     def setChangeFlag(self, srcFileObject, destDbEnv, changeFlag):
+        '''
+        sets the change flag for a given source data set / destination
+        database environment combination.
+        :param srcFileObject: the name of the source dataset
+        :type srcFileObject: str/path
+        :param destDbEnv: the destination database environment key
+        :type destDbEnv: str
+        :param changeFlag: the value of the change flag
+        :type changeFlag: bool
+        '''
         srcDataObj = self.getSrcDataObj(srcFileObject, destDbEnv)
         srcDataObj.setChangeFlag(changeFlag)
 
     def exists(self, srcDataPath, destDbEnv):
+        '''
+        identifies if the given source data path is described by one of the
+        src data objects in this collection
+        :param srcDataPath: path to the source data
+        :type srcDataPath:    str/path
+        :param destDbEnv:
+        :type destDbEnv:
+        '''
         retVal = False
         srcData = self.getSrcDataObj(srcDataPath, destDbEnv)
         if srcData:
@@ -560,6 +596,13 @@ class SourceDataCollection(object):
         return retVal
 
     def getSrcDataObj(self, srcDataPath, destDbEnv):
+        '''
+        returns source data object for the given source data path
+        :param srcDataPath: the source data path
+        :type srcDataPath: str(path)
+        :param destDbEnv: the destination database environment key
+        :type destDbEnv: str
+        '''
         retVal = None
         for srcData in self.sourceDataList:
             if srcData.hasPath(srcDataPath, destDbEnv):
@@ -568,6 +611,17 @@ class SourceDataCollection(object):
         return retVal
 
     def getChangeParam(self, srcDataPath, destDbEnv):
+        '''
+        identifies if the the provided srcDataPath has been processed already
+        and if so whether it has been modified since the last run
+        :param srcDataPath: the source path
+        :type srcDataPath: str/path
+        :param destDbEnv: The destination database environment key that is
+                          being used for the replication.  This is used so
+                          change detection can distinguish between PRD / TST
+                          / DLV replications.
+        :type destDbEnv: str
+        '''
         # returns the boolean value used to indicate whether
         # this particular data set has "srcDataPath" has been
         # processed already, and if so whether it has been
@@ -667,9 +721,24 @@ class SourceFileData(object):
         return self.modificationUTCTimeStamp
 
     def incrementFeatureCount(self):
+        '''
+        keeps track of the number of features associated with a particular
+        source data set that have passed through the transformer
+        '''
+
         self.featureCount += 1
 
     def getChangeLogRecord(self, fmw, changeDetectionEnabledParam, changeDate):
+        '''
+        Assembles a list with the various elements that make up a change
+        detect record, mostly using properties from this object
+        :param fmw: name of the fmw that is used for the replication
+        :type fmw: str
+        :param changeDetectionEnabledParam: is the change detection enabled
+        :type changeDetectionEnabledParam: bool
+        :param changeDate: The date of this change event
+        :type changeDate: datetime.datetime
+        '''
         # create a list with the correct number of elements
         outList = [None] * self.const.expectedLogLineParams
         # now start to populate the elements
@@ -681,7 +750,8 @@ class SourceFileData(object):
         # - last modified as a local date time string
         outList[self.const.logFileParam_LastModifiedDateStr] = \
             Util.datetime2localDateTimeString(
-            changeDate, self.const.dateFormatStr, self.const.LocalTimeZone)
+                changeDate, self.const.dateFormatStr,
+                self.const.LocalTimeZone)
         # - last time file was checked
         outList[self.const.logFileParam_LastCheckedUTCTimeStamp] = \
             str(Util.datetime2intTimeStamp(self.currentUTCDateTime))
@@ -709,11 +779,22 @@ class SourceFileData(object):
         return self.changeParam
 
     def setChangeFlag(self, changeFlag):
+        '''
+        Change flag is boolean value that is used to indicate if the data
+        actually changed for a given change detect record.
+
+        :param changeFlag: the value that the changeParam propertly should
+                           get set to
+        :type changeFlag: bool
+        '''
         self.logger.debug("setting the change flag to %s", changeFlag)
         self.changeParam = changeFlag
 
 
-class Util:
+class Util(object):
+    '''
+    a static class for misc functions used by this module
+    '''
 
     @staticmethod
     def formatDataSet(fmeDataSet):
@@ -750,6 +831,14 @@ class Util:
 
     @staticmethod
     def datetime2intTimeStamp(inDateTime):
+        '''
+        Converts a datetime to an integer time stamp
+        :param inDateTime: input datetime that is to be returned as a
+                           integer time stamp
+        :type inDateTime: datetime.datetime
+        :return: timestamp
+        :rtype: int
+        '''
         if not isinstance(inDateTime, datetime.datetime):
             msg = 'You sent an object of type {0} when expecting a ' + \
                 'datetime object'
@@ -765,6 +854,18 @@ class Util:
     @staticmethod
     def datetime2localDateTimeString(inDateTime, datetimeStringFormat,
                                      localDateTime):
+        '''
+        receives a datetime object and a datetime string format, and a
+        timezone object.  Converts the datetime object into the string format
+        for the given time zone
+        :param inDateTime: input datetime
+        :type inDateTime: datetime.datetime
+        :param datetimeStringFormat: the output string format for the date
+                                     time object
+        :type datetimeStringFormat: str
+        :param localDateTime: the timezone for the output datetime string
+        :type localDateTime: pytz
+        '''
         if not isinstance(inDateTime, datetime.datetime):
             msg = 'You sent an object of type {0} when expecting a ' + \
                    'datetime object'
@@ -776,6 +877,9 @@ class Util:
 
 
 class ChangeDetectBCDC(ChangeDetect):
+    '''
+    Change detect object used for BCDC sources.
+    '''
 
     def __init__(self, changeLogPath):
         ChangeDetect.__init__(self, changeLogPath)
@@ -794,6 +898,9 @@ class ChangeDetectBCDC(ChangeDetect):
 
 
 class SourceDataCollectionBCDC(SourceDataCollection):
+    '''
+    source data collection specific to bcdc sources
+    '''
 
     def __init__(self, const):
         SourceDataCollection.__init__(self, const)
@@ -834,6 +941,10 @@ class SourceDataCollectionBCDC(SourceDataCollection):
 
 
 class SourceBCDC(SourceFileData):
+    '''
+    A class that defines how sources defined in BCDC should retrieve their
+    modification dates
+    '''
 
     def __init__(self, srcPath, destDbEnv, const=None):
         SourceFileData.__init__(self, srcPath, destDbEnv, const)
@@ -864,11 +975,12 @@ class SourceBCDC(SourceFileData):
                         tzinfo=pytz.utc)
         return revisionDateTime
 
-    def getUTCTimeStamp(self, srcPath=None):
+    def getUTCTimeStamp(self):
+        # old method call included  srcPath=None
         if not self.modificationUTCTimeStamp:
             # revisionUTCTimeStamp = None
-            if srcPath is None:
-                srcPath = self.srcPath
+            # if srcPath is None:
+            srcPath = self.srcPath
             resp = requests.head(srcPath)
             # test to make sure the data is available
             if resp.status_code != 200:
@@ -882,7 +994,7 @@ class SourceBCDC(SourceFileData):
                                       self.modificationUTCTimeStamp)
                 except BCDCResourceNotFound, e:
                     self.logger.warning("caught exception: BCDCResourceNotFound")
-                    #self.logger.exception("exception caught: %s", e)
+                    # self.logger.exception("exception caught: %s", e)
                     '''
                     urls have been swapped for some data sets so that they
                     no longer point to the resource but rather to a download
@@ -893,11 +1005,14 @@ class SourceBCDC(SourceFileData):
                     a problem with the url, it expecte the url to be structured
                     like:
                     https://catalogue.data.gov.bc.ca - the host
-                    dataset/2b44d212-5438-47a9-ad23-20eb8ada9709 - the dataset / package
-                    resource/c7cc9297-220c-4d6c-a9a7-72d0680b2f74 - links to resource
-                    download/service-bc-location-update-10-22-18.csv - databc links.
+                    dataset/2b44d212-5438-47a9-ad23-20eb8ada9709 -
+                        the dataset / package
+                    resource/c7cc9297-220c-4d6c-a9a7-72d0680b2f74 -
+                        links to resource
+                    download/service-bc-location-update-10-22-18.csv -
+                        databc links.
                     '''
-                    self.logger.debug("caught the exception and trying to " + \
+                    self.logger.debug("caught the exception and trying to " +
                                       "resolve")
                     # sometimes the actual csv file gets duplicated in the
                     # srcPath.  When this happens need to remove it
@@ -910,7 +1025,7 @@ class SourceBCDC(SourceFileData):
                         srcPath = os.path.dirname(srcPath)
 
                     self.logger.debug("srcPath: %s", srcPath)
-                    downloadPath, csvFile = os.path.split(srcPath)  # @UnusedVariable
+                    downloadPath = os.path.dirname(srcPath)  # @UnusedVariable
                     resourcePathFull, downloadDir = os.path.split(downloadPath)
                     resourcePath, resourceId = os.path.split(resourcePathFull)
                     resourceDir = os.path.basename(resourcePath)
@@ -931,6 +1046,19 @@ class SourceBCDC(SourceFileData):
         return self.modificationUTCTimeStamp
 
     def getBCDCResourceModificationDate(self, resourceName):
+        '''
+        Given a resourceName, ie something like a csv file name etc, will
+        query BCDC to retrieve the 'resource' object that is associated
+        with that file.  Then retrieves the modification date associated
+        with that resource
+
+        :param resourceName: name of a file that is stored in BCDC who's
+                             modification date we are trying to return
+        :type resourceName: str
+
+        :return: a datetime object with the modification date
+        :rtype: datetime.datetime
+        '''
         self.logger.debug("resourceName: %s", resourceName)
         bcdc = BCDCUtil.BCDCRestQuery.BCDCRestQuery('PROD')
         resourceNameJustFile = os.path.basename(resourceName)
@@ -976,12 +1104,19 @@ class SourceBCDC(SourceFileData):
 
 
 class BCDCResourceNotFound(Exception):
+    '''
+    custom exception for when the BCDC resource cannot be found
+    '''
 
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
 
 
 class MultipleBCDCResourcesFound(Exception):
+    '''
+    custom exception for when more than one resource is found for a
+    specific file
+    '''
 
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
