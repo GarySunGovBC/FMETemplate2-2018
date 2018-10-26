@@ -50,7 +50,7 @@
        "__cmt2__": "already addressed by the  pythondependencies section",
        "ignoreSuffixes" : [".pyc"],
 	   "sourceDirectoryList": ["lib/DB", "lib/Misc", "lib/BCDCUtil", "lib/PMP", "lib/FMEUtil", "lib/KirkUtil"],
-       "destinationFMEServerDirectory": ["Plugins", "Python", "python27", "config"]
+       "destinationFMEServerDirectory": ["Plugins", "Python", "python27"]
 	},
 	"configFiles": {
 	   "__cmt1__": "templateDefaults.config will come from a secrets repo",

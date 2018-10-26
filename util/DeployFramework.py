@@ -43,7 +43,7 @@ if __name__ == '__main__':
     # ------------------------------------------
     #   retrieving the args
     # ------------------------------------------
-    validSections = ['all', 'config', 'dbcdeps', 'bins', 'py', 'pydep',
+    validSections = ['all', 'config', 'dbcpydep', 'bins', 'py', 'pydep',
                      'secrets', 'fmecust']
     parser = argparse.ArgumentParser()
     envHelp = 'Key word that describes the destination fme server to deploy to'

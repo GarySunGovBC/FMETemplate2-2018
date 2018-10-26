@@ -137,7 +137,9 @@ class DirectoryCache(object):
         retVal = True
         self.logger.debug("src file: %s", deployObj.srcFile)
         srcModTime = time.ctime(os.path.getmtime(deployObj.srcFile))
-        self.logger.debug("srcModTime: %s", srcModTime)
+        # Fri Oct 26 09:51:50 2018
+        srcModTime = time.strptime(srcModTime, '%a %b %d %H:%M:%S %Y')
+        self.logger.debug("srcModTime: %s, %s", srcModTime, type(srcModTime))
 
         dirType = deployObj.destDirType
         fullFilePath = deployObj.destFileFullPathStr
@@ -150,11 +152,14 @@ class DirectoryCache(object):
                 destDateTime = self.resourceCache[dirType][fullFilePath]
         destTimeStr = destDateTime.strftime('%Y-%m-%dT%H:%M:%S')
         destModTime = time.strptime(destTimeStr, '%Y-%m-%dT%H:%M:%S')
-        self.logger.debug("destModTime: %s", destModTime)
-        self.logger.debug("srcModTime: %s", srcModTime)
+        destStrTime = time.strftime('%Y-%m-%dT%H:%M:%S', destModTime)
+        srcStrTime = time.strftime('%Y-%m-%dT%H:%M:%S', srcModTime)
+        self.logger.debug("destModTime: %s", destStrTime)
+        self.logger.debug("srcModTime: %s", srcStrTime)
 
         if srcModTime < destModTime:
             retVal = False
+        self.logger.debug("is src newer: %s", retVal)
         return retVal
 
     def load(self, deployObj):
