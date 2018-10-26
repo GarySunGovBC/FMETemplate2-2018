@@ -213,6 +213,7 @@ class ChangeDetect(object):
         self.logger.debug("updating the change log")
         for srcData in self.sourceDataCollection.sourceDataList:
             self.logger.debug('srcData: %s', srcData)
+            self.logger.debug("getting the utc time stamp")
             changeDate = srcData.getUTCTimeStamp()
             # self.logger.debug('')
             wasChanged = srcData.getWasChanged()
@@ -880,7 +881,8 @@ class SourceBCDC(SourceFileData):
                     self.logger.debug("modification time stamp: %s",
                                       self.modificationUTCTimeStamp)
                 except BCDCResourceNotFound, e:
-                    self.logger.exception("exception caught: %s", e)
+                    self.logger.warning("caught exception: BCDCResourceNotFound")
+                    #self.logger.exception("exception caught: %s", e)
                     '''
                     urls have been swapped for some data sets so that they
                     no longer point to the resource but rather to a download
@@ -895,10 +897,25 @@ class SourceBCDC(SourceFileData):
                     resource/c7cc9297-220c-4d6c-a9a7-72d0680b2f74 - links to resource
                     download/service-bc-location-update-10-22-18.csv - databc links.
                     '''
+                    self.logger.debug("caught the exception and trying to " + \
+                                      "resolve")
+                    # sometimes the actual csv file gets duplicated in the
+                    # srcPath.  When this happens need to remove it
+                    csvPath, csv1 = os.path.split(srcPath)
+                    csv2 = os.path.basename(csvPath)
+                    if csv2.lower() == csv1.lower():
+                        msg = "removing the redundant reference to the csv " + \
+                              "file: %s"
+                        self.logger.debug(msg, csv2)
+                        srcPath = os.path.dirname(srcPath)
+
+                    self.logger.debug("srcPath: %s", srcPath)
                     downloadPath, csvFile = os.path.split(srcPath)  # @UnusedVariable
                     resourcePathFull, downloadDir = os.path.split(downloadPath)
                     resourcePath, resourceId = os.path.split(resourcePathFull)
                     resourceDir = os.path.basename(resourcePath)
+                    self.logger.debug('resourceId: %s', resourceId)
+                    self.logger.debug('downloadDir: %s', downloadDir)
                     # double checking that the path identified is correct
                     if downloadDir.lower() == 'download' and \
                             resourceDir.lower() == 'resource':
