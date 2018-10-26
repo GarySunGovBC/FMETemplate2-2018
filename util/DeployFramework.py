@@ -5,14 +5,16 @@ defined in the file:
 
 '''
 import argparse
-import os.path
-import warnings
 import logging.config
+import os.path
 import sys
-from FrameworkDeployment import usercustomize  # @UnusedImport
-from FrameworkDeployment import DeployFrameworkLib
-# pylint: disable=no-self-use, invalid-name
+import warnings
 
+from FrameworkDeployment import DeployFrameworkLib
+from FrameworkDeployment import usercustomize  # @UnusedImport
+
+
+# pylint: disable=no-self-use, invalid-name
 filterMessage = 'Unverified HTTPS request is being made. Adding ' + \
                 'certificate verification is strongly advised. ' + \
                 'See: https://urllib3.readthedocs.io/en/latest/a' + \
@@ -25,7 +27,7 @@ if __name__ == '__main__':
     # ------------------------------------------
     logConfFile = 'DeploymentLogging.config'
     configDir = os.path.join(os.path.dirname(__file__), '..',
-                                   'config')
+                             'config')
     logConfFilePath = os.path.join(configDir, logConfFile)
 
     outputLogFile = os.path.join(os.path.dirname(__file__), 'deploy.log')
@@ -41,7 +43,6 @@ if __name__ == '__main__':
     # ------------------------------------------
     #   retrieving the args
     # ------------------------------------------
-    import argparse
     validSections = ['all', 'config', 'dbcdeps', 'bins', 'py', 'pydep',
                      'secrets', 'fmecust']
     parser = argparse.ArgumentParser()
@@ -50,7 +51,10 @@ if __name__ == '__main__':
     destHelp = 'What exactly do you want to deploy, options include: {0}'
     destHelp = destHelp.format(destHelp)
     parser.add_argument('--dest', help=destHelp, choices=validSections)
+    parser.add_argument('--overwrite', action='store_true')
     args = parser.parse_args()
+    overWrite = args.overwrite
+    
     if args.dest:
         msg = "using the destination key sent as an arg: %s", args.dest
         logging.debug(msg)
@@ -74,7 +78,7 @@ if __name__ == '__main__':
     if section == 'fmecust' or section == 'all':
         deployFmeCust = DeployFrameworkLib.FMECustomizationDeployments(
             deployConfig=deployConfig, env=env)
-        deployFmeCust.copyCustomTransformers(overwrite=True)
+        deployFmeCust.copyCustomTransformers(overwrite=overWrite)
 
     # ----------------------------------------------------
     # Configs
@@ -83,7 +87,7 @@ if __name__ == '__main__':
     if section == 'config' or section == 'all':
         deployConf = DeployFrameworkLib.ConfigsDeployment(
             deployConfig=deployConfig, env=env)
-        deployConf.copyFiles(overwrite=False)
+        deployConf.copyFiles(overwrite=overWrite)
 
     # ----------------------------------------------------
     # binary Deployment
@@ -92,7 +96,7 @@ if __name__ == '__main__':
     if section == 'bins' or section == 'all':
         binDeploy = DeployFrameworkLib.BinaryDeployments(
             deployConfig=deployConfig, env=env)
-        binDeploy.copyFiles()
+        binDeploy.copyFiles(overwrite=overWrite)
 
     # ----------------------------------------------------
     # Python (framework)
@@ -102,7 +106,7 @@ if __name__ == '__main__':
     if section == 'py' or section == 'all':
         deployPy = DeployFrameworkLib.PythonFMEFramework(
             deployConfig=deployConfig, env=env)
-        deployPy.copyFiles(overwrite=False)
+        deployPy.copyFiles(overwrite=overWrite)
 
     # ----------------------------------------------------
     # Python Dependencies
@@ -113,7 +117,7 @@ if __name__ == '__main__':
     if section == 'pydep' or section == 'all':
         pyDepDeploy = DeployFrameworkLib.PythonDependencies(
             deployConfig=deployConfig, env=env)
-        pyDepDeploy.copyFiles(overwrite=False)
+        pyDepDeploy.copyFiles(overwrite=overWrite)
 
     # This deployment does a subset of the previous one 'pydep'  it will
     # deploy the dependencies that make up the dbcpylib.  Not called
@@ -123,7 +127,7 @@ if __name__ == '__main__':
     if section == 'dbcpydep':
         dbcPyLibDly = DeployFrameworkLib.DBCPyLibDependencies(
             deployConfig=deployConfig, env=env)
-        dbcPyLibDly.copyFiles(overwrite=False)
+        dbcPyLibDly.copyFiles(overwrite=overWrite)
 
     # ----------------------------------------------------
     # Secrets deploy
@@ -131,4 +135,4 @@ if __name__ == '__main__':
     if section == 'secrets' or section == 'all':
         deploySecrets = DeployFrameworkLib.SecretsDeployment(
             deployConfig=deployConfig, env=env)
-        deploySecrets.copyFiles(overwrite=False)
+        deploySecrets.copyFiles(overwrite=overWrite)

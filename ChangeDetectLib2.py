@@ -59,8 +59,8 @@ import pytz
 
 class Constants(object):
     '''
-    class used to emulate enumerations.  Contain constants that may be referenced
-    by various aspects of the application.
+    class used to emulate enumerations.  Contain constants that may be
+    referenced by various aspects of the application.
     '''
 
     # constants used by this library
@@ -112,11 +112,12 @@ class ChangeDetect(object):
             msg = 'Called the ChangeDetect contructor with a {0} type object ' + \
                   'in the parameter changeLogPath.  This parameter must be ' + \
                   'a ChangeLogFilePathtype object'
-            raise ValueError, msg.format(type(changeLogPath))
+            raise ValueError(msg.format(type(changeLogPath)))
 
         # This is a change log object (ChangeLogFilePath)
         self.chngLogFilePath = changeLogPath
-        self.logger.debug("Change log file path: {0}".format(self.chngLogFilePath))
+        self.logger.debug("Change log file path: {0}".format(
+            self.chngLogFilePath))
         self.chngLog = ChangeLogFile(self.chngLogFilePath, self.const)
         # self.chngLogFile = ChangeLogFile(self.chngLogFilePath)
         self.chngLog.readChangeDetectLogFile()
@@ -130,20 +131,22 @@ class ChangeDetect(object):
         Identifies if a specific source dataset (feature class), based on the
         data that has been entered into this class, has changed.
 
-        :param srcDataPath: The file that we want to know whether it has changed
-        :param destDbEnvKey: The destination database environment key to use
-                             in the change detection
-        :return: boolean value to indicate whether the 'srcDataPath' has changed.
+        :param srcDataPath: The file that we want to know whether it has
+        changed
+        :param destDbEnvKey: The destination database environment
+        key to use in the change detection
+        :return: boolean value to indicate whether the 'srcDataPath' has
+        changed.
         :rtype: bool
         '''
         retVal = False
         # self.logger.debug("called has changed")
         # standardize the path:
         srcDataPathNormalized = Util.formatDataSet(srcDataPath)
-        if self.sourceDataCollection.exists(srcDataPathNormalized, destDbEnvKey):
-            retVal = self.sourceDataCollection.getChangeParam(srcDataPathNormalized, destDbEnvKey)
-            # self.logger.debug("using the cached version of source data, {0} {1}",
-            # srcDataPathNormalized, retVal)
+        if self.sourceDataCollection.exists(srcDataPathNormalized,
+                                            destDbEnvKey):
+            retVal = self.sourceDataCollection.getChangeParam(
+                srcDataPathNormalized, destDbEnvKey)
         else:
             # havent' seen this source data set yet.
 
@@ -161,9 +164,11 @@ class ChangeDetect(object):
             if chgLogEvent:
                 # modification date of the file in srcDataUTCTimeStamp
                 # has it changed since the last time the script was run?
-                srcData = self.getSourceDataObj(srcDataPathNormalized, destDbEnvKey)
+                srcData = self.getSourceDataObj(srcDataPathNormalized,
+                                                destDbEnvKey)
                 srcDataUTCTimeStamp = srcData.getUTCTimeStamp()
-                logEventUTCTimeStamp = chgLogEvent.getLastTimeRanAsUTCTimeStamp()
+                logEventUTCTimeStamp = \
+                    chgLogEvent.getLastTimeRanAsUTCTimeStamp()
                 # add the source data to the source data collection
                 # print 'srcDataUTCTimeStamp', srcDataUTCTimeStamp
                 # print 'logEventUTCTimeStamp', logEventUTCTimeStamp
@@ -175,7 +180,6 @@ class ChangeDetect(object):
             else:
                 # if there is no change event in the changelog, then assume
                 # that we should replicate data
-                # self.logger.debug("no change event for source {0}".format(srcDataPathNormalized))
                 retVal = True
         return retVal
 
@@ -186,7 +190,8 @@ class ChangeDetect(object):
         :param srcDataPathNormalized: a normalized source file path
         :param destDbEnvKey: destination database environment key
         '''
-        return SourceFileData(srcDataPathNormalized, destDbEnvKey, self.const)
+        return SourceFileData(srcDataPathNormalized,
+                              destDbEnvKey, self.const)
 
     def addFeatureChange(self, srcDataPath, destDbEnvKey):
         '''
@@ -196,7 +201,8 @@ class ChangeDetect(object):
         :param destDbEnvKey: destination database environment key
         '''
         srcDataPathNormalized = Util.formatDataSet(srcDataPath)
-        self.sourceDataCollection.incrementFeatureCount(srcDataPathNormalized, destDbEnvKey)
+        self.sourceDataCollection.incrementFeatureCount(
+            srcDataPathNormalized, destDbEnvKey)
 
     def updateFileChangeLog(self, fmwName):
         '''
@@ -210,7 +216,8 @@ class ChangeDetect(object):
             changeDate = srcData.getUTCTimeStamp()
             # self.logger.debug('')
             wasChanged = srcData.getWasChanged()
-            newRecord = srcData.getChangeLogRecord(fmwName, wasChanged, changeDate)
+            newRecord = srcData.getChangeLogRecord(fmwName, wasChanged,
+                                                   changeDate)
             self.logger.debug("record 2 write %s", newRecord)
             self.chngLog.writeLogRecord(newRecord)
 
@@ -247,14 +254,16 @@ class ChangeLogFilePath(object):
     :ivar logger: the logging object
     :ivar changeLogRootDir: The root directory for where logs are to be stored.
     :ivar changeLogFileName: The name of the change log file.
-    :ivar fmwFilePath: The path to the FMW file that is using the change detection
+    :ivar fmwFilePath: The path to the FMW file that is using the change
+    detection
     :ivar changeLogDirParameterName: The property name in the global section of
                                      the config file that defines the name of
                                      the directory for change log files
 
     '''
 
-    def __init__(self, changeLogRootDir, changeLogFileName, fmwFilePath, changeLogDirParameterName):
+    def __init__(self, changeLogRootDir, changeLogFileName, fmwFilePath,
+                 changeLogDirParameterName):
         self.logger = logging.getLogger(__name__)
 
         # gets populated by method calculateAndVerifyChangeLogFilePath
@@ -274,7 +283,7 @@ class ChangeLogFilePath(object):
         '''
         return self.fullPathToChangeLog
 
-    def calculateAndVerifyChangeLogFilePath(self):  # pylint: disable=invalid-name
+    def calculateAndVerifyChangeLogFilePath(self):  # pylint: disable=invalid-name @IgnorePep8
         '''
         Verifies the properties provided in the constructor.
           - Verifies that the root directory to use for the log files exist
@@ -286,17 +295,20 @@ class ChangeLogFilePath(object):
         '''
         # Check for the root directory for the path to the change logs
         if not os.path.exists(self.changeLogRootDir):
-            msg = 'The root directory: {0} for file change logs does not exist' + \
-                  'Either create it or change the parameter in the global section ' + \
-                  'called {1} in the config file {2} to a directory that exists'
-            msg = msg.format(self.changeLogRootDir, self.changeLogDirParameterName,
+            msg = 'The root directory: {0} for file change logs does not ' + \
+                  'exist Either create it or change the parameter in the ' + \
+                  'global section called {1} in the config file {2} to ' + \
+                  'a directory that exists'
+            msg = msg.format(self.changeLogRootDir,
+                             self.changeLogDirParameterName,
                              self.changeLogDirParameterName)
             self.logger.error(msg)
-            raise ValueError, msg
+            raise ValueError(msg)
 
         # Create the directory for this specific fmw
         fmwFileNameNoSuffix = os.path.splitext(self.fmwFilePath)[0]
-        changeLogFMWDir = os.path.join(self.changeLogRootDir, fmwFileNameNoSuffix)
+        changeLogFMWDir = os.path.join(self.changeLogRootDir,
+                                       fmwFileNameNoSuffix)
         if not os.path.exists(changeLogFMWDir):
             msg = 'The FMW directory for change logs {0} does not exist.' + \
                   'Creating the directory now'
@@ -305,11 +317,12 @@ class ChangeLogFilePath(object):
             os.mkdir(changeLogFMWDir)
 
         # Create the log file for this specific fmw
-        self.fullPathToChangeLog = os.path.join(changeLogFMWDir, self.changeLogFileName)
+        self.fullPathToChangeLog = os.path.join(changeLogFMWDir,
+                                                self.changeLogFileName)
         if not os.path.exists(self.fullPathToChangeLog):
             msg = 'There is no file change log currently created for the ' + \
-                  'fmw: {0}, creating one now!  The full path to the file that ' + \
-                  'is being created is {1}'
+                  'fmw: {0}, creating one now!  The full path to the ' + \
+                  'file that is being created is {1}'
             msg = msg.format(self.fmwFilePath, self.fullPathToChangeLog)
             self.logger.info(msg)
             fh = open(self.fullPathToChangeLog, 'w')
@@ -348,7 +361,7 @@ class ChangeLogFile(object):
             msg = 'Trying to read the change detection log file {0} ' + \
                   'however this path does not exist'
             self.logger.error(logFile)
-            raise ValueError, msg.format(logFile)
+            raise ValueError(msg.format(logFile))
         with open(logFile, 'r') as logFileFH:
             for line in logFileFH:
                 line = line.strip()
@@ -454,21 +467,27 @@ class ChangeEvent(object):
         # get rid of leading or trailing whitespace characters and
         # then split into a list.
         lineList = self.logLineString.strip().split(',')
-        if len(lineList) <> self.const.expectedLogLineParams:
-            msg = 'Expecting a log file line with {2} elements in it.  ' + \
+        if len(lineList) != self.const.expectedLogLineParams:
+            msg = 'Expecting a log file line with {2} elements in it. ' + \
                   'The line: ({0}) only has {1} elements in it'
-            msg = msg.format(self.logLineString, len(lineList), self.const.expectedLogLineParams)
+            msg = msg.format(self.logLineString, len(lineList),
+                             self.const.expectedLogLineParams)
             self.logger.error(msg)
-            raise ValueError, msg
+            raise ValueError(msg)
 
-        self.lastCheckedDateStr = lineList[self.const.logFileParam_LastCheckedDateStr]
-        self.lastChecked = int(lineList[self.const.logFileParam_LastCheckedUTCTimeStamp])
+        self.lastCheckedDateStr = lineList[
+            self.const.logFileParam_LastCheckedDateStr]
+        self.lastChecked = int(lineList[
+            self.const.logFileParam_LastCheckedUTCTimeStamp])
         self.FMW = lineList[self.const.logFileParam_FMW]
         self.srcData = lineList[self.const.logFileParam_SrcData]
         self.srcData = Util.formatDataSet(self.srcData)
-        self.lastModifiedUTC = int(lineList[self.const.logFileParam_LastModifiedUTCTimeStamp])
-        self.lastModifiedDateStr = lineList[self.const.logFileParam_LastModifiedDateStr]
-        self.destDBEnvKeyValue = lineList[self.const.logFileParam_LastModifiedDestDBEnvKey]
+        self.lastModifiedUTC = int(lineList[
+            self.const.logFileParam_LastModifiedUTCTimeStamp])
+        self.lastModifiedDateStr = lineList[
+            self.const.logFileParam_LastModifiedDateStr]
+        self.destDBEnvKeyValue = lineList[
+            self.const.logFileParam_LastModifiedDestDBEnvKey]
         self.wasModified = lineList[self.const.logFileParam_WasModified]
         if self.wasModified.lower() == 'false':
             self.wasModified = False
@@ -476,7 +495,12 @@ class ChangeEvent(object):
             self.wasModified = True
 
     def getWasModified(self):
-        return  self.wasModified
+        '''
+        identifies if the record was modified
+        :return: boolean that indicates if the source was modified since
+                 last replication date
+        '''
+        return self.wasModified
 
     def getModificationAsUTCTimeStamp(self):
         self.logger.debug("utc time stamp raw %s", self.lastModifiedUTC)
@@ -513,14 +537,14 @@ class SourceDataCollection(object):
 
     def addSourceDataSet(self, srcFileObject):
         '''
-        Adds a
+        Adds a source data set
         '''
         # verify type
         if not isinstance(srcFileObject, SourceFileData):
             msg = 'trying to add a object of type {0} to a' + \
                   'SourceDataCollection object.  You can only ' + \
                   'add objects of type SourceFileData'
-            raise ValueError, msg.format(type(srcFileObject))
+            raise ValueError(msg.format(type(srcFileObject)))
         self.sourceDataList.append(srcFileObject)
 
     def setChangeFlag(self, srcFileObject, destDbEnv, changeFlag):
@@ -565,10 +589,8 @@ class SourceDataCollection(object):
         '''
         srcFile = self.getSrcDataObj(srcDataPath, destEnvDbKey)
         if srcFile:
-            # self.logger.debug("found existing object for path {0}".format(srcDataPath))
             srcFile.incrementFeatureCount()
         else:
-            # self.logger.debug("creatting a new object for path {0}".format(srcDataPath))
             srcFile = SourceFileData(srcDataPath, destEnvDbKey, self.const)
             srcFile.incrementFeatureCount()
             self.addSourceDataSet(srcFile)
@@ -577,9 +599,9 @@ class SourceDataCollection(object):
 class SourceFileData(object):
     '''
     Each source feature class in the fmw, will have one  of these objects
-    created for it.  Will include methods to do things like get the modification
-    date for this object, as well as keeping track of the number of features
-    that are in this object etc.
+    created for it.  Will include methods to do things like get the
+    modification date for this object, as well as keeping track of the
+    number of features that are in this object etc.
     '''
 
     def __init__(self, srcPath, destDbEnv, const=None):
@@ -598,21 +620,10 @@ class SourceFileData(object):
         self.modificationUTCTimeStamp = None
         self.featureCount = 0
 
-        # current time as utc
-        # currentUTCTime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
-        # currentUTCTimeStamp = int(time.mktime(currentUTCTime.timetuple()))
-        # currentLocalDateTime = currentUTCTime.astimezone(pytz.timezone(self.const.LocalTimeZone))
-
-        # fmwName = self.changeObj.fmeMacroValues[self.const.FMWMacroKey_FMWName]
-
         # Calculating the datetime for now.  This is the datetime for the when
         # the data was checked.
-        self.currentUTCDateTime = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
-        # currentLocalDateTime = \
-        # self.currentUTCDateTime.astimezone(pytz.timezone(self.const.LocalTimeZone))
-        # self.currentLocalDateTimeStr = \
-        #    currentLocalDateTime.strftime(self.const.FMELogDateFormatString)
-        # self.currentUTCDateTimeStamp = int(time.mktime(currentUTCDateTime.timetuple()))
+        self.currentUTCDateTime = datetime.datetime.utcnow().replace(
+            tzinfo=pytz.utc)
 
     def hasPath(self, testPath, destDbEnv):
         '''
@@ -668,30 +679,32 @@ class SourceFileData(object):
             str(Util.datetime2intTimeStamp(changeDate))
         # - last modified as a local date time string
         outList[self.const.logFileParam_LastModifiedDateStr] = \
-        Util.datetime2localDateTimeString(changeDate,
-                                          self.const.dateFormatStr,
-                                          self.const.LocalTimeZone)
+            Util.datetime2localDateTimeString(
+            changeDate, self.const.dateFormatStr, self.const.LocalTimeZone)
         # - last time file was checked
         outList[self.const.logFileParam_LastCheckedUTCTimeStamp] = \
-        str(Util.datetime2intTimeStamp(self.currentUTCDateTime))
+            str(Util.datetime2intTimeStamp(self.currentUTCDateTime))
         # - last time file was checked as local date time string
         outList[self.const.logFileParam_LastCheckedDateStr] = \
-        Util.datetime2localDateTimeString(self.currentUTCDateTime,
-                                          self.const.dateFormatStr,
-                                          self.const.LocalTimeZone)
+            Util.datetime2localDateTimeString(self.currentUTCDateTime,
+                                              self.const.dateFormatStr,
+                                              self.const.LocalTimeZone)
         # - source file - swapping back to windows paths
         outList[self.const.logFileParam_SrcData] = \
-        os.path.normcase(os.path.normpath(self.srcPath))
+            os.path.normcase(os.path.normpath(self.srcPath))
         # - last modified destination database env key
-        outList[self.const.logFileParam_LastModifiedDestDBEnvKey] = self.destDbEnv
-        # - was the change detection enabled, (ie was the change actually performed)
-        outList[self.const.logFileParam_WasModified] = str(changeDetectionEnabledParam)
+        outList[self.const.logFileParam_LastModifiedDestDBEnvKey] = \
+            self.destDbEnv
+        # - was the change detection enabled, (ie was the change actually
+        #   performed)
+        outList[self.const.logFileParam_WasModified] = \
+            str(changeDetectionEnabledParam)
         return outList
 
     def getWasChanged(self):
-        # retVal = False
-        # if self.featureCount:
-        #    retVal = True
+        '''
+        :returns boolean indicating if the source has changed
+        '''
         return self.changeParam
 
     def setChangeFlag(self, changeFlag):
@@ -721,12 +734,9 @@ class Util:
         # only normalize if the the dataset does not start with
         # http:// or https://
         dataPath = fmeDataSet
-        if dataPath[0:7].lower() <> r'http://' and \
-         dataPath[0:8].lower() <> r'https://':
-            # print 'normalizing the path', dataPath[0:7], dataPath[0:8], dataPath
-            # self.logger.debug("orignal path: {0}".format(fmeDataSet))
+        if dataPath[0:7].lower() != r'http://' and \
+                dataPath[0:8].lower() != r'https://':
             dataPath = os.path.normcase(dataPath)
-            # self.logger.debug("case normalized path: {0}".format(fmeDataSet))
             dataPath = os.path.normpath(dataPath)
             # self.logger.debug("normalized path: {0}".format(fmeDataSet))
             # internally was having problems comparing paths when they used the
@@ -735,26 +745,29 @@ class Util:
             # when record is written back to the log file the path delimiter
             # get switched back
             dataPath = dataPath.replace('\\', '/')
-            # self.logger.debug("path with forward slashes: {0}".format(dataPath))
         return dataPath
 
     @staticmethod
     def datetime2intTimeStamp(inDateTime):
         if not isinstance(inDateTime, datetime.datetime):
-            msg = 'You sent an object of type {0} when expecting a datetime object'
-            raise ValueError, msg.format(type(inDateTime))
+            msg = 'You sent an object of type {0} when expecting a ' + \
+                'datetime object'
+            raise ValueError(msg.format(type(inDateTime)))
 
         inDateTimeNoTZ = inDateTime.replace(tzinfo=None)
-        unixTime = (inDateTimeNoTZ - datetime.datetime(1970, 1, 1)).total_seconds()
+        unixTime = (inDateTimeNoTZ -
+                    datetime.datetime(1970, 1, 1)).total_seconds()
         unixTimeInt = int(round(unixTime))
         # retVal = int(time.mktime(inDateTime.timetuple()))
         return unixTimeInt
 
     @staticmethod
-    def datetime2localDateTimeString(inDateTime, datetimeStringFormat, localDateTime):
+    def datetime2localDateTimeString(inDateTime, datetimeStringFormat,
+                                     localDateTime):
         if not isinstance(inDateTime, datetime.datetime):
-            msg = 'You sent an object of type {0} when expecting a datetime object'
-            raise ValueError, msg.format(type(inDateTime))
+            msg = 'You sent an object of type {0} when expecting a ' + \
+                   'datetime object'
+            raise ValueError(msg.format(type(inDateTime)))
 
         dateTimeAsLocal = inDateTime.astimezone(pytz.timezone(localDateTime))
         dateTimeAsLocalStr = dateTimeAsLocal.strftime(datetimeStringFormat)
@@ -775,7 +788,8 @@ class ChangeDetectBCDC(ChangeDetect):
 
     def addFeatureChange(self, srcDataPath, destDbEnvKey):
         self.logger.debug("adding feature change for %s", srcDataPath)
-        self.sourceDataCollection.incrementFeatureCount(srcDataPath, destDbEnvKey)
+        self.sourceDataCollection.incrementFeatureCount(srcDataPath,
+                                                        destDbEnvKey)
 
 
 class SourceDataCollectionBCDC(SourceDataCollection):
@@ -792,7 +806,7 @@ class SourceDataCollectionBCDC(SourceDataCollection):
             msg = 'trying to add a object of type {0} to a ' + \
                   'SourceBCDC object.  You can only ' + \
                   'add objects of type SourceFileData'
-            raise ValueError, msg.format(type(srcFileObject))
+            raise ValueError(msg.format(type(srcFileObject)))
         self.logger.debug("added %s", srcFileObject)
         self.sourceDataList.append(srcFileObject)
 
@@ -811,7 +825,8 @@ class SourceDataCollectionBCDC(SourceDataCollection):
             self.logger.debug("found existing object for path %s", srcDataPath)
             srcFile.incrementFeatureCount()
         else:
-            self.logger.debug("creatting a new object for path %s", srcDataPath)
+            self.logger.debug("creatting a new object for path %s",
+                              srcDataPath)
             srcFile = SourceBCDC(srcDataPath, destEnvDbKey, self.const)
             srcFile.incrementFeatureCount()
             self.addSourceDataSet(srcFile)
@@ -826,17 +841,75 @@ class SourceBCDC(SourceFileData):
         self.const = const
         if not self.const:
             self.const = Constants()
+        self.modificationUTCTimeStamp = None
 
-    def getUTCTimeStamp(self):
+    def getResourceUTCTimeStamp(self, resourceId):
+        '''
+        returns the parameter last_modified for the current resource
+        '''
+        revisionDateTime = None
+        bcdc = BCDCUtil.BCDCRestQuery.BCDCRestQuery('PROD')
+        self.logger.debug("resourceId: %s", resourceId)
+        resp = bcdc.getResourceShow(resourceId)
+        modifiedDateKey = "last_modified"
+        if isinstance(resp, dict):
+            if 'result' in resp:
+                if modifiedDateKey in resp['result']:
+                    dateStr = resp['result'][modifiedDateKey]
+                    self.logger.debug("datetimestr: %s", dateStr)
+                    revisionDateTime = datetime.datetime.strptime(
+                        dateStr, '%Y-%m-%dT%H:%M:%S.%f')
+                    revisionDateTime = revisionDateTime.replace(
+                        tzinfo=pytz.utc)
+        return revisionDateTime
+
+    def getUTCTimeStamp(self, srcPath=None):
         if not self.modificationUTCTimeStamp:
             # revisionUTCTimeStamp = None
-            resp = requests.head(self.srcPath)
+            if srcPath is None:
+                srcPath = self.srcPath
+            resp = requests.head(srcPath)
             # test to make sure the data is available
-            if resp.status_code <> 200:
+            if resp.status_code != 200:
                 msg = 'Unable to connect to the source dataset {0}'
-                raise ValueError, msg.format(self.srcPath)
+                raise ValueError(msg.format(self.srcPath))
             else:
-                self.modificationUTCTimeStamp = self.getBCDCResourceModificationDate(self.srcPath)
+                try:
+                    self.modificationUTCTimeStamp = \
+                        self.getBCDCResourceModificationDate(self.srcPath)
+                    self.logger.debug("modification time stamp: %s",
+                                      self.modificationUTCTimeStamp)
+                except BCDCResourceNotFound, e:
+                    self.logger.exception("exception caught: %s", e)
+                    '''
+                    urls have been swapped for some data sets so that they
+                    no longer point to the resource but rather to a download
+                    page, for example:
+                    https://catalogue.data.gov.bc.ca/dataset/2b44d212-5438-47a9-ad23-20eb8ada9709/resource/c7cc9297-220c-4d6c-a9a7-72d0680b2f74/download/service-bc-location-update-10-22-18.csv
+
+                    At this point in the code we have detected that there is
+                    a problem with the url, it expecte the url to be structured
+                    like:
+                    https://catalogue.data.gov.bc.ca - the host
+                    dataset/2b44d212-5438-47a9-ad23-20eb8ada9709 - the dataset / package
+                    resource/c7cc9297-220c-4d6c-a9a7-72d0680b2f74 - links to resource
+                    download/service-bc-location-update-10-22-18.csv - databc links.
+                    '''
+                    downloadPath, csvFile = os.path.split(srcPath)  # @UnusedVariable
+                    resourcePathFull, downloadDir = os.path.split(downloadPath)
+                    resourcePath, resourceId = os.path.split(resourcePathFull)
+                    resourceDir = os.path.basename(resourcePath)
+                    # double checking that the path identified is correct
+                    if downloadDir.lower() == 'download' and \
+                            resourceDir.lower() == 'resource':
+                        self.logger.debug("resource path: %s",
+                                          resourcePathFull)
+                        self.modificationUTCTimeStamp = \
+                            self.getResourceUTCTimeStamp(resourceId)
+                        self.logger.debug("modificationUTCTimeStamp, %s",
+                                          self.modificationUTCTimeStamp)
+                    else:
+                        raise
 
         return self.modificationUTCTimeStamp
 
@@ -850,14 +923,14 @@ class SourceBCDC(SourceFileData):
             msg = 'When searching BCDC for a resource that contains the ' + \
                   'file {0} found {1} records.  Should only have found ' + \
                   'one.'
-            msg = msg.format(resourceName, len(resourceDict['result']['results']))
-            # TODO: Define appropriate error
-            raise ValueError, msg
+            msg = msg.format(resourceName,
+                             len(resourceDict['result']['results']))
+            raise MultipleBCDCResourcesFound(msg)
         elif not resourceDict['result']['results']:
             msg = 'Did not find any resource records in BCDC that are ' + \
                   'associated with the file: {0} url: {1}'
             msg = msg.format(resourceNameJustFile, resourceName)
-            raise ValueError, msg
+            raise BCDCResourceNotFound(msg)
         revision_id = resourceDict['result']['results'][0]['revision_id']
         self.logger.debug("revision id: %s", revision_id)
         revision = bcdc.getRevision(revision_id)
@@ -876,9 +949,22 @@ class SourceBCDC(SourceFileData):
         return revisionDateTime
 
     def getChangeLogRecord(self, fmw, changeDetectionEnabledParam, changeDate):
-        logRecord = super(SourceBCDC, self).getChangeLogRecord(fmw,
-                                                               changeDetectionEnabledParam,
-                                                               changeDate)
+        logRecord = super(SourceBCDC, self).getChangeLogRecord(
+            fmw,
+            changeDetectionEnabledParam,
+            changeDate)
         # now replace the src data with an unformatted version
         logRecord[self.const.logFileParam_SrcData] = self.srcPath
         return logRecord
+
+
+class BCDCResourceNotFound(Exception):
+
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(self, *args, **kwargs)
+
+
+class MultipleBCDCResourcesFound(Exception):
+
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(self, *args, **kwargs)

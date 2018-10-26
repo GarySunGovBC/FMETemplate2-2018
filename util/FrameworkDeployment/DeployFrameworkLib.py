@@ -52,6 +52,7 @@ Issues to keep track of:
 
 @author: kjnether
 '''
+import usercustomize
 
 import logging
 import os.path
@@ -60,8 +61,10 @@ import time
 import datetime
 import pytz
 
-import util.FrameworkDeployment.DeployConstants as DeployConstants
-import util.FrameworkDeployment.DeployConfigReader as DeployConfigReader
+from . import DeployConstants
+from . import DeployConfigReader
+#import util.FrameworkDeployment.DeployConstants as DeployConstants
+#import util.FrameworkDeployment.DeployConfigReader as DeployConfigReader
 import FMEUtil.PyFMEServerV2 as PyFMEServer
 
 # pylint: disable=no-self-use, invalid-name

@@ -56,7 +56,7 @@ class EmailFrameworkBridge(object):
 
         # self.const = DBCFMEConstants.TemplateConstants()
         # self.params = DataBCFMWTemplate.TemplateConfigFileReader(
-        #    self.fmeObj.macroValues[self.const.FMWParams_DestKey])
+        # self.fmeObj.macroValues[self.const.FMWParams_DestKey])
         self.email = None
 
         # print the macroValues

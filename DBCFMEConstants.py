@@ -116,7 +116,7 @@ class TemplateConstants(object):
     emailer_smtpServer = 'smtpserver'
     emailer_smtpPort = 'smtpport'
     emailer_fromAddress = 'emailfrom'
-    defaultEmailOnFailure = 'DataBCDA@gov.bc.ca'
+    defaultEmailOnFailure = 'dataetl@gov.bc.ca'
 
     # kirk parameters
     kirkSection = 'kirk'
