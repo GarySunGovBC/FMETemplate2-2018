@@ -2347,6 +2347,9 @@ class CalcParamsBase(GetPublishedParams):
         destServName = self.getDestinationServiceName()
         # don't need port currently
         oraClientString = self.paramObj.getOracleDirectConnectClientString()
+        
+        # now check to see if there is already a oracle client string 
+        # defined.
         dirConnectTemplate = 'sde:{0}:{1}/{2}'
         srcSDEDirectConnectString = dirConnectTemplate.\
             format(oraClientString, destHost, destServName)
@@ -3431,7 +3434,7 @@ class CalcParamsDevelopment(object):
         self.logger.info(msg)
         return ffFile
 
-    def getDestDatabaseConnectionFilePath(self, position=None):  # pylint: disable=invalid-name @IgnorePep8
+    def getDestDatabaseConnectionFilePath(self, position=None):  # @IgnorePep8
         '''
         :param position: The position or in other words what connection file
                          numbered parameters do you want to use in this
