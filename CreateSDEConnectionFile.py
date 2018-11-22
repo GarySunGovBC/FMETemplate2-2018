@@ -13,11 +13,11 @@ import logging.config
 import os.path
 import sys
 
-sys.path.append(r"E:\sw_nt\python27\ArcGIS10.2\Lib\site-packages")
-sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\arcpy')
-sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\ArcToolbox\Scripts')
-sys.path.append(r'E:\sw_nt\arcgis\Desktop10.2\bin')
-sys.path.append(r"E:\sw_nt\python27\ArcGIS10.2\Lib")
+sys.path.append(r"E:\sw_nt\python27\ArcGIS10.4\Lib\site-packages")
+sys.path.append(r'E:\sw_nt\arcgis\Desktop10.4\arcpy')
+sys.path.append(r'E:\sw_nt\arcgis\Desktop10.4\ArcToolbox\Scripts')
+sys.path.append(r'E:\sw_nt\arcgis\Desktop10.4\bin')
+sys.path.append(r"E:\sw_nt\python27\ArcGIS10.4\Lib")
 
 
 class CreateConnectionFile(object):
