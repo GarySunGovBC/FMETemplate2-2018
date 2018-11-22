@@ -291,12 +291,17 @@ class ArcPyPaths(object):
                    - lib
                    - Lib/site-packages
         '''
+        # needed this path on marsic: C:\Windows\system32;^
+
         sitePaths = os.path.join(pythonRootDir, 'Lib', 'site-packages')
         libPaths = os.path.join(pythonRootDir, 'lib')
+        dllPaths = os.path.join(pythonRootDir, 'DLLs')
 
         returnPaths = []
         returnPaths.append(sitePaths)
         returnPaths.append(libPaths)
+        returnPaths.append(dllPaths)
+        returnPaths.append(r'C:\Windows\system32')
         return returnPaths
 
     def getArcGisDesktopPaths(self, desktopRootDir=None):
@@ -307,20 +312,23 @@ class ArcPyPaths(object):
         if not desktopRootDir:
             desktop = ArcGisInstallPaths()
             desktopRootDir = desktop.getInstallDir()
-
         arcpyDir = os.path.join(desktopRootDir, 'arcpy')
         toolboxDir = os.path.join(desktopRootDir, 'ArcToolbox', 'Scripts')
         binPath = os.path.join(desktopRootDir, 'bin')
+        scriptsPath = os.path.join(desktopRootDir, 'Scripts')
 
         paths2Add.append(arcpyDir)
         paths2Add.append(toolboxDir)
         paths2Add.append(binPath)
-
+        paths2Add.append(desktopRootDir)
+        paths2Add.append(scriptsPath)
         return paths2Add
 
     def getPathsAndAddToPYTHONPATH(self, pythonVersion=None):
         paths = self.getPaths(pythonVersion)
+        self.logger.debug("arcpypaths: %s", '\n'.join(paths))
         sys.path.extend(paths)
+        self.logger.debug("new paths are: %s", '\n'.join(sys.path))
 
 
 class ESRIArcGISInstallDirNotFound(OSError):

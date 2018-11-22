@@ -56,10 +56,11 @@ else:
     # now make sure these are at the start of the path list
     #subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
     #lib_intPath = os.path.join(curDir, 'lib_int')
-    libdir = 'lib'
+    libdirs = ['lib']
     if platform.architecture()[0] == '64bit':
-        libdir = 'lib64'
-    pathsToAdd = [curDir, os.path.join(curDir, libdir), os.path.join(curDir, 'fmeCustomizations', 'Transformers')]
+        libdirs.append( 'lib64')
+    pathsToAdd = [curDir, os.path.join(curDir, 'fmeCustomizations', 'Transformers')]
+    pathsToAdd.extend(libdirs)
     #pathsToAdd = [curDir, os.path.join(curDir, 'lib'), os.path.join(curDir, 'fmeCustomizations', 'Transformers')]
     for pth2Rerder in pathsToAdd:
         pthCntr = 0
