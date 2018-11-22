@@ -2347,8 +2347,8 @@ class CalcParamsBase(GetPublishedParams):
         destServName = self.getDestinationServiceName()
         # don't need port currently
         oraClientString = self.paramObj.getOracleDirectConnectClientString()
-        
-        # now check to see if there is already a oracle client string 
+
+        # now check to see if there is already a oracle client string
         # defined.
         dirConnectTemplate = 'sde:{0}:{1}/{2}'
         srcSDEDirectConnectString = dirConnectTemplate.\
@@ -3561,14 +3561,25 @@ class CalcParamsDataBC(object):
 
         connFileName = '{0}__{1}.sde'.format(host, servName)
         connectionFileFullPath = os.path.join(destDir, connFileName)
+        self.logger.debug("connectionFileFullPath: %s", connectionFileFullPath)
         if not os.path.exists(connectionFileFullPath):
             # get the url, token
+            self.logger.debug("conn file does not exist, attempting to " +
+                              "create")
+
             self.__createSDEConnectionFile(connectionFileFullPath,
                                            host, servName, port)
+
         else:
             self.logger.debug("SDE connection file %s already exists",
                               connectionFileFullPath)
         return connectionFileFullPath
+
+#     def testCreate(self, connectionFileFullPath, host,
+#                                   serviceName, port=None):
+#         self.__createSDEConnectionFile(connectionFileFullPath, host,
+#                                   serviceName, port)
+
 
     def __createSDEConnectionFile(self, connectionFileFullPath, host,
                                   serviceName, port=None):
@@ -3595,10 +3606,14 @@ class CalcParamsDataBC(object):
             self.logger.warning(msg)
             desktopDir = self.paramObj.getArcGISDesktopRootDirectory()
             pythonRootDir = self.paramObj.getPythonRootDir()
+            self.logger.debug("pythonRootDir: %s", pythonRootDir)
+            self.logger.debug("desktopDir: %s", desktopDir)
 
             arcpyPaths = InstallPaths.ArcPyPaths()
             desktopPaths = arcpyPaths.getArcGisDesktopPaths(desktopDir)
             pyPaths = arcpyPaths.ammendPythonPaths(pythonRootDir)
+            self.logger.debug("desktopPaths: %s", desktopPaths)
+            self.logger.debug("pyPaths: %s", pyPaths)
 
             desktopPaths.extend(pyPaths)  # merge the two lists
             sys.path.extend(desktopPaths)
@@ -3606,6 +3621,7 @@ class CalcParamsDataBC(object):
             # if os.path.exists(E:\sw_nt\arcgis\Desktop10.2)
 
         except:
+            self.logger.error("uncaught exceptions when fixing arcy paths")
             raise
 
         # next step... call CreateSDEConnectonFile module to create the path

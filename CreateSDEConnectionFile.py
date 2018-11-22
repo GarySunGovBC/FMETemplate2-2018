@@ -13,11 +13,17 @@ import logging.config
 import os.path
 import sys
 
-sys.path.append(r"E:\sw_nt\python27\ArcGIS10.4\Lib\site-packages")
-sys.path.append(r'E:\sw_nt\arcgis\Desktop10.4\arcpy')
-sys.path.append(r'E:\sw_nt\arcgis\Desktop10.4\ArcToolbox\Scripts')
-sys.path.append(r'E:\sw_nt\arcgis\Desktop10.4\bin')
-sys.path.append(r"E:\sw_nt\python27\ArcGIS10.4\Lib")
+# sys.path.append(r"E:\sw_nt\python27\ArcGIS10.4\Lib\site-packages")
+# sys.path.append(r'E:\sw_nt\arcgis\Desktop10.4\arcpy')
+# sys.path.append(r'E:\sw_nt\arcgis\Desktop10.4\ArcToolbox\Scripts')
+# sys.path.append(r'E:\sw_nt\arcgis\Desktop10.4\bin')
+# sys.path.append(r"E:\sw_nt\python27\ArcGIS10.4\Lib")
+# sys.path.append(r"E:\sw_nt\python27\ArcGIS10.4")
+# sys.path.append(r"E:\sw_nt\python27\ArcGIS10.4\DLLs")
+# sys.path.append(r"E:\sw_nt\Python27\ArcGIS10.4\include")
+# sys.path.append(r"E:\sw_nt\Python27\ArcGIS10.4\libs")
+# sys.path.append(r"E:\sw_nt\Python27\ArcGIS10.4\scripts")
+# sys.path.append(r"E:\sw_nt\Python27\ArcGIS10.4\Tools\Scripts")
 
 
 class CreateConnectionFile(object):
