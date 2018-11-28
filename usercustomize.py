@@ -10,7 +10,7 @@ import sys
 import getpass
 import json
 # notify that usercustomize is being run
-#print 'RUNNING USERCUSTOMIZE {0}'.format(__file__)
+print 'RUNNING USERCUSTOMIZE {0}'.format(__file__)
 
 # get the devpaths.json file
 curDir = os.path.dirname(__file__)
@@ -20,12 +20,11 @@ path2devpathsJson = os.path.join(curDir, configDirName, devpathsFileName)
 
 expectedKeys = ['template_dev_directory', 'host', 'username']
 dir2Add = None
-print 'here 1'
+# does the devpaths.json file exist if so read it and get the dev paths
 if os.path.exists(path2devpathsJson):
     fh = open(path2devpathsJson, 'r')
     struct = json.load(fh)
     fh.close()
-    print 'here 2'
     proceed = False
     # make sure the expected keys exist
     for expectKey in expectedKeys:
@@ -39,10 +38,8 @@ if os.path.exists(path2devpathsJson):
        currentUser.lower() == struct['username']:
         dir2Add = struct['template_dev_directory']
         dir2Add = os.path.realpath(dir2Add)
-
 if dir2Add:
     # subdirs 
-    #subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
     subDirs = ['lib', 'fmeCustomizations/Transformers', '']
     for subDir in subDirs:
         pth = os.path.join(dir2Add, subDir)
@@ -52,6 +49,9 @@ if dir2Add:
     # the dependencies.
     tmpKirkUtilPath = r'Z:\Workspace\kjnether\proj\DataBCPyLib\KirkUtil'
     sys.path.insert(0, pth)
+    if platform.architecture()[0] == '64bit':
+        pth = os.path.join(dir2Add, '64bit')
+        sys.path.insert(0, pth)
 else:
     # now make sure these are at the start of the path list
     #subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
@@ -75,5 +75,3 @@ else:
         #        break
         #    pthCntr += 1
 #print 'pathlist:', sys.path
-
-

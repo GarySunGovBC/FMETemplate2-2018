@@ -11,6 +11,7 @@ import subprocess
 import sys
 import tempfile
 import datetime
+import platform
 
 import DataBCFMWTemplate
 
@@ -23,10 +24,11 @@ def attemptFMEObjectsImport():
         import fmeobjects  # @UnresolvedImport
         logger.debug("Attempt 1: successfully imported the fmeobjects module")
     except:
+
         # once move to production can extract the fme path from the
         # macro value FME_HOME and pass those parameters to this script
         pathList = os.environ['PATH'].split(';')
-        sys.path.insert(0, r'E:\sw_nt\FME2015\fmeobjects\python27')
+        sys.path.insert(0, r'E:\sw_nt\FME2017\fmeobjects\python27')
         os.environ['PATH'] = ';'.join(pathList)
         logger.debug("Attempt 2: importing the fmeobjects module")
         import fmeobjects  # @UnresolvedImport
@@ -40,20 +42,78 @@ class Reader(object):
     Very simple at the moment but can anticipate as we move towards autmated
     error reporting we will be in a position to add more functionality
     that reports on specific features etc.
+
     '''
 
-    def __init__(self, ffsFile, retry=False):
+    def __init__(self, ffsFile, fmeInstallPath, retry=False):
+        '''
+
+        :param ffsFile: the ffs file who's features we want to count
+        :type ffsFile: str
+        :param fmeInstallPath: the path to the fme install that is to be used
+                               to get the fmeobjects requirement to query
+                               the ffs file.
+        :type fmeInstallPath:  str
+        :param retry: identifies if this run is a result a automated
+                      re-run.
+        :type retry: bool
+        '''
         self.retry = retry
         self.ffsFile = ffsFile
         self.stdoutIDStr = 'ffsFeatures:'
         self.stdoutTemplate = self.stdoutIDStr + ' {0}'
         self.logger = logging.getLogger(__name__)
+        self.fmeInstallPath = fmeInstallPath
         # double check that the file exists
         if not os.path.exists(self.ffsFile):
             msg = 'you specified an FFS file: {0} that does not exist'
             msg = msg.format(self.ffsFile)
             self.logger.error(msg)
         # attemptFMEObjectsImport()
+
+    def getFMEObjects(self):
+        '''
+        This method is used when the ffs file feature count is to take place
+        in the same process as the requesting process.  When this happens
+        it is likely that a different version of python is being used than
+        the version supplied with FME.  As a result we need to add the paths
+        for where python should find fmeobjects.
+
+        This is further complicated by having multiple installs (32 and 64bit)
+        This method will do the following:
+          - is the current python 32 or 64 bit
+          - get the 32 / 64 bit fme directory
+          - add the 64 bit fme directory to the path
+          - attempt to import fme objects.
+        '''
+        bit = platform.architecture()[0]
+        params = DataBCFMWTemplate.TemplateConfigFileReader('DLV')
+        use32Bit = False
+        # possible values: '32bit' / '64bit'
+        if bit == '32bit':
+            use32Bit = True
+        fmeInstallPathTmplt = params.getFMERootDirTmplt(bit32=use32Bit)
+        # fmeInstallPathTmplt contains a format param {0} where the release
+        # year gets inserted.  Going to start with whatever year it is and count
+        # backwards 5 years at a time until an install path is found
+        now = datetime.datetime.now()
+        year = now.year
+        yearRange = 5
+        for fmeYear in range(year, year - yearRange, -1):
+            fmePath = fmeInstallPathTmplt.format(fmeYear)
+            if os.path.exists(fmePath):
+                break
+        if not os.path.exists(fmePath):
+            msg = 'unable to find a fme install path, years tried {0} to ' + \
+                  '{1} using the install path template string {2}'
+            msg = msg.format(year - yearRange, year, fmeInstallPathTmplt)
+            raise ValueError, msg
+            
+        fmeObjPaths = os.path.join(fmePath, 'fmeobjects', 'python27')
+        self.logger.debug("fmeObjPaths: %s", fmeObjPaths)
+        sys.path.insert(0, fmeObjPaths)
+        global fmeobjects
+        import fmeobjects
 
     def getFeatureCountSameProcess(self):
         '''
@@ -62,13 +122,14 @@ class Reader(object):
         :return: The number of features found in the FFS file.
         :rtype: int
         '''
+        self.getFMEObjects()
         tempDir = os.path.dirname(self.ffsFile)
         # ffsFile = tempfile.NamedTemporaryFile(dir=tempDir, delete=False)
         ffsFile = tempfile.mktemp(suffix='.ffs', dir=tempDir, prefix='tmp_')
         self.logger.debug("tempfile name: %s", ffsFile)
         shutil.copyfile(self.ffsFile, ffsFile)
         self.logger.debug("copied %s to %s", self.ffsFile, ffsFile)
-        attemptFMEObjectsImport()
+        # attemptFMEObjectsImport(self.fmeInstallPath)
         try:
             self.logger.debug("starting to open and read the ffs file: %s", ffsFile)
             reader = fmeobjects.FMEUniversalReader('FFS', False, [])  # @UndefinedVariable
@@ -181,6 +242,7 @@ class Reader(object):
                       'template that was tested: %s'
                 self.logger.error(msg, fmeInstallPathTmplt)
                 raise IOError(msg)
+        fmeInstallDir = os.path.realpath(os.path.normpath(fmeInstallDir))
         return fmeInstallDir
 
     def getExecEnv(self, param, fmeVersion=None):
@@ -199,10 +261,16 @@ class Reader(object):
 
         '''
         libPath = os.path.join(os.path.dirname(__file__), 'lib')
+        libPath = os.path.realpath(os.path.normpath(libPath))
 
         fmeRootDir = self.getFMEInstallPath(param, fmeVersion)
+
         fmePythonDir = os.path.join(fmeRootDir, 'fmepython27')
+        fmePythonDir = os.path.realpath(os.path.normpath(fmePythonDir))
+
         fmeObjDir = os.path.join(fmeRootDir, 'fmeobjects', 'python27')
+        fmeObjDir = os.path.realpath(os.path.normpath(fmeObjDir))
+
         self.logger.debug("fmeRootDir: {0}".format(fmeRootDir))
         self.logger.debug("fmePythonDir: {0}".format(fmePythonDir))
         self.logger.debug("fmeObjDir: {0}".format(fmeObjDir))
@@ -216,6 +284,7 @@ class Reader(object):
         pythonPath.append(fmeRootDir)
         pythonPath.append(fmePythonDir)
         pythonPath.append(fmeObjDir)
+
         # make sure all of sys.path is a regular string
         sysPathStrList = []
         sysPathStrList.append(libPath)
@@ -228,15 +297,20 @@ class Reader(object):
                 searchString = r'\\FME\d{4}'
                 fixedPath = re.sub(searchString, '\\FME{0}'.format(
                     fmeVersion), pth)
-            self.logger.debug("adding path: {0}".format(fixedPath))
-            sysPathStrList.append(str(fixedPath))
+                fixedPath = os.path.normpath(fixedPath)
+            if fixedPath not in sysPathStrList:
+                sysPathStrList.append(str(fixedPath))
+                self.logger.debug("adding path: {0}".format(fixedPath))
             # print '   ', fixedPath
 
         # insert the FME Paths to the start of the path string:
-        sysPathStrList.insert(0, fmeRootDir)
-        sysPathStrList.insert(0, fmePythonDir)
-        sysPathStrList.insert(0, fmeObjDir)
-
+        paths2Add = [fmeRootDir, fmePythonDir, fmeObjDir]
+        for path2Add in paths2Add:
+            path2Add = os.path.realpath(path2Add)
+            path2Add = os.path.normpath(path2Add)
+            if path2Add not in sysPathStrList:
+                sysPathStrList.insert(0, path2Add)
+                self.logger.debug("adding path: {0}".format(path2Add))
         syspathString = ';'.join(sysPathStrList)
         self.logger.debug("syspath string %s, %s", syspathString,
                           type(syspathString))
@@ -246,18 +320,17 @@ class Reader(object):
         self.logger.debug("myenv: %s", my_env)
         return my_env
 
-    def getFeatureCountSeparateProcess(self, fmeVersion=None):
+    def getFeatureCountSeparateProcess(self, fmeVersion=None, fmeInstallPath=None):
         '''
         This method will spawn a separate subprocess calling this module
         using its command line interface.
 
-        This functionality exists as the fme.exe crashes in the shutdown when
-        using the ffs file reader (fmeobjects) is attempted.
+        This functionality exists as the fme.exe crashes in the shutdown
+        when using the ffs file reader (fmeobjects) is attempted.
 
-        To work around this limitation this method will create a subprocess and
-        execute the ffs file reader on that subprocess, capturing and parsing
-        the output from the ffs file
-
+        To work around this limitation this method will create a subprocess
+        and execute the ffs file reader on that subprocess, capturing and
+        parsing the output from the ffs file
         '''
         self.logger.debug("fmeVersion: %s", fmeVersion)
         param = DataBCFMWTemplate.TemplateConfigFileReader('DLV')
@@ -268,8 +341,11 @@ class Reader(object):
         thisFileString = self.getThisFileAsPy()
 
         execEnv = self.getExecEnv(param, fmeVersion=fmeVersion)
+        # self.getFMEInstallPath()
+        fmeExecutable = os.path.join(self.fmeInstallPath, 'fme.exe')
 
-        commandList = [pythonExe, thisFileString, self.ffsFile]
+        # commandList = [pythonExe, thisFileString, self.ffsFile]
+        commandList = [fmeExecutable, 'python', thisFileString, self.ffsFile, self.fmeInstallPath]
         self.logger.debug("command being executed: %s", ' '.join(commandList))
         out = subprocess.check_output(commandList, env=execEnv)
         self.logger.debug("out is: %s", out)
@@ -305,8 +381,8 @@ class Reader(object):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        usage = 'FFSReader <ffs file to read>'
+    if len(sys.argv) < 3:
+        usage = 'FFSReader <ffs file to read> <fme install path>'
         raise ValueError, usage
 
     # TODO: Modify this to use the logging config file to retrieve the
@@ -316,7 +392,8 @@ if __name__ == '__main__':
     # logger.setLevel(logging.DEBUG)
 
     ffsFile = sys.argv[1]
-    rdr = Reader(ffsFile)
+    installPath = sys.argv[2]
+    rdr = Reader(ffsFile, installPath)
     feats = rdr.getFeatureCountSameProcess()
     # feats = rdr.getFeatureCount()
     outStr = rdr.stdoutTemplate.format(feats)

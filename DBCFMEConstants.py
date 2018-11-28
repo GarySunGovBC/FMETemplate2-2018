@@ -53,7 +53,8 @@ class TemplateConstants(object):
     ConfFileSection_global_ARCGISDesktopRootDir = 'defaultArcRootInstall'
     ConfFileSection_global_PythonRootDir = 'defaultArcPythonPath'
     ConfFileSection_global_FMERootDirTmplt = 'defaultFMERootInstallTmplt'
-
+    ConfFileSection_global_FMERootDirTmplt32Bit = 'defaultFMERootInstallTmplt32bit'
+    
     ConfFileSection_destKeywords = 'dest_param_keywords'
 
     ConfFileSection_putty = 'putty'

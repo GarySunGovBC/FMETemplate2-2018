@@ -59,8 +59,9 @@ import DataBCDbMethods
 import FMWExecutionOrderDependencies
 from DBCFMEConstants import TemplateConstants
 
-# pylint: disable=invalid-name
 
+
+# pylint: disable=invalid-name
 
 class Start(object):
     '''
@@ -1045,7 +1046,7 @@ class TemplateConfigFileReader(object):
                           " file: %s", pythonRootdir)
         return pythonRootdir
 
-    def getFMERootDirTmplt(self):
+    def getFMERootDirTmplt(self, bit32=False):
         '''
         Retrieves the path to the the standardized location of an FME install.
         The year release of the install path is parameterized for string
@@ -1056,9 +1057,13 @@ class TemplateConfigFileReader(object):
 
         where the {0} is where the install version would be inserted
         '''
+        if bit32:
+            paramName = self.const.ConfFileSection_global_FMERootDirTmplt32Bit
+        else:
+            paramName = self.const.ConfFileSection_global_FMERootDirTmplt
         fmeRootDirTmplt = self.parser.get(
             self.const.ConfFileSection_global,
-            self.const.ConfFileSection_global_FMERootDirTmplt)
+            paramName)
         self.logger.debug("FME install path tmplt string from config" +
                           " file: %s", fmeRootDirTmplt)
         return fmeRootDirTmplt
@@ -4747,7 +4752,7 @@ class DWMWriter(object):
         returnDict['features_written_count'] = \
             self.getTotalFeaturesWrittenCount()
         returnDict['features_rejected_count'] = \
-            self.getTotalFeaturesRejectedCount()
+            self.getTotalFeaturesRejectedCount(subprocess=True)
         returnDict['notification_email'] = self.getNotificationEmail()
         returnDict['log_filename'] = self.getLogFileName()
         returnDict['datasource'] = self.getDataSource()
@@ -4883,22 +4888,40 @@ class DWMWriter(object):
 
         '''
         # self.params.get
+        
+        # need to calculate the path to python based on whether the fme
+        # version is 64 bit or not, then make the 64 bit install the 
+        # default location
+        #
+        
         retVal = None
         logFile = self.getLogFileName()
         self.logger.debug("log file path: %s", logFile)
         logFileNoSuffix = os.path.splitext(logFile)[0]
-        ffsFileName = '{0}_log.ffs'.format(logFileNoSuffix)
-        self.logger.debug("ffs file is: %s", ffsFileName)
+        # the ffs file name auto created with the SDE30 writer.
+        ffsFileNameSDE30 = '{0}_log.ffs'.format(logFileNoSuffix)
+        # the calculated ffs file name, this is how ffs is generated for 
+        # geodb writers
+        ffsFileNameGeoDb = self.params.getFailedFeaturesFile()
+        self.logger.debug("ffs file is: %s", ffsFileNameSDE30)
 
         # ffs files from SDE 30 writer are named with the same name as the job
         # number.  If the fmw uses the SDE Geodb writer then the the ffs files
         # will come from a published parameter.
+        ffsFile = None
+        if os.path.exists(ffsFileNameSDE30):
+            ffsFile = ffsFileNameSDE30
+            self.logger.debug("found an SDE30 generated FFS file: %s", ffsFile)
+        elif os.path.exists(ffsFileNameGeoDb):
+            ffsFile = ffsFileNameGeoDb
+            self.logger.debug("found an GeoDb generated FFS file: %s", ffsFile)
+        self.logger.debug('FFS File that is to be read is: %s', ffsFile)
 
 #        ffsFileNameGeoDb = self.pubParams.getFailedFeaturesFiles()
-
-        if os.path.exists(ffsFileName):
+        if os.path.exists(ffsFile):
             self.logger.debug("creating and FFReader object")
-            ffs = FFSReader.Reader(ffsFileName)
+            fmeInstallPath = self.fme.macroValues['FME_HOME']
+            ffs = FFSReader.Reader(ffsFile, fmeInstallPath=fmeInstallPath)
             if subprocess:
                 # in order to configure the paths we need to send it the
                 # product number ie, 2012, 2013, 2015, 2017, etc.
