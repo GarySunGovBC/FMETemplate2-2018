@@ -59,9 +59,8 @@ import DataBCDbMethods
 import FMWExecutionOrderDependencies
 from DBCFMEConstants import TemplateConstants
 
-
-
 # pylint: disable=invalid-name
+
 
 class Start(object):
     '''
@@ -3585,7 +3584,6 @@ class CalcParamsDataBC(object):
 #         self.__createSDEConnectionFile(connectionFileFullPath, host,
 #                                   serviceName, port)
 
-
     def __createSDEConnectionFile(self, connectionFileFullPath, host,
                                   serviceName, port=None):
         '''
@@ -4888,19 +4886,18 @@ class DWMWriter(object):
 
         '''
         # self.params.get
-        
+
         # need to calculate the path to python based on whether the fme
-        # version is 64 bit or not, then make the 64 bit install the 
+        # version is 64 bit or not, then make the 64 bit install the
         # default location
         #
-        
         retVal = None
         logFile = self.getLogFileName()
         self.logger.debug("log file path: %s", logFile)
         logFileNoSuffix = os.path.splitext(logFile)[0]
         # the ffs file name auto created with the SDE30 writer.
         ffsFileNameSDE30 = '{0}_log.ffs'.format(logFileNoSuffix)
-        # the calculated ffs file name, this is how ffs is generated for 
+        # the calculated ffs file name, this is how ffs is generated for
         # geodb writers
         ffsFileNameGeoDb = self.params.getFailedFeaturesFile()
         self.logger.debug("ffs file is: %s", ffsFileNameSDE30)
