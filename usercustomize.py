@@ -31,7 +31,7 @@ if os.path.exists(path2devpathsJson):
         if not expectKey in struct:
             proceed = False
             break
-        
+
     currentUser = getpass.getuser()
     node = (platform.node()).lower()
     if node.lower() == struct['host'].lower() and \
@@ -39,39 +39,46 @@ if os.path.exists(path2devpathsJson):
         dir2Add = struct['template_dev_directory']
         dir2Add = os.path.realpath(dir2Add)
 if dir2Add:
-    # subdirs 
+    # subdirs
     subDirs = ['lib', 'fmeCustomizations/Transformers', '']
     for subDir in subDirs:
         pth = os.path.join(dir2Add, subDir)
         sys.path.insert(0, pth)
-        #print 'added path: {0}'.format(pth)
-    # While developing kirk!  Once dev is complete this module will become part of 
+        # print 'added path: {0}'.format(pth)
+    # While developing kirk!  Once dev is complete this module will become part of
     # the dependencies.
     tmpKirkUtilPath = r'Z:\Workspace\kjnether\proj\DataBCPyLib\KirkUtil'
     sys.path.insert(0, pth)
     if platform.architecture()[0] == '64bit':
         pth = os.path.join(dir2Add, '64bit')
         sys.path.insert(0, pth)
+        print 'datapaths adding', pth
 else:
     # now make sure these are at the start of the path list
-    #subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
-    #lib_intPath = os.path.join(curDir, 'lib_int')
+    # subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']
+    # lib_intPath = os.path.join(curDir, 'lib_int')
     libdirs = ['lib']
     if platform.architecture()[0] == '64bit':
-        libdirs.append( 'lib64')
+        libdirs.append('lib64')
+        # libdirs.insert(0, 'lib64')
     pathsToAdd = [curDir, os.path.join(curDir, 'fmeCustomizations', 'Transformers')]
     pathsToAdd.extend(libdirs)
-    #pathsToAdd = [curDir, os.path.join(curDir, 'lib'), os.path.join(curDir, 'fmeCustomizations', 'Transformers')]
+    # pathsToAdd = [curDir, os.path.join(curDir, 'lib'), os.path.join(curDir, 'fmeCustomizations', 'Transformers')]
     for pth2Rerder in pathsToAdd:
         pthCntr = 0
-        pth2Rerder = os.path.realpath(pth2Rerder)
+        # get the directory this file is in to this file
+        rootPath = os.path.dirname(__file__)
+        pth2Rerder = os.path.join(rootPath, pth2Rerder)
+        # pth2Rerder = os.path.realpath(pth2Rerder)
+
         sys.path.insert(0, pth2Rerder)
-        #print 'inserted', pth2Rerder, 'to the front of the pathlist'
-        #for curPth in sys.path:
+        print 'inserted', pth2Rerder, 'to the front of the pathlist'
+        # for curPth in sys.path:
         #    if pth2Rerder == curPth:
         #        del sys.path[pthCntr]
         #        sys.path.insert(0, pth2Rerder)
         #        print 'inserted', pth2Rerder, 'to the front of the pathlist'
         #        break
         #    pthCntr += 1
-#print 'pathlist:', sys.path
+# print 'pathlist:', sys.path
+# print '\n'.join(os.environ.keys())

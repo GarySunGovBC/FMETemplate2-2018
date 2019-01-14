@@ -4912,10 +4912,11 @@ class DWMWriter(object):
         elif os.path.exists(ffsFileNameGeoDb):
             ffsFile = ffsFileNameGeoDb
             self.logger.debug("found an GeoDb generated FFS file: %s", ffsFile)
+
         self.logger.debug('FFS File that is to be read is: %s', ffsFile)
 
 #        ffsFileNameGeoDb = self.pubParams.getFailedFeaturesFiles()
-        if os.path.exists(ffsFile):
+        if (ffsFile is not None) and os.path.exists(ffsFile):
             self.logger.debug("creating and FFReader object")
             fmeInstallPath = self.fme.macroValues['FME_HOME']
             ffs = FFSReader.Reader(ffsFile, fmeInstallPath=fmeInstallPath)
@@ -4927,6 +4928,10 @@ class DWMWriter(object):
             else:
                 retVal = ffs.getFeatureCountSameProcess()
             self.logger.debug("failed features read from ffs file: %s", retVal)
+        else:
+            # no ffs file has been found for either geodb or
+            # for sde30 writers.
+            retVal = 0
         return retVal
 
     def getFMEProductNumber(self):
