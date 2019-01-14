@@ -136,9 +136,10 @@ class TemplateConstants(object):
     FMWParams_KirkFldMapCnt = 'KIRK_FLDMAPCNT'
     FMWParams_KirkCounterAttribute = 'KIRK_COUNTERATTRIBUTE'
     FMWParams_KirkCounterTmpAttribute = 'KIRK_TMP_COUNTER_ATTRIBUTE'
+    FMWParams_KirkDestDbKeyOverride = 'KIRK_DEST_DB_KEY_OVERRIDE'
 
     # published parameters - destination
-    FMWParams_DestKey = 'DEST_DB_ENV_KEY'
+    FMWParams_DestKey = 'DEST_DB_ENV_KEY' 
     FMWParams_DestSchema = 'DEST_SCHEMA'
     FMWParams_DestType = 'DEST_TYPE'
     FMWParams_DestFeatPrefix = 'DEST_FEATURE_'

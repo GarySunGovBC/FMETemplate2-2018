@@ -103,6 +103,18 @@ class KIRKParams(object):
             self.job = KirkJob(jobData)
             self.logger.debug("created kirk job obj")
 
+    def getOverRideDestEnv(self):
+        '''
+        :return: destination database environment key override parameter
+
+        This parameter can be used to override the destination environment
+        for the destination data.  Allows you to force a job to replicate to
+        DLV or TST environments, other other environments that are different
+        from those defined in the KIRK API.
+        '''
+        destDbEnvKeyOverride = self.pubParams.getDestDbEnvOverride()
+        return destDbEnvKeyOverride
+
     def getDestDbEnvKey(self):
         '''
         Using the job id, queries Kirk through the api to determine what the
@@ -171,18 +183,26 @@ class KIRKParams(object):
         # jnether<solidus>proj<solidus>APP_KIRK<solidus>src<solidus>fmws',
         # 'FME_BUILD_DATE_ENCODED': '20170731', 'SCHEMA_MAPPER_CSV':
         # '$(FME_MF_DIR)schemaMapper.csv'}
-        self.getJob()
-        destDbEnv = self.job.getDestDbEnvKey()
-        # the way that kirk works is the dest_db_env_key is not set when the
-        # job is initiated.  It gets retrieve by this method.  In order to
-        # retrieve it we need to read the TemplateConfig file. The api was
-        # created so that it requires a env key to be provided when a
-        # template config is created.  Kirk creates the template config
-        # reader with a dummy value then when the env key gets retrieved
-        # in this method we are populating the template config reader
-        # with the correct value for the current job.
-        self.fmeFrameworkConfig.setDestinationDatabaseEnvKey(destDbEnv)
-        self.logger.info("destination Database Env. Key: %s", destDbEnv)
+
+        # changing the logic here to detect a override parameter
+        # if it exists and its set then it gets used, otherwise the
+        # destination comes from the job definition
+        overrideDestDbEnvKey = self.getOverRideDestEnv()
+        if overrideDestDbEnvKey is None:
+            self.getJob()
+            destDbEnv = self.job.getDestDbEnvKey()
+            # the way that kirk works is the dest_db_env_key is not set when the
+            # job is initiated.  It gets retrieve by this method.  In order to
+            # retrieve it we need to read the TemplateConfig file. The api was
+            # created so that it requires a env key to be provided when a
+            # template config is created.  Kirk creates the template config
+            # reader with a dummy value then when the env key gets retrieved
+            # in this method we are populating the template config reader
+            # with the correct value for the current job.
+            self.fmeFrameworkConfig.setDestinationDatabaseEnvKey(destDbEnv)
+            self.logger.info("destination Database Env. Key: %s", destDbEnv)
+        else: 
+            destDbEnv = overrideDestDbEnvKey
         return destDbEnv
 
     def getSource(self):
@@ -561,4 +581,23 @@ class GetPublishedParams(DataBCFMWTemplate.GetPublishedParams):
         kirkJobIdKey = self.getMacroKeyForPosition(kirkJobIdKey)
         kirkJobId = self.getFMEMacroValue(kirkJobIdKey)
         return kirkJobId
+
+    def getDestDbEnvOverride(self):
+        '''
+        :return: the override destination database environment key
+
+        With Kirk Jobs the destination key is defined with the job in the
+        api.  The framework allows you to define a parameter that can be
+        used to override the destination key defined in the job.
+        '''
+        retVal = None
+        kirkDestDbKey = self.const.FMWParams_KirkDestDbKeyOverride
+        kirkDestDbKey = self.getMacroKeyForPosition(kirkDestDbKey)
+        if self.existsMacroKey(kirkDestDbKey):
+            retVal = self.getFMEMacroValue(kirkDestDbKey)
+        if (retVal is not None) and not retVal.strip():
+            # if the value is not set or is a null value then make sure that
+            # it is set back to None.
+            retVal = None
+        return retVal
 
