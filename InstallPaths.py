@@ -32,7 +32,8 @@ class RegistryReader(object):
         keyStr = '\\'.join(str(e) for e in keys)
         # keyStr = '\\'.join(keys)
         self.logger.debug('keyStr: %s', keyStr)
-        explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
+        #explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
+        explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_READ)
         subKeys = []
         try:
             i = 0
@@ -48,7 +49,7 @@ class RegistryReader(object):
         # keyStr = '\\'.join(keys)
         keyStr = '\\'.join(str(e) for e in keys)
         self.logger.debug('keyStr: %s', keyStr)
-        explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
+        explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_READ)
         values = []
         try:
             cnt = 0
