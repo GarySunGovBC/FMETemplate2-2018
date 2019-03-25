@@ -15,25 +15,7 @@ b) a library (this lib) that is used to calculate various
      - oracle sde direct connect strings
      - etc...
 
-
-
-
 '''
-# for some reason this has to manually added
-# import sys
-
-# for fmeobjects to import properly the fme dir has
-# to be closer to the front of the pathlist
-# TODO: have a autodetect for 2015 and send an error if
-# not running under fme2015
-# These lines are only necessary for unit tests as they
-# enable the use of the fmeobjects code
-# pathList = os.environ['PATH'].split(';')
-# pathList.insert(0, r'E:\sw_nt\FME2015')
-# sys.path.insert(0, r'E:\sw_nt\FME2015\fmeobjects\python27')
-# sys.path.insert(0, r'\\data.bcgov\work\scripts\python\DataBCPyLib')
-# os.environ['PATH'] = ';'.join(pathList)
-
 import ConfigParser
 import datetime
 import importlib
@@ -92,7 +74,6 @@ class Start(object):
         self.logger.debug('source fmw dir: %s', fmwDir)
         # Reading the global paramater config file
 
-        # self.paramObj = TemplateConfigFileReader(destKey)
         self.config = TemplateConfigFileReader(destKey)
         customScriptDir = self.config.getCustomScriptDirectory()
         # Extract the custom script directory from config file
@@ -330,6 +311,10 @@ class Shutdown(object):
 
 
 class DefaultShutdown(object):
+    '''
+    The default shutdown class, if no other shutdown is configured this one
+    will get run.
+    '''
 
     def __init__(self, fme):
         self.fme = fme
@@ -337,7 +322,6 @@ class DefaultShutdown(object):
         self.params = CalcParamsBase(self.fme.macroValues)
         destKey = self.params.getDestDatabaseEnvKey()
         self.config = TemplateConfigFileReader(destKey)
-        # self.config = TemplateConfigFileReader(self.fme.macroValues[self.const.FMWParams_DestKey]) @IgnorePep8
 
         self.params.addPlugin()
 
@@ -357,7 +341,6 @@ class DefaultShutdown(object):
             destKey = self.params.getDestDatabaseEnvKey()
             destKey = self.config.getDestinationDatabaseKey(destKey)
 
-            # destKey = self.fme.macroValues[self.const.FMWParams_DestKey]
             if not self.config.isDataBCNode():
                 # either not being run on a databc computer, or is being run in
                 # development mode, either way should not be writing to to the
@@ -411,8 +394,6 @@ class DefaultShutdown(object):
                 emailer = Emailer.EmailFrameworkBridge(self.fme, self.const,
                                                        self.params,
                                                        self.config)
-                # email2Add = 'kevin.netherton@gov.bc.ca'
-                # email2Add = 'DataBCDA@gov.bc.ca'
                 email2Add = self.const.defaultEmailOnFailure
                 # if an exception was raised in the shutdown then send out
                 # an email notifying of this situation even if the fmw
@@ -421,12 +402,10 @@ class DefaultShutdown(object):
                     # the exception was in the shutdown not a problem with
                     # the actual fmw so only email databc.  Currently in
                     # beta feature, so emailing only myself
-                    # (kevin.netherton@gov.bc.ca)
                     emailer.addNotifyEmail('FAIL', email2Add)
                     # emailer.notifyFail = email2Add
                 # add default email address for failures.
                 elif not emailer.notifyFail:
-                    # emailer.notifyFail = email2Add
                     emailer.addNotifyEmail('FAIL', email2Add)
                     self.logger.debug("adding email address to fails")
                 else:
@@ -445,10 +424,12 @@ class DefaultShutdown(object):
 
 
 class TemplateConfigFileReader(object):
+    '''
+    reads the fme template config file and provides an interface to the
+    data that is stored in that file.
+    '''
 
     def __init__(self, key, confFile=None):
-        # ModuleLogConfig()
-        # modDotClass = '{0}.{1}'.format(__name__, self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
 
@@ -480,7 +461,6 @@ class TemplateConfigFileReader(object):
         relative to the actual fmw being run.
 
         '''
-        # justFmwName, fmwSuffix = os.path.splitext(fmwName)
         justFmwName = os.path.splitext(fmwName)[0]
         # if not self.isFMEServerNode():
         logDirKey = self.const.EnvVar_LogDir
@@ -506,7 +486,6 @@ class TemplateConfigFileReader(object):
         return fullPath
 
     def calcPIDCacheDirectory(self, fmwDir, fmwName):
-        # justFmwName, fmwSuffix = os.path.splitext(fmwName)
         justFmwName = os.path.splitext(fmwName)[0]
 
         pidDirName = self.parser.get(self.const.ConfFileSection_global,
@@ -514,7 +493,6 @@ class TemplateConfigFileReader(object):
         outputsDir = self.getOutputsDirectory()
 
         if not self.isDataBCNode():
-            # logDir = self.const.AppConfigLogDir
             fullPath = os.path.join(fmwDir, outputsDir,
                                     pidDirName, justFmwName)
         else:
@@ -855,8 +833,6 @@ class TemplateConfigFileReader(object):
 
         $(DEST_SCHEMA)_$(DEST_FEATURE_1)_JOB_$(FME_JOB_ID)_failed_features.ffs
         '''
-        # destSchema = self.getDest
-
         failedFeatsFile = self.parser.get(
             self.const.ConfFileSection_global,
             self.const.ConfFileSection_global_failedFeaturesFile)
@@ -1060,7 +1036,7 @@ class TemplateConfigFileReader(object):
         format() function.
 
         Example:
-           C:\Program File\FME{0}
+           C:\\Program File\\FME{0}
 
         where the {0} is where the install version would be inserted
         '''
@@ -1333,8 +1309,6 @@ class PMPSourceAccountParser(object):
     '''
 
     def __init__(self, accntName, sqlServerIdentifier):
-        # ModuleLogConfig()
-        # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
         modDotClass = '{0}'.format(__name__)
         self.logger = logging.getLogger(modDotClass)
         self.const = TemplateConstants()
@@ -1478,7 +1452,10 @@ class Util(object):
 
     @staticmethod
     def calcLogFilePath(fmwDir, fmwName):
-        '''  pylint: disable=anomalous-backslash-in-string
+        '''
+        :param fmwDir: the directory where the fmw that is being run is located
+        :param fmwName: the fmw name
+
         This method will recieve the full path to where the current
         fmw that is being processed is located, and the name of the fmw
         that is being processed.  It will then calculate:
@@ -1489,14 +1466,14 @@ class Util(object):
             this value.
 
         example if the inputs are:
-          fmwDir = 'C:\somedir\myFmws'
+          fmwDir = 'C:\\somedir\\myFmws'
           fmwName = 'CopyData.fmw'
 
           Then:
-           - outputs directory will be: C:\somedir\myFmws\outputs
+           - outputs directory will be: C:\\somedir\\myFmws\\outputs
                (depending on what the value const.AppConfigOutputsDir
                 is set to)
-           - log dir path will be: C:\somedir\myFmws\outputs\CopyData
+           - log dir path will be: C:\\somedir\\myFmws\\outputs\\CopyData
            - and the relative log directory will be:
              ./outputs/CopyData/CopyData.log
                (Which is the relative path for the fmw but not
@@ -1505,9 +1482,9 @@ class Util(object):
          If returnPathList is set to True then the method will
          return a list with all these paths, the order will be:
            [0] relative path (./outputs/CopyData/CopyData.log)
-           [1] full path to log file (C:\somedir\myFmws\outputs\CopyData\CopyData.log)  # @IgnorePep8
-           [2] log dir (C:\somedir\myFmws\outputs\CopyData)
-           [3] outputs (C:\somedir\myFmws\outputs)
+           [1] full path to log file ( C:\\somedir\\myFmws\\outputs\\CopyData\\CopyData.log)  # @IgnorePep8
+           [2] log dir ( C:\\somedir\\myFmws\\outputs\\CopyData )
+           [3] outputs ( C:\\somedir\\myFmws\\outputs )
 
         '''
         const = TemplateConstants()
@@ -1581,7 +1558,6 @@ class Util(object):
         '''
         # strip off the .fmw
         fmwFileNameNoSuffix = (os.path.splitext(fmwName))[0]
-        # const = TemplateConstants()
         enhancedLogKeyword = '_extra'
         logFileNameTmplt = '{0}{1}.{2}'
         logFileName = logFileNameTmplt.format(fmwFileNameNoSuffix,
@@ -1626,7 +1602,6 @@ class Util(object):
                 justParamName = (isParamNameRegex.search(paramValue)).group(1)
                 logger.debug('detected parameter %s', paramValue)
                 paramValue = Util.getParamValue(justParamName, fmwMacros)
-                # print 'Value extracted from linked parameter %s', paramValue
                 logger.info('Value extracted from linked parameter %s',
                             paramValue)
         return paramValue
@@ -1670,7 +1645,6 @@ class GetPublishedParams(object):
         retVal = True
         macroKey = self.const.FMWParams_SrcSSSchema
         macroKey = self.getMacroKeyForPosition(macroKey, position)
-        # srcPort = None
         if not self.existsMacroKey(macroKey):
             retVal = False
         return retVal
@@ -1686,7 +1660,6 @@ class GetPublishedParams(object):
         retVal = True
         macroKey = self.const.FMWParams_SrcSSDbName
         macroKey = self.getMacroKeyForPosition(macroKey, position)
-        # srcPort = None
         if not self.existsMacroKey(macroKey):
             retVal = False
         return retVal
@@ -1973,7 +1946,6 @@ class GetPublishedParams(object):
                 logger.debug('detected parameter %s', paramValue)
                 paramValue = Util.getParamValue(justParamName,
                                                 self.fmeMacroVals)
-                print 'Value extracted from linked parameter %s', paramValue
                 logger.debug('Value extracted from linked parameter %s',
                              paramValue)
                 logger.info('parameter (%s) is a linked parameter with an ' +
@@ -2030,14 +2002,11 @@ class GetPublishedParams(object):
             attributePieces = macroKey.split('_')
             numericPositionString = u'{0}'.format(position)
             # only interested in the last piece
-            if attributePieces[-1].isdigit():
+            if attributePieces[-1].isdigit() or attributePieces[-1] == '':
                 # then we replace this number with the position and rebuild
                 attributePieces[-1] = numericPositionString
-            else:
-                if attributePieces[-1] == '':
-                    attributePieces[-1] = numericPositionString
-                else:
-                    attributePieces.append(numericPositionString)
+            elif attributePieces[-1] != '':
+                attributePieces.append(numericPositionString)
             macroKey = '_'.join(attributePieces)
             retVal = macroKey
         return retVal
@@ -2163,7 +2132,6 @@ class GetPublishedParams(object):
             macroKey = macroKeyProxy
         else:
             macroKey = macroKeyData
-        # macroKey = self.getMacroKeyForPosition(macroKey, position )
 
         msg = "retrieving data from the parameter %s"
         self.logger.debug(msg, macroKey)
@@ -2235,13 +2203,7 @@ class CalcParamsBase(GetPublishedParams):
 
         GetPublishedParams.__init__(self, fmeMacroVals)
         self.plugin = None
-        # don't need these lines as they are populated by the parent class
-        # self.fmeMacroVals = fmeMacroVals
-        # self.const = TemplateConstants()
 
-        # fmwDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
-        # fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
-        # destKey = self.fmeMacroVals[self.const.FMWParams_DestKey]
         fmwDir = self.getFMWDirectory()
         fmwName = self.getFMWFile()
         self.destKey = self.getDestDatabaseEnvKey()
@@ -2251,7 +2213,6 @@ class CalcParamsBase(GetPublishedParams):
         # ModuleLogConfig()
         self.logger = logging.getLogger(__name__)
         self.paramObj = TemplateConfigFileReader(self.destKey)
-        # self.logger = fmeobjects.FMELogFile()  # @UndefinedVariable
         self.debugMethodMessage = "method: {0}"
 
     def addPlugin(self, forceDevel=False):
@@ -2333,7 +2294,6 @@ class CalcParamsBase(GetPublishedParams):
         '''
         msg = self.debugMethodMessage.format("getDestEasyConnectString")
         self.logger.debug(msg)
-        # destEasyConnectString = None
         destHost = self.getDestinationHost()
         destServName = self.getDestinationServiceName()
         destPort = self.getDestinationOraclePort()
@@ -2354,7 +2314,6 @@ class CalcParamsBase(GetPublishedParams):
             msg = 'You specified a position parameter for this method however ' + \
                   'it is not currently used by this method'
             self.logger.warning(msg)
-        # destSDEConnectString = None
         destHost = self.getDestinationHost()
         destServName = self.getDestinationServiceName()
         # don't need port currently
@@ -2776,7 +2735,6 @@ class CalcParamsBase(GetPublishedParams):
         ssHost = self.getSrcHost(position)
         msg = msg.format(schema, ssDbName, ssHost)
         self.logger.info(msg)
-        # pswd = self.plugin.getSourcePassword(position)
         pswd = self.plugin.getSourceSqlServerPassword(position)
         return pswd
 
@@ -2829,7 +2787,6 @@ class CalcParamsBase(GetPublishedParams):
             # TODO: get the port from the config file parameter
         # SQLServerDBName = self.getSrcSqlServerDatabaseName(position)
         if port:
-            # retStr = u'{0}\{1},{2}'.format(host, SQLServerDBName, port)
             retStr = u'{0},{1}'.format(host, port)
         else:
             retStr = host
@@ -3069,8 +3026,6 @@ class CalcParamsDevelopment(object):
         destSchema = self.parent.getDestinationSchema(position)
         destServiceName = self.parent.getDestinationServiceName()
 
-        # destInstance = self.parent.getDestinationInstance()
-        # destServiceName = self.parent.getServiceName()
         self.logger.debug("destSchema: %s", destSchema)
         self.logger.debug("destServiceName: %s", destServiceName)
 
@@ -3332,7 +3287,6 @@ class CalcParamsDevelopment(object):
         For now just ignores the domain when searching for the password
         '''
         retVal = None
-        # schemaMacroKey, serviceNameMacroKey = self.parent.getSchemaAndServiceNameForPasswordRetrieval(position) @IgnorePep8
 
         if not self.parent.existsSourceOracleSchema(position):
             macroKeyProxy = self.const.FMWParams_SrcProxySchema
@@ -3492,7 +3446,6 @@ class CalcParamsDevelopment(object):
         destDir = self.parent.getFMWDirectory()
         host = self.parent.getSrcHost(position)
         serviceName = self.parent.getSrcOraServiceName(position)
-        # port = self.parent.getSrcPort(position)
         fileNameTmpl = '{0}__{1}.sde'
         connectionFile = fileNameTmpl.format(host, serviceName)
         connectionFileFullPath = os.path.join(destDir, connectionFile)
@@ -3734,18 +3687,12 @@ class CalcParamsDataBC(object):
 
         pmpHelper = PMPHelper(self.paramObj, self.destKey)
 
-        # pmp = self.__getPMPObj()
-        # resrcs = pmp.getResources()
 
         # get the schema / host / dbname from the
         # fme parameters
         srcSchemaInFMW = self.parent.getSourceSqlServerConnectionSchema(
             position)
         self.logger.debug("using the schema: %s", srcSchemaInFMW)
-        # if sqlServerProxySchema in self.fmeMacroVals:
-        #    srcSchemaInFMW = self.parent.getSrcSqlServerProxySchema(position)
-        # else:
-        #    srcSchemaInFMW = self.parent.getSrcSQLServerSchema(position)
 
         ssDbNameInFMW = self.parent.getSrcSqlServerDatabaseName(position,
                                                                 ignoreDomain)
@@ -3868,7 +3815,6 @@ class CalcParamsDataBC(object):
         # Need to detect if the source instance is bcgw.  If it is then
         # get the password from there.
         isSrcBCGW = self.parent.isSourceBCGW(position)
-        # isSrcDBC = self.parent.isSourceDBC(position)
 
         if isSrcBCGW:
             # destKey = self.parent.getDestDatabaseEnvKey()
@@ -3898,18 +3844,8 @@ class CalcParamsDataBC(object):
                 # start by trying to just retrieve the account using
                 # destSchema@servicename as the "User Account" parameter
                 try:
-                    # accntATInstance = accntNameInFMW.strip() + '@' + instance.strip()
-                    # self.logger.debug("account@instance search string: {0}".format(accntATInstance))
-                    # todo, need to modify so it can find the account associated with
-                    # user@inst:host:port
-                    # resId = pmp.getResourceId(pmpResource)
-                    # if not resId:
-                    #    msg = 'Unable to retrieve a resource id in pmp for the resource name {0} using the token {1}'
-                    #    msg = msg.format(pmpResource, self.token)
-                    #    raise ValueError, msg
                     self.logger.debug("getting account ids")
                     accnts = pmpHelper.getAccountDictionary(pmpResource)
-                    # accnts = pmp.getAccountsForResourceID(pmpResource)
                     for accntDict in accnts:
                         accntName = PMPSourceAccountParser(
                             accntDict[self.const.PMPKey_AccountName],
@@ -3924,16 +3860,16 @@ class CalcParamsDataBC(object):
                                               serviceName, srcOraServName)
                             if serviceName.lower() == srcOraServName.lower():
                                 # match return password for this account
-                                accntId = accntDict[self.const.PMPKey_AccountId]
-                                # pswd = pmp.getAccountPasswordWithAccountId(accntId, resId)
+                                accntId = accntDict[
+                                    self.const.PMPKey_AccountId]
                                 pswd = pmpHelper.getPMPPassword(accntId,
                                                                 pmpResource)
                                 break
                     if not pswd:
-                        msg = 'unable to get password for the account name:' + \
-                              ' {0} and database service name {1}'
-                        raise ValueError(msg.format(srcOraSchema, srcOraServName))
-                    # pswd = pmp.getAccountPassword(accntATInstance, pmpResource)
+                        msg = 'unable to get password for the account ' + \
+                              'name: {0} and database service name {1}'
+                        raise ValueError(msg.format(srcOraSchema,
+                                                    srcOraServName))
                 except ValueError:
                     msg = 'There is no account for schema %s / service name ' + \
                           '%s in pmp for the resource %s using the token %s ' + \
@@ -4001,9 +3937,8 @@ class CalcParamsDataBC(object):
             srcResources = [self.currentPMPResource]
 
         pswd = None
-        # pmpDict = self.getPmpDict()
         pmpHelper = PMPHelper(self.paramObj, self.destKey)
-        # pmp = PMP.PMPRestConnect.PMP(pmpDict)
+
         # test pmp connectivity
         self.logger.debug("testing connectivity with PMP")
 
@@ -4077,7 +4012,6 @@ class CalcParamsDataBC(object):
             else:
                 # get the password and return it
                 pswd = pmpHelper.getPMPPassword(snList[0][1], pmpResource)
-                # pswd = pmp.getAccountPasswordWithAccountId(snList[0][1], resId) @IgnorePep8
         if not pswd:
             msg = 'unable to find the password using the heuristic search' + \
                   'for the schema: {0}, service name {1}'
@@ -4110,8 +4044,6 @@ class CalcParamsDataBC(object):
             os.makedirs(ffDir)
 
         fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName]
-        # fmwName = Util.getParamValue(self.const.FMWMacroKey_FMWName,
-        #                              self.fmeMacroVals)
 
         fmwName, suffix = os.path.splitext(fmwName)
         del suffix
@@ -4122,7 +4054,6 @@ class CalcParamsDataBC(object):
             self.logger.debug(msg)
             os.makedirs(fmwDir)
         if not failedFeatsFileName:
-            # failedFeatsFile = self.paramObj.getFailedFeaturesFile()
             destSchema = self.parent.getDestinationSchema(position)
             destFeature = self.parent.getDestinationFeature(position)
             jobNumStr = ''
@@ -4339,7 +4270,6 @@ class PMPHelper(object):
         self.logger.debug("Computer name: %s", computerName)
         if not baseUrl:
             baseUrl = self.paramObj.getPmpBaseUrl()
-        altUrl = self.paramObj.getPmpAltUrl()
         pmpDict = {'token': self.paramObj.getPmpToken(computerName),
                    'baseurl': baseUrl,
                    'restdir': self.paramObj.getPmpRestDir()}
@@ -4419,13 +4349,10 @@ class PMPHelper(object):
             # error trapped, now try alt url
             altdict = self.getPMPAltConnectionDictionary()
 
-            # altUrl = self.paramObj.getPmpAltUrl()
             msg = "error raised in attempt to communicate with pmp." + \
                   "switching to use the alternative url: <not listing " + \
                   "here>, pmp error message: %s"
             self.logger.warning(msg, e)
-            # self.pmpDict = self.getPMPConnectionDictionary(
-            #    baseUrl=altdict['baseurl'])
             self.pmpDict = altdict
             self.pmp = PMP.PMPRestConnect.PMP(self.pmpDict)
 
@@ -4443,9 +4370,6 @@ class PMPHelper(object):
 
                 if self.currentRetry >= self.maxWaitIntervals:
 
-                    # self.failWaitTime = 60*5
-                    # self.maxWaitIntervals = 5
-                    # raise IOError, msg.format(url, altUrl)
                     self.logger.error("Unable to communicate with PMP or" +
                                       " the alternate PMP url")
                     raise
@@ -4571,7 +4495,6 @@ class PMPHelper(object):
         if os.path.exists(sshKeyFilePath):
             os.remove(sshKeyFilePath)
 
-        # pswd = self.pmp.getAccountPassword('BIOT', 'SSH_KEYS')
         keyFileContents = self.pmp.getPasswordFiles('BIOT', 'SSH_KEYS')
         # next need to write the contents of the variable keyFileContents to
         # the destination file.
@@ -4582,7 +4505,7 @@ class PMPHelper(object):
 
 
 class DWMWriter(object):
-    '''  #pylint: disable=anomalous-backslash-in-string
+    r'''  #pylint: disable=anomalous-backslash-in-string
     Things that were logged by the other logger:
       a) mappingFileID
       b) startTime -  reads the log file and strips out
@@ -4661,9 +4584,7 @@ class DWMWriter(object):
         if not self.const:
             self.const = TemplateConstants()
         self.fme = fme
-        # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
-        modDotClass = __name__
-        self.logger = logging.getLogger(modDotClass)
+        self.logger = logging.getLogger(__name__)
 
         self.params = CalcParamsBase(self.fme.macroValues)
         self.pubParams = GetPublishedParams(self.fme.macroValues)
@@ -4688,20 +4609,12 @@ class DWMWriter(object):
         be used by subsequent method to populate a record in the DWM reporting
         table.
         '''
-        # computerName = Util.getComputerName()
-        # pmpDict = {'token': self.config.getPmpToken(computerName),
-        #           'baseurl': self.config.getPmpBaseUrl(),
-        #           'restdir': self.config.getPmpRestDir()}
-        # pmpHelper = PMPHelper(self.config, self.destKey)
         pmpHelper = PMPHelper(self.config, self.dwmKey)
-        # pmp = PMP.PMPRestConnect.PMP(pmpDict)
         accntName = self.config.getDWMDbUser()
         serviceName = self.config.getDestinationServiceName()
 
-        # instance = self.config.getDestinationServiceName()
         pmpResources = self.config.getDestinationPmpResource()
         passwrd = pmpHelper.getAccountPassword(accntName, pmpResources)
-        # passwrd = pmp.getAccountPassword(accntName, pmpResource)
         if isinstance(passwrd, unicode):
             # when attempting to connect to database using unicode encoded
             # password am getting a error message:
@@ -4883,7 +4796,9 @@ class DWMWriter(object):
         Returns the time, now.  Used to indicate when the script finished
         running. Grabbed from the shutdown process
         '''
-        return datetime.datetime.now()
+        endTime =  datetime.datetime.now()
+        self.logger.debug("end time: %s", endTime)
+        return endTime
 
     def getExitStatus(self):
         '''
@@ -4958,7 +4873,6 @@ class DWMWriter(object):
 
         self.logger.debug('FFS File that is to be read is: %s', ffsFile)
 
-#        ffsFileNameGeoDb = self.pubParams.getFailedFeaturesFiles()
         if (ffsFile is not None) and os.path.exists(ffsFile):
             self.logger.debug("creating and FFReader object")
             fmeInstallPath = self.fme.macroValues['FME_HOME']
@@ -5091,7 +5005,6 @@ class DWMWriter(object):
         :rtype: str
         '''
         destSchema = self.params.getDestinationSchema()
-        # destSchema = self.fme.macroValues[self.const.FMWParams_DestSchema]
         return destSchema
 
     def getDestTable(self):

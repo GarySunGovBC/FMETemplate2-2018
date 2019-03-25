@@ -58,12 +58,9 @@ class FMELogHandler(logging.Handler):
 
     def emit(self, record):
         try:
-            # print 'record', record
             logLevel = record.levelno
-            # print 'log level', logLevel
             formattedRecord = self.format(record)
             severity = self.getSeverity(logLevel)
-            # print 'severity', severity
             self.fmeLogger.logMessageString(formattedRecord, severity)
         except (KeyboardInterrupt, SystemExit):
             raise
@@ -115,4 +112,3 @@ class FMEShutdownLogger(logging.Handler):
     def close(self):
         if self.logFH:
             self.logFH.close()
-
