@@ -53,6 +53,11 @@ if dir2Add:
         pth = os.path.join(dir2Add, '64bit')
         sys.path.insert(0, pth)
         print 'datapaths adding', pth
+        
+    # setting env vars for log directory, log for this run will be placed in here 
+    # in theory
+    os.environ['DBC_FRAMEWORK_LOGDIR'] = os.path.join(dir2Add, 'outputs', 'log')
+    print 'setting the env var for logging to: ', os.environ['DBC_FRAMEWORK_LOGDIR']
 else:
     # now make sure these are at the start of the path list
     # subDirs = ['lib_ext', 'lib_int', 'fmeCustomizations/Transformers', '']

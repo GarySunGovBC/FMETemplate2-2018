@@ -58,6 +58,7 @@ import DataBCEmailer as Emailer
 import DataBCDbMethods
 import FMWExecutionOrderDependencies
 from DBCFMEConstants import TemplateConstants
+import requests
 
 # pylint: disable=invalid-name
 
@@ -482,7 +483,14 @@ class TemplateConfigFileReader(object):
         # justFmwName, fmwSuffix = os.path.splitext(fmwName)
         justFmwName = os.path.splitext(fmwName)[0]
         # if not self.isFMEServerNode():
-        if not self.isDataBCNode():
+        logDirKey = self.const.EnvVar_LogDir
+        if (logDirKey in os.environ) and os.environ[logDirKey]:
+            # if this env var is set then it will be used for the location
+            # of the log dir
+            outputsDir = self.getOutputsDirectory()
+            logDir = os.environ[logDirKey]
+            fullPath = os.path.join(fmwDir, outputsDir, logDir, justFmwName)
+        elif not self.isDataBCNode():
             outputsDir = self.getOutputsDirectory()
             logDir = self.const.AppConfigLogDir
             fullPath = os.path.join(fmwDir, outputsDir, logDir, justFmwName)
@@ -3697,8 +3705,6 @@ class CalcParamsDataBC(object):
         if not schema:
             schema = self.parent.getDestinationSchema(position)
 
-        # TODO HERE NOW
-        # -----------------------------------
         pmpHelper = PMPHelper(self.paramObj, destKey)
 
         msg = 'retrieving the destination password for schema: ({0}) db ' + \
@@ -4219,6 +4225,7 @@ class ModuleLogConfig(object):
                                 the elimination of that depedency.
 
         '''
+        logConfFileFullPath = None
         if not destKey:
             destKey = 'DEV'
         logFileFullPath = Util.calcLogFilePath(fmwDir, fmwName)
@@ -4226,10 +4233,11 @@ class ModuleLogConfig(object):
         # get the tmpLog to test to see if the logger has been
         # initialized yet or not
         tmpLog = logging.getLogger(__name__)
-        tmpLog.debug("name of current logger: %s", __name__)
+        tmpLog.info("Module Log config logger: %s", __name__)
         tmpLog.debug("logFileFullPath: %s", logFileFullPath)
         tmpLog.debug("handlers already configed: {0}".format(tmpLog.handlers))
         if not tmpLog.handlers:
+            tmpLog.info('Logger does not have a handler configured')
             logging.logFileName = logFileFullPath
             const = TemplateConstants()
             confFile = TemplateConfigFileReader(destKey)
@@ -4249,7 +4257,6 @@ class ModuleLogConfig(object):
                 dirname = os.path.dirname(__file__)
                 logConfFileFullPath = os.path.join(dirname, configDir,
                                                    logConfFileName)
-
             enhancedLoggingFileName = Util.calcEnhancedLoggingFileName(fmwName)
             enhancedLoggingDir = confFile.calcEnhancedLoggingFileOutputDirectory(fmwDir, fmwName)  # @IgnorePep8
             enhancedLoggingFullPath = os.path.join(enhancedLoggingDir,
@@ -4267,6 +4274,7 @@ class ModuleLogConfig(object):
             # logger.debug("logger should be configured")
             # logger.debug("log name: {0}".format(__name__))
             logger.info("enhancedLoggingFullPath: %s", enhancedLoggingFullPath)
+            logger.info("log config file being used: %s", logConfFileFullPath)
         else:
             tmpLog.debug("log already configured")
 
@@ -4277,24 +4285,32 @@ class PMPHelper(object):
     we need a pmp object it is created in a consistent manner
     and also enables all time we need pmp communication
 
-    that it use the failover address if initial
-    communication attempts fail.
+    that it use the failover address if initial communication attempts
+    fail.
 
     :ivar paramObj: contains a instance of the TemplateConfigFileReader class.
     :ivar destKey: the destination database key.  Comes from the published
                    parameter of the fmw, (DEST_DB_ENV_KEY)
     '''
 
-    def __init__(self, paramObj, destKey):
-        modDotClass = '{0}'.format(__name__)
-        self.logger = logging.getLogger(modDotClass)
+    def __init__(self, paramObj, destKey, testConnection=True):
+        # having trouble getting the PMP fail over to work properly, so have
+        # created a new log entry here that can be set to debug to help
+        # resolve this issue next time it comes up.
+        loggerName = '{0}.{1}'.format(__name__, self.__class__.__name__)
+
+        self.logger = logging.getLogger(loggerName)
+        self.logger.debug("PMPHELPER Test logger, log name: %s", loggerName)
         self.paramObj = paramObj
         self.destKey = destKey
 
         self.pmpDict = self.getPMPConnectionDictionary()
+        self.logger.debug("attempt to communicate with pmp url: %s",
+                          self.pmpDict['baseurl'])
         self.pmp = PMP.PMPRestConnect.PMP(self.pmpDict)
         self.resources = None
-        self.attemptCommunication()
+        if testConnection:
+            self.attemptCommunication()
 
         self.resIdCache = {}
 
@@ -4320,14 +4336,32 @@ class PMPHelper(object):
         :rtype: dict
         '''
         computerName = Util.getComputerName()
+        self.logger.debug("Computer name: %s", computerName)
         if not baseUrl:
             baseUrl = self.paramObj.getPmpBaseUrl()
+        altUrl = self.paramObj.getPmpAltUrl()
         pmpDict = {'token': self.paramObj.getPmpToken(computerName),
                    'baseurl': baseUrl,
                    'restdir': self.paramObj.getPmpRestDir()}
         return pmpDict
 
-    def getDestinationPMPAccountPassword(self, schema):  # pylint: disable=invalid-name @IgnorePep8
+    def getPMPAltConnectionDictionary(self):
+        '''
+        PMP servers are set up with a fail over server.  This method will
+        return the dictionary that can be used to connect to the fail over
+        server.  Keys in the return dict:
+           - token
+           - baseurl
+           - restdir
+        '''
+        computerName = Util.getComputerName()
+        altUrl = self.paramObj.getPmpAltUrl()
+        pmpAltDict = {'token': self.paramObj.getPmpToken(computerName),
+                      'baseurl': altUrl,
+                      'restdir': self.paramObj.getPmpRestDir()}
+        return pmpAltDict
+
+    def getDestinationPMPAccountPassword(self, schema):
         '''
         Using the destination key to identify the pmp resource, extracts the
         password from pmp for the provided schema
@@ -4351,6 +4385,7 @@ class PMPHelper(object):
                       ' original error message: {2}'
                 msg = msg.format(schema, pmpResource, e)
                 self.logger.warning(msg)
+
         if not passwrd:
             msg = 'Cant find the password in any of the PMP resources: {0} for ' + \
                   'the account {1}'
@@ -4377,14 +4412,21 @@ class PMPHelper(object):
         try:
             # try communication with the default url
             self.getResources()
-        except PMP.PMPRestConnect.PMPCommunicationProblem, e:
+        # ConnectionError
+        except (PMP.PMPRestConnect.PMPCommunicationProblem,
+                requests.ConnectionError), e:
+            self.logger.warning("attempting the alternate pmp server")
             # error trapped, now try alt url
-            altUrl = self.paramObj.getPmpAltUrl()
+            altdict = self.getPMPAltConnectionDictionary()
+
+            # altUrl = self.paramObj.getPmpAltUrl()
             msg = "error raised in attempt to communicate with pmp." + \
-                  "switching to use the alternative url: %s, pmp error " + \
-                  "message: %s"
-            self.logger.warning(msg, altUrl, e)
-            self.pmpDict = self.getPMPConnectionDictionary(baseUrl=altUrl)
+                  "switching to use the alternative url: <not listing " + \
+                  "here>, pmp error message: %s"
+            self.logger.warning(msg, e)
+            # self.pmpDict = self.getPMPConnectionDictionary(
+            #    baseUrl=altdict['baseurl'])
+            self.pmpDict = altdict
             self.pmp = PMP.PMPRestConnect.PMP(self.pmpDict)
 
             self.resources = None
@@ -4675,8 +4717,9 @@ class DWMWriter(object):
             try:
                 self.logger.warning(str(e))
                 host = self.config.getDestinationHost()
-                msg = u'unable to create a connection to the schema: {0}, instance {1} ' + \
-                      u'going to try to connect directly to the server: {2}'
+                msg = u'unable to create a connection to the schema: {0},' + \
+                      u' instance {1} going to try to connect directly ' + \
+                      u'to the server: {2}'
                 msg = msg.format(accntName, serviceName, host)
                 self.logger.warning(msg)
                 port = self.config.getDestinationOraclePort()

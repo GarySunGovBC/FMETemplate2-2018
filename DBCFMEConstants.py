@@ -95,6 +95,9 @@ class TemplateConstants(object):
     ConfFile_deps_maxretries = 'maxretries'
     ConfFile_deps_waittime = 'waittime'
 
+    # Environment variable names that are consumed by the framework
+    EnvVar_LogDir = 'DBC_FRAMEWORK_LOGDIR'
+
     # jenkins params
     jenkinsSection = 'jenkins'
     jenkinsSection_createSDEconnFile_token = 'buildsdeconnfile_token'
