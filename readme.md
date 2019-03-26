@@ -1,6 +1,6 @@
 # DataBC FME Framework
 
-This is the root directory for the DataBC FME Framework..  The 
+This is the root directory for the DataBC FME Framework.  The 
 Goals of the template are:
 
 1. Promote Modularity:  Keep code embedded in FMWs to an extreme minimum.  All 
