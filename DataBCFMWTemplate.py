@@ -1456,7 +1456,7 @@ class Util(object):
         :param fmwDir: the directory where the fmw that is being run is located
         :param fmwName: the fmw name
 
-        This method will recieve the full path to where the current
+        This method will receive the full path to where the current
         fmw that is being processed is located, and the name of the fmw
         that is being processed.  It will then calculate:
           - the full path to the outputs director
@@ -1488,9 +1488,6 @@ class Util(object):
 
         '''
         const = TemplateConstants()
-        # fmwName = self.fmeMacroVals[self.const.FMWMacroKey_FMWName])
-        # fmwDir = fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
-        # curDir = self.fmeMacroVals[self.const.FMWMacroKey_FMWDirectory]
         outDirFullPath = os.path.join(fmwDir, const.AppConfigOutputsDir)
         logDirFullPath = os.path.join(outDirFullPath, const.AppConfigLogDir)
         fmwFileNoExt, fileExt = os.path.splitext(fmwName)

@@ -1,0 +1,282 @@
+#! <?xml version="1.0" encoding="UTF-8" ?>
+#! <TRANSFORMER
+# TRANSFORMER_BEGIN StringCleaner,1,Strings,7ff0f851-56c5-4096-b058-3df4eea061d7,"Linked by Default",No,NO_PARALLELISM,,No,16494,YES,No
+# <p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">
+#     <br/>
+# </p>
+# <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">This transformers cleans the value stored in an attribute by removing all accents. There are options available to remove special characters (like spaces, #, ^, ...) and to make the returned value uppercase.</p>
+# <p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">
+#     <br/>
+# </p>
+# <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">The code implemented to remove the accents is the one provided by david_r on the knowledge.safe.com forum:</p>
+# <p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">https://knowledge.safe.com/questions/1749/accents-in-attributes.html</p>
+# <p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">
+#     <br/>
+# </p>
+# <p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;">
+#     <br/>
+# </p>
+# 
+# TRANSFORMER_END
+#!   DOC_TOP_LEFT="-1047.24 -339.753"
+#!   TITLE="StringCleaner"
+#!   FME_PROCESS_GROUPS_ORDERED="No"
+#!   FMX_INSERT_MODE="Linked by Default"
+#!   FME_BUILD_NUM="16494"
+#!   REQUIREMENTS_KEYWORD="none"
+#!   EXPLICIT_BOOKMARK_ORDER="false"
+#!   ITERATION_COUNT_ATTR=""
+#!   LEGAL_TERMS_CONDITIONS="&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;"
+#!   REQUIREMENTS="&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;"
+#!   FME_DOCUMENT_GUID="7ff0f851-56c5-4096-b058-3df4eea061d7"
+#!   SHOW_INFO_NODES="true"
+#!   HISTORY="2016-10-05,Jeroen&lt;space&gt;Stiers,Creation"
+#!   ZOOM_SCALE="119"
+#!   ATTR_TYPE_ENCODING="SDF"
+#!   VIEW_POSITION="-1546.76 1299.91"
+#!   LAST_SAVE_DATE="2016-10-06T14:45:22"
+#!   CATEGORY="Strings"
+#!   PASSWORD=""
+#!   FME_LINKED_TRANSFORMER_VERSION="1"
+#!   FME_PROCESS_GROUP_BY=""
+#!   WARN_INVALID_XFORM_PARAM="Yes"
+#!   BLOCKED_LOOPING="No"
+#!   USAGE="&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Provide the custom transformer with a feature having an attribute to be cleaned / standardised. &lt;/p&gt;&#10;&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;You can specify:&lt;/p&gt;&#10;&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- which attribute to clean&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- if the result should be in uppercase or not&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;- which characters to remove from the string (1 character per line)&lt;/p&gt;&#10;"
+#!   DOC_EXTENTS="3111.51 71"
+#!   FME_PROCESS_COUNT="NO_PARALLELISM"
+#!   XFORM_DEPRECATED="No"
+#!   LAST_SAVE_BUILD="FME(R) 2016.1.0.1 (20160516 - Build 16494 - WIN64)"
+#!   WORKSPACE_VERSION="1"
+#!   SHOW_ANNOTATIONS="true"
+#!   MAX_LOOP_ITERATIONS=""
+#!   FMX_ATTRIBUTE_PROPOGATION_MODE="AUTO"
+#!   FME_SERVER_SERVICES=""
+#!   FME_DOCUMENT_PRIORGUID="e4137eba-6d61-489b-bee2-174a911b4371,32601755-8414-4ae7-a022-2a0caac2dd50,aac93bbd-5435-41f4-9701-5e5bd73a19a6,14ce5a0c-c101-42f2-b237-4a79a6e0043c,876e9c13-45b5-41cf-a85d-bdcdceb4e83f"
+#!   DESCRIPTION="&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;This transformers cleans the value stored in an attribute by removing all accents. There are options available to remove special characters (like spaces, #, ^, ...) and to make the returned value uppercase.&lt;/p&gt;&#10;&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;The code implemented to remove the accents is the one provided by david_r on the knowledge.safe.com forum:&lt;/p&gt;&#10;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;https://knowledge.safe.com/questions/1749/accents-in-attributes.html&lt;/p&gt;&#10;&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&#10;    &lt;br/&gt;&#10;&lt;/p&gt;&#10;"
+#! >
+#! <DATASETS>
+#! </DATASETS>
+#! <DATA_TYPES>
+#! </DATA_TYPES>
+#! <GEOM_TYPES>
+#! </GEOM_TYPES>
+#! <FEATURE_TYPES>
+#! </FEATURE_TYPES>
+#! <FMESERVER>
+#! </FMESERVER>
+#! <GLOBAL_PARAMETERS>
+#! <GLOBAL_PARAMETER
+#!   GUI_LINE="GUI ATTR_OR_ATTR nameAttribute What attribute should be cleaned?:"
+#!   DEFAULT_VALUE=""
+#!   IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#!   GUI_LINE="GUI CHOICE_OR_ATTR uppercase Yes%No Do you want the returned string to be in uppercase?:"
+#!   DEFAULT_VALUE="Yes"
+#!   IS_STAND_ALONE="true"
+#! />
+#! <GLOBAL_PARAMETER
+#!   GUI_LINE="GUI OPTIONAL TEXT_EDIT_OR_ATTR charactersToRemove What special characters should be removed (next to all accents):"
+#!   DEFAULT_VALUE="&lt;apos&gt;&lt;lf&gt;_&lt;lf&gt;-&lt;lf&gt;&lt;quote&gt;&lt;lf&gt;.&lt;lf&gt;?&lt;lf&gt;+&lt;lf&gt;=&lt;lf&gt;&lt;backslash&gt;&lt;lf&gt;&lt;amp&gt;&lt;lf&gt;|&lt;lf&gt;^&lt;lf&gt;&lt;space&gt;&lt;lf&gt;*&lt;lf&gt;&lt;dollar&gt;&lt;lf&gt;&lt;openparen&gt;&lt;lf&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;openbracket&gt;&lt;lf&gt;&lt;closebracket&gt;&lt;lf&gt;&lt;opencurly&gt;&lt;lf&gt;&lt;closecurly&gt;&lt;lf&gt;!"
+#!   IS_STAND_ALONE="true"
+#! />
+#! </GLOBAL_PARAMETERS>
+#! <COMMENTS>
+#! </COMMENTS>
+#! <CONSTANTS>
+#! </CONSTANTS>
+#! <BOOKMARKS>
+#! </BOOKMARKS>
+#! <TRANSFORMERS>
+#! <TRANSFORMER
+#!   IDENTIFIER="1"
+#!   TYPE="PythonCaller"
+#!   VERSION="4"
+#!   POSITION="853.624 -268.753"
+#!   BOUNDING_RECT="853.624 -268.753 -1 -1"
+#!   ORDER="5e+14"
+#!   PARMS_EDITED="true"
+#!   ENABLED="true"
+#!   LAST_PARM_EDIT="16494"
+#! >
+#!     <OUTPUT_FEAT NAME="OUTPUT"/>
+#!     <FEAT_COLLAPSED COLLAPSED="0"/>
+#!     <XFORM_ATTR ATTR_NAME="StringCleaner_nameAttribute" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#!     <XFORM_ATTR ATTR_NAME="StringCleaner_valueAttribute" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#!     <XFORM_ATTR ATTR_NAME="StringCleaner_uppercase" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#!     <XFORM_ATTR ATTR_NAME="StringCleaner_charactersToRemove" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#!     <XFORM_PARM PARM_NAME="PARAMETERS_GROUP" PARM_VALUE=""/>
+#!     <XFORM_PARM PARM_NAME="NEW_ATTRIBUTES" PARM_VALUE=""/>
+#!     <XFORM_PARM PARM_NAME="HIDE_ATTRIBUTES" PARM_VALUE=""/>
+#!     <XFORM_PARM PARM_NAME="PYTHONSOURCE" PARM_VALUE="import&lt;space&gt;fme&lt;lf&gt;import&lt;space&gt;fmeobjects&lt;lf&gt;import&lt;space&gt;unicodedata&lt;space&gt;as&lt;space&gt;ud&lt;lf&gt;&lt;lf&gt;#&lt;space&gt;This&lt;space&gt;code&lt;space&gt;is&lt;space&gt;based&lt;space&gt;on&lt;space&gt;the&lt;space&gt;answer&lt;space&gt;of&lt;space&gt;david_r&lt;space&gt;in&lt;space&gt;the&lt;space&gt;FME&lt;space&gt;knowledge&lt;space&gt;page:&lt;lf&gt;#&lt;space&gt;https:&lt;solidus&gt;&lt;solidus&gt;knowledge.safe.com&lt;solidus&gt;questions&lt;solidus&gt;1749&lt;solidus&gt;accents-in-attributes.html&lt;lf&gt;&lt;lf&gt;class&lt;space&gt;StandardiseString&lt;openparen&gt;object&lt;closeparen&gt;:&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;def&lt;space&gt;__init__&lt;openparen&gt;self&lt;closeparen&gt;:&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;#&lt;space&gt;Create&lt;space&gt;a&lt;space&gt;list&lt;space&gt;containing&lt;space&gt;all&lt;space&gt;characters&lt;space&gt;that&lt;space&gt;have&lt;space&gt;to&lt;space&gt;be&lt;space&gt;replaced&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;#&lt;space&gt;by&lt;space&gt;nothing&lt;space&gt;&lt;openparen&gt;so&lt;space&gt;they&lt;space&gt;will&lt;space&gt;be&lt;space&gt;removed&lt;closeparen&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;self.toRemove&lt;space&gt;=&lt;space&gt;None&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;def&lt;space&gt;input&lt;openparen&gt;self&lt;comma&gt;feature&lt;closeparen&gt;:&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;if&lt;space&gt;self.toRemove&lt;space&gt;is&lt;space&gt;None:&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;self.toRemove&lt;space&gt;=&lt;space&gt;feature.getAttribute&lt;openparen&gt;&lt;apos&gt;StringCleaner_charactersToRemove&lt;apos&gt;&lt;closeparen&gt;.split&lt;openparen&gt;&lt;apos&gt;&lt;backslash&gt;n&lt;apos&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;#&lt;space&gt;Get&lt;space&gt;the&lt;space&gt;currently&lt;space&gt;stored&lt;space&gt;value&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;name&lt;space&gt;=&lt;space&gt;feature.getAttribute&lt;openparen&gt;&lt;apos&gt;StringCleaner_valueAttribute&lt;apos&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;#&lt;space&gt;Go&lt;space&gt;through&lt;space&gt;the&lt;space&gt;list&lt;space&gt;of&lt;space&gt;characters&lt;space&gt;to&lt;space&gt;remove&lt;space&gt;and&lt;space&gt;remove&lt;space&gt;them&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;for&lt;space&gt;cChar&lt;space&gt;in&lt;space&gt;self.toRemove:&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;name&lt;space&gt;=&lt;space&gt;name.replace&lt;openparen&gt;cChar&lt;comma&gt;&lt;space&gt;&lt;apos&gt;&lt;apos&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;#&lt;space&gt;Remove&lt;space&gt;all&lt;space&gt;the&lt;space&gt;special&lt;space&gt;characters&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;new_name&lt;space&gt;=&lt;space&gt;&lt;apos&gt;&lt;apos&gt;.join&lt;openparen&gt;&lt;openbracket&gt;self.rmdiacritics&lt;openparen&gt;char&lt;closeparen&gt;&lt;space&gt;for&lt;space&gt;char&lt;space&gt;in&lt;space&gt;name&lt;closebracket&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;#&lt;space&gt;Convert&lt;space&gt;to&lt;space&gt;uppercase&lt;space&gt;if&lt;space&gt;necessary&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;if&lt;space&gt;feature.getAttribute&lt;openparen&gt;&lt;apos&gt;StringCleaner_uppercase&lt;apos&gt;&lt;closeparen&gt;&lt;space&gt;==&lt;space&gt;&lt;apos&gt;Yes&lt;apos&gt;:&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;new_name&lt;space&gt;=&lt;space&gt;new_name.upper&lt;openparen&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;#&lt;space&gt;Store&lt;space&gt;the&lt;space&gt;result&lt;space&gt;in&lt;space&gt;the&lt;space&gt;attribute&lt;space&gt;and&lt;space&gt;output&lt;space&gt;the&lt;space&gt;feature.&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;feature.setAttribute&lt;openparen&gt;feature.getAttribute&lt;openparen&gt;&lt;apos&gt;StringCleaner_nameAttribute&lt;apos&gt;&lt;closeparen&gt;&lt;comma&gt;&lt;space&gt;new_name&lt;closeparen&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;self.pyoutput&lt;openparen&gt;feature&lt;closeparen&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;def&lt;space&gt;close&lt;openparen&gt;self&lt;closeparen&gt;:&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;pass&lt;lf&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;def&lt;space&gt;rmdiacritics&lt;openparen&gt;self&lt;comma&gt;&lt;space&gt;char&lt;closeparen&gt;:&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;apos&gt;&lt;apos&gt;&lt;apos&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;Return&lt;space&gt;the&lt;space&gt;base&lt;space&gt;character&lt;space&gt;of&lt;space&gt;char&lt;comma&gt;&lt;space&gt;by&lt;space&gt;&lt;quote&gt;removing&lt;quote&gt;&lt;space&gt;any&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;diacritics&lt;space&gt;like&lt;space&gt;accents&lt;space&gt;or&lt;space&gt;curls&lt;space&gt;and&lt;space&gt;strokes&lt;space&gt;and&lt;space&gt;the&lt;space&gt;like.&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;apos&gt;&lt;apos&gt;&lt;apos&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;try:&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;desc&lt;space&gt;=&lt;space&gt;ud.name&lt;openparen&gt;char&lt;closeparen&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;cutoff&lt;space&gt;=&lt;space&gt;desc.find&lt;openparen&gt;&lt;apos&gt;&lt;space&gt;WITH&lt;space&gt;&lt;apos&gt;&lt;closeparen&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;if&lt;space&gt;cutoff&lt;space&gt;!=&lt;space&gt;-1:&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;desc&lt;space&gt;=&lt;space&gt;desc&lt;openbracket&gt;:cutoff&lt;closebracket&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;return&lt;space&gt;ud.lookup&lt;openparen&gt;desc&lt;closeparen&gt;&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;except&lt;space&gt;ValueError:&lt;lf&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;&lt;space&gt;return&lt;space&gt;&lt;apos&gt;&lt;apos&gt;"/>
+#!     <XFORM_PARM PARM_NAME="TRANSFORMER_GROUP" PARM_VALUE=""/>
+#!     <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="PythonCaller"/>
+#!     <XFORM_PARM PARM_NAME="PYTHONSYMBOL" PARM_VALUE="StandardiseString"/>
+#!     <XFORM_PARM PARM_NAME="ADVANCED_GROUP" PARM_VALUE=""/>
+#!     <XFORM_PARM PARM_NAME="LIST_ATTRS" PARM_VALUE=""/>
+#! </TRANSFORMER>
+#! <TRANSFORMER
+#!   IDENTIFIER="2"
+#!   TYPE="AttributeEncoder"
+#!   VERSION="0"
+#!   POSITION="268.266 -268.753"
+#!   BOUNDING_RECT="268.266 -268.753 -1 -1"
+#!   ORDER="5e+14"
+#!   PARMS_EDITED="true"
+#!   ENABLED="true"
+#!   LAST_PARM_EDIT="16494"
+#! >
+#!     <OUTPUT_FEAT NAME="OUTPUT"/>
+#!     <FEAT_COLLAPSED COLLAPSED="0"/>
+#!     <XFORM_ATTR ATTR_NAME="StringCleaner_nameAttribute" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#!     <XFORM_ATTR ATTR_NAME="StringCleaner_valueAttribute" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#!     <XFORM_ATTR ATTR_NAME="StringCleaner_uppercase" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#!     <XFORM_ATTR ATTR_NAME="StringCleaner_charactersToRemove" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#!     <XFORM_PARM PARM_NAME="PARAMETERS_GROUP" PARM_VALUE=""/>
+#!     <XFORM_PARM PARM_NAME="ATTRCHOICE" PARM_VALUE="Selected Attributes"/>
+#!     <XFORM_PARM PARM_NAME="TRANSFORMER_GROUP" PARM_VALUE=""/>
+#!     <XFORM_PARM PARM_NAME="ATTRS_GROUP" PARM_VALUE=""/>
+#!     <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="AttributeEncoder"/>
+#!     <XFORM_PARM PARM_NAME="DEST_ENCODING" PARM_VALUE="utf-8"/>
+#!     <XFORM_PARM PARM_NAME="ATTRLIST" PARM_VALUE="StringCleaner_valueAttribute"/>
+#!     <XFORM_PARM PARM_NAME="TREAT_AS_BYTES" PARM_VALUE="Honor Encoding"/>
+#! </TRANSFORMER>
+#! <TRANSFORMER
+#!   IDENTIFIER="8"
+#!   TYPE="AttributeCreator"
+#!   VERSION="8"
+#!   POSITION="-329.55 -268.753"
+#!   BOUNDING_RECT="-329.55 -268.753 -1 -1"
+#!   ORDER="5e+14"
+#!   PARMS_EDITED="true"
+#!   ENABLED="true"
+#!   LAST_PARM_EDIT="16494"
+#! >
+#!     <OUTPUT_FEAT NAME="OUTPUT"/>
+#!     <FEAT_COLLAPSED COLLAPSED="0"/>
+#!     <XFORM_ATTR ATTR_NAME="StringCleaner_nameAttribute" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#!     <XFORM_ATTR ATTR_NAME="StringCleaner_valueAttribute" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#!     <XFORM_ATTR ATTR_NAME="StringCleaner_uppercase" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#!     <XFORM_ATTR ATTR_NAME="StringCleaner_charactersToRemove" IS_USER_CREATED="false" FEAT_INDEX="0" />
+#!     <XFORM_PARM PARM_NAME="ATTRIBUTE_HANDLING" PARM_VALUE=""/>
+#!     <XFORM_PARM PARM_NAME="MULTI_FEATURE_MODE" PARM_VALUE="NO"/>
+#!     <XFORM_PARM PARM_NAME="NULL_ATTR_MODE_DISPLAY" PARM_VALUE="No Substitution"/>
+#!     <XFORM_PARM PARM_NAME="TRANSFORMER_GROUP" PARM_VALUE=""/>
+#!     <XFORM_PARM PARM_NAME="XFORMER_NAME" PARM_VALUE="AttributeCreator"/>
+#!     <XFORM_PARM PARM_NAME="ATTRIBUTE_GRP" PARM_VALUE=""/>
+#!     <XFORM_PARM PARM_NAME="ATTR_TABLE" PARM_VALUE="&quot;&quot; StringCleaner_nameAttribute SET_TO $(nameAttribute)  StringCleaner_valueAttribute SET_TO &lt;at&gt;Value&lt;openparen&gt;$(nameAttribute)&lt;closeparen&gt;  StringCleaner_uppercase SET_TO $(uppercase)  StringCleaner_charactersToRemove SET_TO $(charactersToRemove)"/>
+#!     <XFORM_PARM PARM_NAME="NUM_SUBSEQUENT_FEATURES" PARM_VALUE="&lt;Unused&gt;"/>
+#!     <XFORM_PARM PARM_NAME="NUM_PRIOR_FEATURES" PARM_VALUE="&lt;Unused&gt;"/>
+#!     <XFORM_PARM PARM_NAME="NULL_ATTR_VALUE" PARM_VALUE="&lt;Unused&gt;"/>
+#! </TRANSFORMER>
+#! </TRANSFORMERS>
+#! <SUBDOCUMENT_IOS>
+#! <SUBDOCUMENT_IO
+#!   IDENTIFIER="4"
+#!   NAME="Input"
+#!   POSITION="-1047.24 -268.753"
+#!   BOUNDING_RECT="-1047.24 -268.753 430 71"
+#!   COLLAPSED="true"
+#!   PUBLISHED="true"
+#!   IS_SOURCE="true"
+#!   ATTR_MODE="0"
+#! >
+#! </SUBDOCUMENT_IO>
+#! <SUBDOCUMENT_IO
+#!   IDENTIFIER="6"
+#!   NAME="Output"
+#!   POSITION="1482.62 -268.753"
+#!   BOUNDING_RECT="1482.62 -268.753 581.65 71"
+#!   COLLAPSED="false"
+#!   IS_SOURCE="false"
+#!   ATTR_MODE="1"
+#! >
+#! </SUBDOCUMENT_IO>
+#! </SUBDOCUMENT_IOS>
+#! <FEAT_LINKS>
+#! <FEAT_LINK
+#!   IDENTIFIER="9"
+#!   SOURCE_NODE="4"
+#!   TARGET_NODE="8"
+#!   SOURCE_PORT_DESC="0"
+#!   TARGET_PORT_DESC="fi 0 "
+#!   ENABLED="true"
+#!   EXECUTION_IDX="0"
+#!   HIDDEN="false"
+#!   EXTRA_POINTS=""
+#! />
+#! <FEAT_LINK
+#!   IDENTIFIER="7"
+#!   SOURCE_NODE="1"
+#!   TARGET_NODE="6"
+#!   SOURCE_PORT_DESC="fo 0 OUTPUT"
+#!   TARGET_PORT_DESC="0"
+#!   ENABLED="true"
+#!   EXECUTION_IDX="0"
+#!   HIDDEN="false"
+#!   EXTRA_POINTS=""
+#! />
+#! <FEAT_LINK
+#!   IDENTIFIER="3"
+#!   SOURCE_NODE="2"
+#!   TARGET_NODE="1"
+#!   SOURCE_PORT_DESC="fo 0 OUTPUT"
+#!   TARGET_PORT_DESC="fi 0 "
+#!   ENABLED="true"
+#!   EXECUTION_IDX="0"
+#!   HIDDEN="false"
+#!   EXTRA_POINTS=""
+#! />
+#! <FEAT_LINK
+#!   IDENTIFIER="13"
+#!   SOURCE_NODE="8"
+#!   TARGET_NODE="2"
+#!   SOURCE_PORT_DESC="fo 0 OUTPUT"
+#!   TARGET_PORT_DESC="fi 0 "
+#!   ENABLED="true"
+#!   EXECUTION_IDX="0"
+#!   HIDDEN="false"
+#!   EXTRA_POINTS=""
+#! />
+#! </FEAT_LINKS>
+#! <BREAKPOINTS>
+#! </BREAKPOINTS>
+#! <ATTR_LINKS>
+#! </ATTR_LINKS>
+#! <SUBDOCUMENTS>
+#! </SUBDOCUMENTS>
+#! <LOOKUP_TABLES>
+#! </LOOKUP_TABLES>
+#! </TRANSFORMER>
+DEFAULT_MACRO $(StringCleaner_WORKSPACE_NAME)_nameAttribute 
+DEFAULT_MACRO $(StringCleaner_WORKSPACE_NAME)_uppercase Yes
+DEFAULT_MACRO $(StringCleaner_WORKSPACE_NAME)_charactersToRemove <apos><lf>_<lf>-<lf><quote><lf>.<lf>?<lf>+<lf>=<lf><backslash><lf><amp><lf>|<lf>^<lf><space><lf>*<lf><dollar><lf><openparen><lf><closeparen><lf><openbracket><lf><closebracket><lf><opencurly><lf><closecurly><lf>!
+#! START_HEADER
+#! END_HEADER
+
+LOG_TIMINGS YES
+LOG_FILTER_MASK -1
+DEFAULT_MACRO WB_CURRENT_CONTEXT
+DEFAULT_MACRO StringCleaner_WORKSPACE_NAME ""
+INCLUDE [puts {MACRO WB_OLD_CONTEXT_$(StringCleaner_WORKSPACE_NAME) $(WB_CURRENT_CONTEXT)};          puts {MACRO WB_CURRENT_CONTEXT $(StringCleaner_WORKSPACE_NAME)}]
+FACTORY_DEF * TeeFactory   FACTORY_NAME "$(StringCleaner_WORKSPACE_NAME)_Input1475757922 Input Splitter"   INPUT FEATURE_TYPE "$(StringCleaner_WORKSPACE_NAME)_Input"   OUTPUT FEATURE_TYPE "$(StringCleaner_WORKSPACE_NAME)_Input"
+# -------------------------------------------------------------------------
+
+FACTORY_DEF * AttrSetFactory    FACTORY_NAME $(StringCleaner_WORKSPACE_NAME)_AttributeCreator    INPUT  FEATURE_TYPE "$(StringCleaner_WORKSPACE_NAME)_Input"    MULTI_FEATURE_MODE NO 	 NULL_ATTR_MODE NO_OP 	 ATTRSET_CREATE_DIRECTIVES _PROPAGATE_MISSING_FDIV 	 ATTR_ACTION "" "StringCleaner_nameAttribute" "SET_TO" "$($(StringCleaner_WORKSPACE_NAME)_nameAttribute$encode)"     ATTR_ACTION "" "StringCleaner_valueAttribute" "SET_TO" "<at>Value<openparen>$($(StringCleaner_WORKSPACE_NAME)_nameAttribute$encode)<closeparen>"     ATTR_ACTION "" "StringCleaner_uppercase" "SET_TO" "$($(StringCleaner_WORKSPACE_NAME)_uppercase$encode)"     ATTR_ACTION "" "StringCleaner_charactersToRemove" "SET_TO" "$($(StringCleaner_WORKSPACE_NAME)_charactersToRemove)"    OUTPUT OUTPUT FEATURE_TYPE "$(StringCleaner_WORKSPACE_NAME)_AttributeCreator_OUTPUT"
+
+
+# -------------------------------------------------------------------------
+
+Tcl2 proc $(StringCleaner_WORKSPACE_NAME)_AttributeEncoder_convert {} {    set attrs [split {StringCleaner_valueAttribute} { }];    set allAttributes false;    if { {SELECTED} == {ALL} } {       set attrs [FME_AttributeNames];       set allAttributes true;    };    set parmList {{EvaluateExpression} {ATTR_SET_EXPR}};    foreach attr $attrs {      if {[string first {fme_} $attr] == 0 && $allAttributes} {         continue;      };      if {$allAttributes} {        set attr [FME_EncodeText $attr];      };      set funcAttr $attr;      if { [string first "<quote>" $attr] != -1 }      {          set funcAttr [string map {"<quote>" "<backslash><quote>"} $attr];          append funcAttr "<quote>";          set funcAttr "<quote>"$funcAttr;      };      set funcCall [join [list "<at>ConvertEncoding<openparen>utf-8<comma><at>Value<openparen>" $funcAttr "<closeparen><comma>FALSE<closeparen>"] {}];      lappend parmList $attr;      lappend parmList $funcCall;    };    lappend parmList {$(StringCleaner_WORKSPACE_NAME)_AttributeEncoder};    eval FME_Execute $parmList; }
+FACTORY_DEF * TeeFactory    FACTORY_NAME $(StringCleaner_WORKSPACE_NAME)_AttributeEncoder    INPUT  FEATURE_TYPE "$(StringCleaner_WORKSPACE_NAME)_AttributeCreator_OUTPUT"    OUTPUT FEATURE_TYPE "$(StringCleaner_WORKSPACE_NAME)_AttributeEncoder_OUTPUT"         @Tcl2("$(StringCleaner_WORKSPACE_NAME)_AttributeEncoder_convert")
+
+
+# -------------------------------------------------------------------------
+
+
+FME_PYTHON_PATH "$(FME_MF_DIR)"
+
+FACTORY_DEF * PythonFactory    FACTORY_NAME $(StringCleaner_WORKSPACE_NAME)_PythonCaller    INPUT  FEATURE_TYPE "$(StringCleaner_WORKSPACE_NAME)_AttributeEncoder_OUTPUT"    SYMBOL_NAME StandardiseString    PYTHON_NAMESPACE FMEOBJECTS    SOURCE_CODE import<space>fme<lf>import<space>fmeobjects<lf>import<space>unicodedata<space>as<space>ud<lf><lf>#<space>This<space>code<space>is<space>based<space>on<space>the<space>answer<space>of<space>david_r<space>in<space>the<space>FME<space>knowledge<space>page:<lf>#<space>https:<solidus><solidus>knowledge.safe.com<solidus>questions<solidus>1749<solidus>accents-in-attributes.html<lf><lf>class<space>StandardiseString<openparen>object<closeparen>:<lf><space><space><space><space>def<space>__init__<openparen>self<closeparen>:<lf><space><space><space><space><space><space><space><space><lf><space><space><space><space><space><space><space><space>#<space>Create<space>a<space>list<space>containing<space>all<space>characters<space>that<space>have<space>to<space>be<space>replaced<lf><space><space><space><space><space><space><space><space>#<space>by<space>nothing<space><openparen>so<space>they<space>will<space>be<space>removed<closeparen><lf><space><space><space><space><space><space><space><space>self.toRemove<space>=<space>None<lf><space><space><space><space><space><space><space><space><lf><space><space><space><space><space><space><space><space><lf><space><space><space><space>def<space>input<openparen>self<comma>feature<closeparen>:<lf><space><space><space><space><space><space><space><space><lf><space><space><space><space><space><space><space><space>if<space>self.toRemove<space>is<space>None:<lf><space><space><space><space><space><space><space><space><space><space><space><space>self.toRemove<space>=<space>feature.getAttribute<openparen><apos>StringCleaner_charactersToRemove<apos><closeparen>.split<openparen><apos><backslash>n<apos><closeparen><lf><space><space><space><space><space><space><space><space><space><space><space><space><lf><space><space><lf><space><space><space><space><space><space><space><space>#<space>Get<space>the<space>currently<space>stored<space>value<lf><space><space><space><space><space><space><space><space>name<space>=<space>feature.getAttribute<openparen><apos>StringCleaner_valueAttribute<apos><closeparen><lf><space><space><space><space><space><space><space><space><lf><space><space><space><space><space><space><space><space>#<space>Go<space>through<space>the<space>list<space>of<space>characters<space>to<space>remove<space>and<space>remove<space>them<lf><space><space><space><space><space><space><space><space>for<space>cChar<space>in<space>self.toRemove:<lf><space><space><space><space><space><space><space><space><space><space><space><space>name<space>=<space>name.replace<openparen>cChar<comma><space><apos><apos><closeparen><lf><lf><space><space><space><space><space><space><space><space>#<space>Remove<space>all<space>the<space>special<space>characters<lf><space><space><space><space><space><space><space><space>new_name<space>=<space><apos><apos>.join<openparen><openbracket>self.rmdiacritics<openparen>char<closeparen><space>for<space>char<space>in<space>name<closebracket><closeparen><lf><space><space><space><space><space><space><space><space><lf><space><space><space><space><space><space><space><space>#<space>Convert<space>to<space>uppercase<space>if<space>necessary<lf><space><space><space><space><space><space><space><space>if<space>feature.getAttribute<openparen><apos>StringCleaner_uppercase<apos><closeparen><space>==<space><apos>Yes<apos>:<lf><space><space><space><space><space><space><space><space><space><space><space><space>new_name<space>=<space>new_name.upper<openparen><closeparen><lf><space><space><space><space><space><space><space><space><lf><space><space><space><space><space><space><space><space>#<space>Store<space>the<space>result<space>in<space>the<space>attribute<space>and<space>output<space>the<space>feature.<lf><space><space><space><space><space><space><space><space>feature.setAttribute<openparen>feature.getAttribute<openparen><apos>StringCleaner_nameAttribute<apos><closeparen><comma><space>new_name<closeparen><lf><space><space><space><space><space><space><space><space>self.pyoutput<openparen>feature<closeparen><lf><space><space><space><space><space><space><space><space><lf><space><space><space><space>def<space>close<openparen>self<closeparen>:<lf><space><space><space><space><space><space><space><space>pass<lf><lf><space><space><space><space>def<space>rmdiacritics<openparen>self<comma><space>char<closeparen>:<lf><space><space><space><space><space><space><space><space><apos><apos><apos><lf><space><space><space><space><space><space><space><space>Return<space>the<space>base<space>character<space>of<space>char<comma><space>by<space><quote>removing<quote><space>any<lf><space><space><space><space><space><space><space><space>diacritics<space>like<space>accents<space>or<space>curls<space>and<space>strokes<space>and<space>the<space>like.<lf><space><space><space><space><space><space><space><space><apos><apos><apos><lf><space><space><space><space><space><space><space><space>try:<lf><space><space><space><space><space><space><space><space><space><space><space><space>desc<space>=<space>ud.name<openparen>char<closeparen><lf><space><space><space><space><space><space><space><space><space><space><space><space>cutoff<space>=<space>desc.find<openparen><apos><space>WITH<space><apos><closeparen><lf><space><space><space><space><space><space><space><space><space><space><space><space>if<space>cutoff<space>!=<space>-1:<lf><space><space><space><space><space><space><space><space><space><space><space><space><space><space><space><space>desc<space>=<space>desc<openbracket>:cutoff<closebracket><lf><space><space><space><space><space><space><space><space><space><space><space><space>return<space>ud.lookup<openparen>desc<closeparen><lf><space><space><space><space><space><space><space><space>except<space>ValueError:<lf><space><space><space><space><space><space><space><space><space><space><space><space>return<space><apos><apos>    OUTPUT PYOUTPUT FEATURE_TYPE "$(StringCleaner_WORKSPACE_NAME)_PythonCaller_OUTPUT"
+
+FACTORY_DEF * TeeFactory   FACTORY_NAME "$(StringCleaner_WORKSPACE_NAME)_Output1475757922 Output Collector"   INPUT FEATURE_TYPE "$(StringCleaner_WORKSPACE_NAME)_PythonCaller_OUTPUT"   OUTPUT FEATURE_TYPE "$(StringCleaner_WORKSPACE_NAME)_Output" @RemoveAttributes(StringCleaner_nameAttribute,StringCleaner_valueAttribute,StringCleaner_uppercase,StringCleaner_charactersToRemove)
+INCLUDE [puts {MACRO WB_CURRENT_CONTEXT $(WB_OLD_CONTEXT_$(StringCleaner_WORKSPACE_NAME))}]
