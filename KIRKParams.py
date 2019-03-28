@@ -40,13 +40,24 @@ class KIRKParams(object):
         self.fmeMacros = FMEMacros
         self.fmeFrameworkConfig = None
         self.kirk = None
-        self.pubParams = GetPublishedParams(self.fmeMacros)
-        self.readFrameworkConfig()
         self.jobId = None
+
+        self.pubParams = GetPublishedParams(self.fmeMacros)
+        self.configLogging()
+        self.readFrameworkConfig()
         self.source = None
         self.job = None
         self.fieldMap = None
         self.counterTransformers = None
+
+    def configLogging(self):
+        '''
+        creates the enhanced logger if one has not already been created
+        '''
+        fmwName = self.pubParams.getFMWFile()
+        fmwDir = self.pubParams.getFMWDirectory()
+        self.getJobId()
+        KirkEnhancedLogger(fmwDir, fmwName, self.jobId)
 
     def getJobId(self):
         '''
@@ -201,7 +212,7 @@ class KIRKParams(object):
             # with the correct value for the current job.
             self.fmeFrameworkConfig.setDestinationDatabaseEnvKey(destDbEnv)
             self.logger.info("destination Database Env. Key: %s", destDbEnv)
-        else: 
+        else:
             destDbEnv = overrideDestDbEnvKey
         return destDbEnv
 
@@ -600,4 +611,100 @@ class GetPublishedParams(DataBCFMWTemplate.GetPublishedParams):
             # it is set back to None.
             retVal = None
         return retVal
+
+
+class KirkEnhancedLogger():
+    '''
+    When FME runs an FMW, the following describes the order of operation:
+
+    1. runs any Scripted Parameters
+    2. runs startup
+    3. runs the actual FMW operations
+    4. runs shutdown
+
+    Unfortunately when code is run in either step 1 or step 4, the script
+    cannot write to the FMW log file.  For this reason a second log file
+    is generated to log code that is performed when populating scripted
+    parameters or shutdown.
+
+    on non kirk jobs a log is maintained for each FMW.  Unfortunately because
+    KIRK re-uses FMW's the log files frequently become locked by other
+    processes.
+
+    This class resolves this by creating a separate log file for KIRK jobs
+    that includes the job number.
+
+    KIRK job logs will now be stored in the following way:
+    outputs/log/<kirk fmw name>/<kirk job id>/<kirk log files>.log
+
+    These will be set up as rolling logs.
+    '''
+
+    def __init__(self, fmwDir, fmwFile, jobid, customLogConfig=None):
+        self.fmwFile = fmwFile
+        self.fmwDir = fmwDir
+        self.jobid = jobid
+        tmpLog = logging.getLogger(__name__)
+        if not tmpLog.handlers:
+            logConfigFile = self.getLogConfigFilePath()
+            print 'log config file:', logConfigFile
+            enhancedLogFilePath = self.getEnhancedLogFilePath()
+            print 'enhancedLogFilePath:', enhancedLogFilePath
+            if not os.path.exists(enhancedLogFilePath):
+                fh = open(enhancedLogFilePath, 'w')
+                fh.close()
+            logging.logFileName = enhancedLogFilePath
+            logging.config.fileConfig(logConfigFile, defaults={
+                    'logfilename': str(enhancedLogFilePath)})
+            self.logger = logging.getLogger(__name__)
+            self.logger.info("first log message for enhanced logger")
+
+    def addKirkIDToLogPath(self, frameworkPath):
+        '''
+        The fme framework creates a path for the enhanced logging file.
+        Because KIRK re-uses the same fmw we need to tack on the job id
+        to the path to the enhanced log to keep the log files unique.
+        '''
+        pathPart, fmwLogFile = os.path.split(frameworkPath)
+        fmwLogFile = '{0}_{1}'.format(fmwLogFile, self.jobid)
+        kirkLogPathWithJobId = os.path.join(pathPart, fmwLogFile)
+        if not os.path.exists(kirkLogPathWithJobId):
+            os.makedirs(kirkLogPathWithJobId)
+        return kirkLogPathWithJobId
+
+    def getEnhancedLogFilePath(self):
+        '''
+        calculates and returns the path to the log file that will be
+        created that gets used for code run before the FME log file exists,
+        and after it has been disconnected (shutdown code)
+        '''
+        confFile = DataBCFMWTemplate.TemplateConfigFileReader('DEV')
+        enhancedLoggingFileName = \
+            DataBCFMWTemplate.Util.calcEnhancedLoggingFileName(self.fmwFile)
+        enhancedLoggingDir = confFile.calcEnhancedLoggingFileOutputDirectory(
+            self.fmwDir, self.fmwFile)
+        
+        # now dissect this path and insert the path with the job_id
+        enhancedLoggingDir = self.addKirkIDToLogPath(enhancedLoggingDir)
+        
+        enhancedLoggingFullPath = os.path.join(enhancedLoggingDir,
+                                               enhancedLoggingFileName)
+        enhancedLoggingFullPath = os.path.realpath(enhancedLoggingFullPath)
+        enhancedLoggingFullPath = enhancedLoggingFullPath.replace(
+                os.path.sep, '/')
+        return enhancedLoggingFullPath
+
+    def getLogConfigFilePath(self):
+        '''
+        Using parameters defined in the framework config file, calculates
+        the expected location of the logging config file and returns it.
+        '''
+        confFile = DataBCFMWTemplate.TemplateConfigFileReader('DEV')
+        const = DataBCFMWTemplate.TemplateConstants()
+        logConfigFileName = confFile.getApplicationLogFileName()
+        configDir = const.AppConfigConfigDir
+        dirname = os.path.dirname(__file__)
+        logConfFileFullPath = os.path.join(dirname, configDir,
+                                                   logConfigFileName)
+        return logConfFileFullPath
 
