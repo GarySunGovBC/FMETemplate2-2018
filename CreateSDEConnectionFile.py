@@ -31,15 +31,59 @@ class CreateConnectionFile(object):
     simple class used to help create arcgis .sde connection files
     '''
 
-    def __init__(self, connFile2Create, host, serviceName, port=None):  # pylint: disable=redefined-outer-name
+    def __init__(self, connFile2Create, host, serviceName, port=None, dbType='oracle'):  # pylint: disable=redefined-outer-name
+        '''
+        :param connFile2Create: the path and name of the connection file
+                                that is to be created
+        :param host: host to be used when creating the connection file
+        :param serviceName: for oracle connections, the service name, for
+                            sql server connections use database name
+        :param port: if port should be used in the connection specify here
+        :param dbType: database type that is being connected to, currently
+                       supported options include {oracle|sqlserver}
+
+        '''
         self.logger = logging.getLogger(__name__)
         self.connFile2Create = connFile2Create
         self.host = host
         self.port = port
         self.serviceName = serviceName
+        self.dbtype = dbType
+        self.sde = None
+        supportedDbTypes = ['oracle', 'sql_server']
+        if self.dbtype.lower() not in supportedDbTypes:
+            msg = 'The database type specified: {0} is an invalid type!' + \
+                  'Valid types include: {1}'
+            msg = msg.format(self.dbtype, self.supportedDbTypes)
+            raise ValueError(msg)
         self.logger.info('serviceName: %s', serviceName)
         self.logger.info('host: %s', host)
         self.logger.info('connFile2Create: %s', connFile2Create)
+
+    def getConnectionString(self):
+        '''
+        :return: the direct connect connection string that should be used
+                 in the connection file.
+        '''
+        connStr = None
+        if self.dbtype.lower() == 'oracle':
+            self.sde = 'SDE.DEFAULT'
+            if not self.port:
+                connStr = '{0}/{1}'.format(self.host, self.serviceName)
+            else:
+                connStr = '{0}:{1}/{2}'.format(self.host, self.port,
+                                               self.serviceName)
+            self.logger.debug("easyConnectString: %s", connStr)
+        elif self.dbtype.lower() == 'sql_server':
+            self.sde = 'sde'
+            if not self.port:
+                connStr = '{0}\{1}'.format(self.host, self.serviceName)
+            else:
+                connStr = '{0}\{1},{2}'.format(self.host, self.serviceName,
+                                               self.port)
+        self.logger.debug("connection string: %s", connStr)
+        return connStr
+            
 
     def createConnFile(self):
         '''
@@ -64,11 +108,7 @@ class CreateConnectionFile(object):
             # for direct connect use:
             # CreateDatabaseConnection_management
             # host:port/serviceName, most of the time its just host/serviceName
-            if not self.port:
-                easyConnectString = '{0}/{1}'.format(self.host, self.serviceName)
-            else:
-                easyConnectString = '{0}:{1}/{2}'.format(self.host, self.port, self.serviceName)
-            self.logger.debug("easyConnectString: %s", easyConnectString)
+            connStr = self.getConnectionString()
 
             self.logger.debug("importing arcpy...")
             import arcpy  # @UnresolvedImport
@@ -84,13 +124,13 @@ class CreateConnectionFile(object):
             # seems to require a value for username and password even through they are invalid
             arcpy.CreateDatabaseConnection_management(connDirPath,
                                                       connFilePath,
-                                                      'ORACLE',
-                                                      easyConnectString,
+                                                      self.dbtype.upper(),
+                                                      connStr,
                                                       'DATABASE_AUTH',
                                                       'junk',
                                                       'junk',
                                                       'DO_NOT_SAVE_USERNAME',
-                                                      'SDE.DEFAULT')
+                                                      self.sde)
             self.logger.info('connection file %s has been created', self.connFile2Create)
 
 
