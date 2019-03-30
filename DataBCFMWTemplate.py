@@ -4253,56 +4253,150 @@ class ModuleLogConfig(object):
                                 the elimination of that depedency.
 
         '''
-        logConfFileFullPath = None
+        self.logConfFileFullPath = customLogConfig
+        self.fmwDir = fmwDir
+        self.fmwName = fmwName
         if not destKey:
             destKey = 'DEV'
-        logFileFullPath = Util.calcLogFilePath(fmwDir, fmwName)
+
+        # logFileFullPath = Util.calcLogFilePath(fmwDir, fmwName)
+        self.confFile = TemplateConfigFileReader(destKey)
+        self.const = TemplateConstants()
+        enhancedLoggingFullPath = self.getEnhancedLoggerPath()
+
+        if not self.logConfFileFullPath:
+            # logConfFileName = self.confFile.getApplicationLogFileName()
+            logging.logFileName = enhancedLoggingFullPath
+            logConfFileFullPath = self.getLogConfigurationFullPath()
 
         # get the tmpLog to test to see if the logger has been
         # initialized yet or not
         tmpLog = logging.getLogger(__name__)
         tmpLog.info("Module Log config logger: %s", __name__)
-        tmpLog.debug("logFileFullPath: %s", logFileFullPath)
+        tmpLog.debug("logFileFullPath: %s", enhancedLoggingFullPath)
         tmpLog.debug("handlers already configed: {0}".format(tmpLog.handlers))
-        if not tmpLog.handlers:
-            tmpLog.info('Logger does not have a handler configured')
-            logging.logFileName = logFileFullPath
-            const = TemplateConstants()
-            confFile = TemplateConfigFileReader(destKey)
 
-            # if the log config file has been sent specifically then don't
-            # calculate it
-            if customLogConfig:
-                logConfFileFullPath = customLogConfig
-            else:
+        # FME Server intercepts these log messages and sticks them in
+        # this location:
+        # http://<server name>/fmeserver/resources#/FME_SHAREDRESOURCE_LOG/engine/current
+        # The following logic attempts to redirect those messages to
+        # our enhanced logger
+        if not self.isLoggerConfiged():
 
-                # Get the log config file name from the app config file
-                logConfFileName = confFile.getApplicationLogFileName()
-
-                # get the name of the conf dir.  The output is always
-                # relative to this module.  the output log is
-                configDir = const.AppConfigConfigDir
-                dirname = os.path.dirname(__file__)
-                logConfFileFullPath = os.path.join(dirname, configDir,
-                                                   logConfFileName)
-            enhancedLoggingFileName = Util.calcEnhancedLoggingFileName(fmwName)
-            enhancedLoggingDir = confFile.calcEnhancedLoggingFileOutputDirectory(fmwDir, fmwName)  # @IgnorePep8
-            enhancedLoggingFullPath = os.path.join(enhancedLoggingDir,
-                                                   enhancedLoggingFileName)
-            enhancedLoggingFullPath = os.path.realpath(enhancedLoggingFullPath)
-            enhancedLoggingFullPath = enhancedLoggingFullPath.replace(
-                os.path.sep, '/')
             if not os.path.exists(enhancedLoggingFullPath):
                 fh = open(enhancedLoggingFullPath, 'w')
                 fh.close()
-
             logging.config.fileConfig(logConfFileFullPath, defaults={
                 'logfilename': str(enhancedLoggingFullPath)})
             logger = logging.getLogger(__name__)
             logger.info("enhancedLoggingFullPath: %s", enhancedLoggingFullPath)
             logger.info("log config file being used: %s", logConfFileFullPath)
+
+#         if not tmpLog.handlers:
+#             tmpLog.info('Logger does not have a handler configured')
+#             logging.logFileName = logFileFullPath
+#             const = TemplateConstants()
+#
+#             # if the log config file has been sent specifically then don't
+#             # calculate it
+#             if customLogConfig:
+#                 logConfFileFullPath = customLogConfig
+#             else:
+#
+#                 # Get the log config file name from the app config file
+#                 logConfFileName = confFile.getApplicationLogFileName()
+#
+#                 # get the name of the conf dir.  The output is always
+#                 # relative to this module.  the output log is
+#                 configDir = const.AppConfigConfigDir
+#                 dirname = os.path.dirname(__file__)
+#                 logConfFileFullPath = os.path.join(dirname, configDir,
+#                                                    logConfFileName)
+#             if not os.path.exists(enhancedLoggingFullPath):
+#                 fh = open(enhancedLoggingFullPath, 'w')
+#                 fh.close()
+#
+#             logging.config.fileConfig(logConfFileFullPath, defaults={
+#                 'logfilename': str(enhancedLoggingFullPath)})
+#             logger = logging.getLogger(__name__)
+#             logger.info("enhancedLoggingFullPath: %s", enhancedLoggingFullPath)
+#             logger.info("log config file being used: %s", logConfFileFullPath)
         else:
             tmpLog.debug("log already configured")
+        # and finnally double check that its all set up correctly and fme
+        # hasn't played any dirty games!
+        self.detectAndResolve()
+
+    def detectAndResolve(self):
+        '''
+        Verifies that we have a logger logging to the enhanced log file
+        location
+        '''
+        if not self.isLoggerConfiged():
+            enhancedLoggingFullPath = self.getEnhancedLoggerPath()
+            fileHandlers = []
+            curLogger = logging.getLevelName(__name__)
+            for hand in curLogger.handlers:
+                if isinstance(hand, logging.FileHandler):
+                    fileHandlers.append(hand)
+                    if hand.get_name() == 'ScriptedParameters':
+                        curLogger.removeHandler(hand)
+                        import logging.handlers.RotatingFileHandler
+                        #TODO: consider getting this from the log config file
+                        #      where it is defined, this is a cludge as fme
+                        #      seems to intercept log events for scripted 
+                        #      parameters
+                        handler = logging.handlers.RotatingFileHandler(
+                            enhancedLoggingFullPath, maxBytes=1000000,
+                            backupCount=2)
+                        curLogger.addHandler(handler)
+
+    def getLogConfigurationFullPath(self):
+        '''
+        Gets the path to the logging config file
+        '''
+        logConfFileName = self.confFile.getApplicationLogFileName()
+        configDir = self.const.AppConfigConfigDir
+        dirname = os.path.dirname(__file__)
+        logConfFileFullPath = os.path.join(dirname, configDir,
+                                           logConfFileName)
+        return logConfFileFullPath
+
+    def getEnhancedLoggerPath(self):
+        '''
+        Calculates the location of log messages for scripted parameter
+        code.
+        '''
+        enhancedLoggingFileName = Util.calcEnhancedLoggingFileName(self.fmwName)
+        enhancedLoggingDir = \
+            self.confFile.calcEnhancedLoggingFileOutputDirectory(
+                self.fmwDir, self.fmwName)
+        enhancedLoggingFullPath = os.path.join(enhancedLoggingDir,
+                                               enhancedLoggingFileName)
+        enhancedLoggingFullPath = os.path.realpath(enhancedLoggingFullPath)
+        enhancedLoggingFullPath = enhancedLoggingFullPath.replace(
+            os.path.sep, '/')
+        return enhancedLoggingFullPath
+
+    def isLoggerConfiged(self):
+        '''
+        determines if logging has been set up for this module to the
+        enhanced logger
+        '''
+        # useful snippet that helped figure this out:
+        # http://code.activestate.com/lists/python-list/621740/
+        enhancedLoggerConfiged = False
+        enhancedLoggingFullPath = self.getEnhancedLoggerPath()
+        enhancedLoggingNorm = os.path.normpath(enhancedLoggingFullPath)
+        curLogger = logging.getLogger(__name__)
+        for hand in curLogger.handlers:
+            if isinstance(hand, logging.FileHandler):
+                logName = hand.baseFilename
+                logNameNorm = os.path.normpath(logName)
+                if logNameNorm == enhancedLoggingNorm:
+                    enhancedLoggerConfiged = True
+                    break
+        return enhancedLoggerConfiged
 
 
 class PMPHelper(object):
