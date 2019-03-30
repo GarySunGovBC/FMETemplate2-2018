@@ -4332,16 +4332,17 @@ class ModuleLogConfig(object):
         Verifies that we have a logger logging to the enhanced log file
         location
         '''
+        import logging.handlers
+        resolved = False
         if not self.isLoggerConfiged():
             enhancedLoggingFullPath = self.getEnhancedLoggerPath()
             fileHandlers = []
             curLogger = logging.getLevelName(__name__)
             for hand in curLogger.handlers:
-                if isinstance(hand, logging.FileHandler):
+                if isinstance(hand, logging.handlers.RotatingFileHandler):
                     fileHandlers.append(hand)
                     if hand.get_name() == 'ScriptedParameters':
                         curLogger.removeHandler(hand)
-                        import logging.handlers.RotatingFileHandler
                         #TODO: consider getting this from the log config file
                         #      where it is defined, this is a cludge as fme
                         #      seems to intercept log events for scripted 
@@ -4350,6 +4351,18 @@ class ModuleLogConfig(object):
                             enhancedLoggingFullPath, maxBytes=1000000,
                             backupCount=2)
                         curLogger.addHandler(handler)
+                        resolved = True
+            if not resolved:
+                if fileHandlers:
+                    # if there are already rotateing file handlers then 
+                    # get rid of them and rec-reate
+                    for hand in fileHandlers:
+                        curLogger.removeHandler(hand)
+                handler = logging.handlers.RotatingFileHandler(
+                    enhancedLoggingFullPath, maxBytes=1000000,
+                    backupCount=2)
+                curLogger.addHandler(handler)
+                resolved = True
 
     def getLogConfigurationFullPath(self):
         '''
