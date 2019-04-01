@@ -4346,10 +4346,12 @@ class ModuleLogConfig(object):
             fileHandlers = []
             curLogger = logging.getLogger(__name__)
             for hand in curLogger.handlers:
-                if isinstance(hand, logging.handlers.RotatingFileHandler):
+                # was logging.handlers.RotatingFileHandler
+                if isinstance(hand, logging.FileHandler):
                     fileHandlers.append(hand)
                     handlerName = hand.get_name()
-                    self.logger.debug("log handler name: %s", handlerName)
+                    fileName = hand.baseFilename
+                    self.logger.debug("log handler name / file: %s / %s", handlerName, fileName)
                     if handlerName == 'ScriptedParameters':
                         self.logger.debug("removing and re-creating handler")
                         curLogger.removeHandler(hand)
@@ -4369,7 +4371,8 @@ class ModuleLogConfig(object):
                     for hand in fileHandlers:
                         self.logger.debug("removing a filehandler log handler")
                         curLogger.removeHandler(hand)
-                self.logger.debug("recreating the logger")
+                self.logger.debug("recreating the logger to : %s",
+                                  enhancedLoggingFullPath)
                 handler = logging.handlers.RotatingFileHandler(
                     enhancedLoggingFullPath, maxBytes=1000000,
                     backupCount=2)
@@ -4430,10 +4433,8 @@ class ModuleLogConfig(object):
                 if logNameNorm == enhancedLoggingNorm:
                     enhancedLoggerConfiged = True
                     self.logger.debug("FileHandler log file matches " +
-                                      "expected path")
-                    break
-                
-        enhancedLoggerConfiged = False
+                                      "expected path: %s", logNameNorm)
+                    break    
         return enhancedLoggerConfiged
 
 
