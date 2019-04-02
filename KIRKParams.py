@@ -613,7 +613,7 @@ class GetPublishedParams(DataBCFMWTemplate.GetPublishedParams):
         return retVal
 
 
-class KirkEnhancedLogger():
+class KirkEnhancedLogger(DataBCFMWTemplate.ModuleLogConfig):
     '''
     When FME runs an FMW, the following describes the order of operation:
 
@@ -641,23 +641,23 @@ class KirkEnhancedLogger():
     '''
 
     def __init__(self, fmwDir, fmwFile, jobid, customLogConfig=None):
-        self.fmwFile = fmwFile
-        self.fmwDir = fmwDir
         self.jobid = jobid
-        tmpLog = logging.getLogger(__name__)
-        if not tmpLog.handlers:
-            logConfigFile = self.getLogConfigFilePath()
-            print 'log config file:', logConfigFile
-            enhancedLogFilePath = self.getEnhancedLogFilePath()
-            print 'enhancedLogFilePath:', enhancedLogFilePath
-            if not os.path.exists(enhancedLogFilePath):
-                fh = open(enhancedLogFilePath, 'w')
-                fh.close()
-            logging.logFileName = enhancedLogFilePath
-            logging.config.fileConfig(logConfigFile, defaults={
-                    'logfilename': str(enhancedLogFilePath)})
-            self.logger = logging.getLogger(__name__)
-            self.logger.info("first log message for enhanced logger")
+        #DataBCFMWTemplate.ModuleLogConfig.getEnhancedLoggerPath = self.getEnhancedLoggerPath
+        DataBCFMWTemplate.ModuleLogConfig.__init__(self, fmwDir, fmwFile, 'DLV')
+        
+#         if not tmpLog.handlers:
+#             logConfigFile = self.getLogConfigFilePath()
+#             print 'log config file:', logConfigFile
+#             enhancedLogFilePath = self.getEnhancedLogFilePath()
+#             print 'enhancedLogFilePath:', enhancedLogFilePath
+#             if not os.path.exists(enhancedLogFilePath):
+#                 fh = open(enhancedLogFilePath, 'w')
+#                 fh.close()
+#             logging.logFileName = enhancedLogFilePath
+#             logging.config.fileConfig(logConfigFile, defaults={
+#                     'logfilename': str(enhancedLogFilePath)})
+#             self.logger = logging.getLogger(__name__)
+#             self.logger.info("first log message for enhanced logger")
 
     def addKirkIDToLogPath(self, frameworkPath):
         '''
@@ -672,7 +672,7 @@ class KirkEnhancedLogger():
             os.makedirs(kirkLogPathWithJobId)
         return kirkLogPathWithJobId
 
-    def getEnhancedLogFilePath(self):
+    def getEnhancedLoggerPath(self):
         '''
         calculates and returns the path to the log file that will be
         created that gets used for code run before the FME log file exists,
@@ -680,9 +680,9 @@ class KirkEnhancedLogger():
         '''
         confFile = DataBCFMWTemplate.TemplateConfigFileReader('DEV')
         enhancedLoggingFileName = \
-            DataBCFMWTemplate.Util.calcEnhancedLoggingFileName(self.fmwFile)
+            DataBCFMWTemplate.Util.calcEnhancedLoggingFileName(self.fmwName)
         enhancedLoggingDir = confFile.calcEnhancedLoggingFileOutputDirectory(
-            self.fmwDir, self.fmwFile)
+            self.fmwDir, self.fmwName)
         
         # now dissect this path and insert the path with the job_id
         enhancedLoggingDir = self.addKirkIDToLogPath(enhancedLoggingDir)
@@ -694,17 +694,4 @@ class KirkEnhancedLogger():
                 os.path.sep, '/')
         return enhancedLoggingFullPath
 
-    def getLogConfigFilePath(self):
-        '''
-        Using parameters defined in the framework config file, calculates
-        the expected location of the logging config file and returns it.
-        '''
-        confFile = DataBCFMWTemplate.TemplateConfigFileReader('DEV')
-        const = DataBCFMWTemplate.TemplateConstants()
-        logConfigFileName = confFile.getApplicationLogFileName()
-        configDir = const.AppConfigConfigDir
-        dirname = os.path.dirname(__file__)
-        logConfFileFullPath = os.path.join(dirname, configDir,
-                                                   logConfigFileName)
-        return logConfFileFullPath
 

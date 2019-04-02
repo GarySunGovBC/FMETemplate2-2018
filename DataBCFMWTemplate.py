@@ -4329,6 +4329,9 @@ class ModuleLogConfig(object):
             self.logger.debug("log already configured")
         # and finally double check that its all set up correctly and fme
         # hasn't played any dirty games!
+        # commented out this code as it is not necessary... it was created
+        # as the logger config was super flakey and it should explicity
+        # set the log location.
         #self.detectAndResolve()
 
     def detectAndResolve(self):
