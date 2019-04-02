@@ -4271,7 +4271,9 @@ class ModuleLogConfig(object):
         if not self.logConfFileFullPath:
             # logConfFileName = self.confFile.getApplicationLogFileName()
             logging.logFileName = enhancedLoggingFullPath
-            logConfFileFullPath = self.getLogConfigurationFullPath()
+            self.logConfFileFullPath = self.getLogConfigurationFullPath()
+        else:
+            self.logger.info("custom log config is: %s", self.logConfFileFullPath)
 
         # get the logger to test to see if the logger has been
         # initialized yet or not
@@ -4288,11 +4290,11 @@ class ModuleLogConfig(object):
             if not os.path.exists(enhancedLoggingFullPath):
                 fh = open(enhancedLoggingFullPath, 'w')
                 fh.close()
-            logging.config.fileConfig(logConfFileFullPath, defaults={
+            logging.config.fileConfig(self.logConfFileFullPath, defaults={
                 'logfilename': str(enhancedLoggingFullPath)})
             self.logger = logging.getLogger(__name__)
             self.logger.info("enhancedLoggingFullPath: %s", enhancedLoggingFullPath)
-            self.logger.info("log config file being used: %s", logConfFileFullPath)
+            self.logger.info("log config file being used: %s", self.logConfFileFullPath)
 
 #         if not logger.handlers:
 #             logger.info('Logger does not have a handler configured')
@@ -4327,7 +4329,7 @@ class ModuleLogConfig(object):
             self.logger.debug("log already configured")
         # and finally double check that its all set up correctly and fme
         # hasn't played any dirty games!
-        self.detectAndResolve()
+        #self.detectAndResolve()
 
     def detectAndResolve(self):
         '''
