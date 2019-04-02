@@ -642,22 +642,9 @@ class KirkEnhancedLogger(DataBCFMWTemplate.ModuleLogConfig):
 
     def __init__(self, fmwDir, fmwFile, jobid, customLogConfig=None):
         self.jobid = jobid
-        #DataBCFMWTemplate.ModuleLogConfig.getEnhancedLoggerPath = self.getEnhancedLoggerPath
+        # DataBCFMWTemplate.ModuleLogConfig.getEnhancedLoggerPath = \
+        #    self.getEnhancedLoggerPath
         DataBCFMWTemplate.ModuleLogConfig.__init__(self, fmwDir, fmwFile, 'DLV')
-        
-#         if not tmpLog.handlers:
-#             logConfigFile = self.getLogConfigFilePath()
-#             print 'log config file:', logConfigFile
-#             enhancedLogFilePath = self.getEnhancedLogFilePath()
-#             print 'enhancedLogFilePath:', enhancedLogFilePath
-#             if not os.path.exists(enhancedLogFilePath):
-#                 fh = open(enhancedLogFilePath, 'w')
-#                 fh.close()
-#             logging.logFileName = enhancedLogFilePath
-#             logging.config.fileConfig(logConfigFile, defaults={
-#                     'logfilename': str(enhancedLogFilePath)})
-#             self.logger = logging.getLogger(__name__)
-#             self.logger.info("first log message for enhanced logger")
 
     def addKirkIDToLogPath(self, frameworkPath):
         '''
@@ -683,15 +670,13 @@ class KirkEnhancedLogger(DataBCFMWTemplate.ModuleLogConfig):
             DataBCFMWTemplate.Util.calcEnhancedLoggingFileName(self.fmwName)
         enhancedLoggingDir = confFile.calcEnhancedLoggingFileOutputDirectory(
             self.fmwDir, self.fmwName)
-        
+
         # now dissect this path and insert the path with the job_id
         enhancedLoggingDir = self.addKirkIDToLogPath(enhancedLoggingDir)
-        
+
         enhancedLoggingFullPath = os.path.join(enhancedLoggingDir,
                                                enhancedLoggingFileName)
         enhancedLoggingFullPath = os.path.realpath(enhancedLoggingFullPath)
         enhancedLoggingFullPath = enhancedLoggingFullPath.replace(
                 os.path.sep, '/')
         return enhancedLoggingFullPath
-
-

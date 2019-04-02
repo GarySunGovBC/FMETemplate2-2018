@@ -437,7 +437,8 @@ class TemplateConfigFileReader(object):
         self.key = None
 
         self.confFile = confFile
-        self.logger.info("Reading the config file: %s", self.confFile)
+        if self.confFile:
+            self.logger.info("Reading the config file: %s", self.confFile)
         self.const = TemplateConstants()
 
         # This should populate self.parser
