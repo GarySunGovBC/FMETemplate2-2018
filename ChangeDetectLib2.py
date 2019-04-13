@@ -112,9 +112,9 @@ class ChangeDetect(object):
         self.const = Constants()
 
         if not isinstance(changeLogPath, ChangeLogFilePath):
-            msg = 'Called the ChangeDetect contructor with a {0} type object ' + \
-                  'in the parameter changeLogPath.  This parameter must be ' + \
-                  'a ChangeLogFilePathtype object'
+            msg = 'Called the ChangeDetect contructor with a {0} type ' + \
+                  'object in the parameter changeLogPath.  This ' + \
+                  'parameter must be a ChangeLogFilePathtype object'
             raise ValueError(msg.format(type(changeLogPath)))
 
         # This is a change log object (ChangeLogFilePath)
@@ -371,7 +371,8 @@ class ChangeLogFile(object):
                 line = line.strip()
                 if line:
                     logFileEvent = ChangeEvent(line, self.const)
-                    self.changeEventCollection.addChangeEvent(logFileEvent)
+                    if logFileEvent.isLineValid():
+                        self.changeEventCollection.addChangeEvent(logFileEvent)
 
     def getChangeEventCollection(self):
         '''
@@ -468,6 +469,23 @@ class ChangeEvent(object):
 
         self.logLineString = logLineString
         self.parseLogLine()
+        
+    def isLineValid(self):
+        '''
+        :return: indicator of whether the line in the log is a valid
+                 log entry.
+        '''
+        isValid = True
+        lineList = self.logLineString.strip().split(',')
+        if len(lineList) != self.const.expectedLogLineParams:
+            msg = 'Expecting a log file line with {2} elements in it. ' + \
+                  'The line: ({0}) only has {1} elements in it.  ' + \
+                  "skipping this line: {3}"
+            msg = msg.format(self.logLineString, len(lineList),
+                             self.const.expectedLogLineParams, lineList)
+            self.logger.warning(msg)
+            isValid = False
+        return isValid
 
     def parseLogLine(self):
         '''
@@ -480,11 +498,14 @@ class ChangeEvent(object):
         lineList = self.logLineString.strip().split(',')
         if len(lineList) != self.const.expectedLogLineParams:
             msg = 'Expecting a log file line with {2} elements in it. ' + \
-                  'The line: ({0}) only has {1} elements in it'
+                  'The line: ({0}) only has {1} elements in it.  ' + \
+                  "skipping this line: {3}"
             msg = msg.format(self.logLineString, len(lineList),
-                             self.const.expectedLogLineParams)
-            self.logger.error(msg)
-            raise ValueError(msg)
+                             self.const.expectedLogLineParams, lineList)
+            self.logger.warning(msg)
+            # removed the raise statement here and instead am testing to
+            # ensure that the log file line is a valid
+            #raise ValueError(msg)
 
         self.lastCheckedDateStr = lineList[
             self.const.logFileParam_LastCheckedDateStr]

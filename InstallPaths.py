@@ -20,6 +20,7 @@ import re
 import logging
 import os.path
 import sys
+import struct
 
 
 class RegistryReader(object):
@@ -32,7 +33,7 @@ class RegistryReader(object):
         keyStr = '\\'.join(str(e) for e in keys)
         # keyStr = '\\'.join(keys)
         self.logger.debug('keyStr: %s', keyStr)
-        #explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
+        # explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_ALL_ACCESS)
         explorer = _winreg.OpenKey(_winreg.HKEY_LOCAL_MACHINE, keyStr, 0, _winreg.KEY_READ)
         subKeys = []
         try:
@@ -78,6 +79,11 @@ class ArcGisInstallPaths(RegistryReader):
         self.desktopString = 'Desktop'
         self.desktopRegex = re.compile('^' + self.desktopString + '\d{1,2}\.\d+$', re.IGNORECASE)
 
+        # after install of desktop 10.5 the path to the desktop client becomes:
+        # HKEY_LOCAL_MACHINE\SOFTWARE\ESRI\Desktop Background Geoprocessing (64-bit)
+        # and then the root install dir is in the key:  InstallDir
+        self.desktopRegex2 = re.compile('^' + self.desktopString + '\s+Background\s+Geoprocessing.*$', re.IGNORECASE)
+
     def getInstallDir(self):
         esriKey = 'ESRI'
         msg = 'searching for {2} arcgis desktop install dir in registry {0}->{1}'
@@ -98,15 +104,22 @@ class ArcGisInstallPaths(RegistryReader):
             next((desktopEntries.append(subKey) for subKey in subKeys
                                  if self.desktopRegex.match(subKey)), None)
             self.logger.debug('found this desktop entry: {0}'.format(desktopEntries))
+
             desktopEntry = None
             if desktopEntries:
                 desktopEntry = self.getLatestDesktopRelease(desktopEntries)
+            else:
+                next((desktopEntries.append(subKey) for subKey in subKeys
+                                 if self.desktopRegex2.match(subKey)), None)
+                self.logger.debug("found these desktop entries: {0}".format(desktopEntries))
+                if desktopEntries:
+                    desktopEntry = desktopEntries[0]
 
             # for subKey in subKeys:
             if desktopEntry:
                 keyPath.append(desktopEntry)
                 subItems = self.getKeyItems(keyPath)
-                print 'desktop entries:', subItems
+                self.logger.info('desktop entries: %s', subItems)
                 # subItems: is a 3 item tuple,
                 # 0=the entry name,
                 # 1=The entry value
@@ -114,10 +127,10 @@ class ArcGisInstallPaths(RegistryReader):
                 installDirEntry = next((subItem for subItem in subItems
                                         if subItem[0] == self.installDirItemName), None)
                 installDir = installDirEntry[1]
-                print 'installDir', installDir
+                self.logger.info('installDir: %s', installDir)
                 if installDir:
                     retVal = installDir
-                    print 'The install dir is: {0}'.format(retVal)
+                    self.logger.debug('The install dir is: {0}'.format(retVal))
             else:
                 # no desktop entry
                 msg = 'Cannot find a "Desktop#.#" entry under {0}->{1} Returned values include {2}'
@@ -266,19 +279,24 @@ class ArcPyPaths(object):
 
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        self.cacheSysPath = sys.path[0:]
         self.defaultPyVersion = '2.7'
 
-    def getPaths(self, pythonVersion=None):
-        arcGisPaths = self.getArcGisDesktopPaths()
-        pythonPaths = self.getPythonPaths(pythonVersion)
+    def revert(self):
+        sys.path = self.cacheSysPath
+
+    def getPaths(self, pythonVersion=None, bit=32):
+        arcGisPaths = self.getArcGisDesktopPaths(bit=bit)
+        pythonPaths = self.getPythonPaths(pythonVersion, bit=bit)
         arcGisPaths.extend(pythonPaths)  # merge the two lists
         return arcGisPaths
 
-    def getPythonPaths(self, version=None):
+    def getPythonPaths(self, version=None, bit=32):
         if not version:
             version = self.defaultPyVersion
         pypath = PythonInstallPaths()
         pythonRootPath = pypath.getInstallDir(version)
+        self.logger.debug("root python install path: %s", pythonRootPath)
         returnPaths = self.ammendPythonPaths(pythonRootPath)
         return returnPaths
 
@@ -299,23 +317,29 @@ class ArcPyPaths(object):
         dllPaths = os.path.join(pythonRootDir, 'DLLs')
 
         returnPaths = []
+        returnPaths.append(pythonRootDir)
         returnPaths.append(sitePaths)
         returnPaths.append(libPaths)
         returnPaths.append(dllPaths)
         returnPaths.append(r'C:\Windows\system32')
         return returnPaths
 
-    def getArcGisDesktopPaths(self, desktopRootDir=None):
+    def getArcGisDesktopPaths(self, desktopRootDir=None, bit=32):
         '''
         gets the paths associated with the install of arcgis desktop
         '''
         paths2Add = []
+
+        binPath = {'32': 'bin',
+                   '64': 'bin64'}
+
         if not desktopRootDir:
             desktop = ArcGisInstallPaths()
             desktopRootDir = desktop.getInstallDir()
+            self.logger.debug("root arcgis desktop dir: %s", desktopRootDir)
         arcpyDir = os.path.join(desktopRootDir, 'arcpy')
         toolboxDir = os.path.join(desktopRootDir, 'ArcToolbox', 'Scripts')
-        binPath = os.path.join(desktopRootDir, 'bin')
+        binPath = os.path.join(desktopRootDir, binPath[str(bit)])
         scriptsPath = os.path.join(desktopRootDir, 'Scripts')
 
         paths2Add.append(arcpyDir)
@@ -326,9 +350,32 @@ class ArcPyPaths(object):
         return paths2Add
 
     def getPathsAndAddToPYTHONPATH(self, pythonVersion=None):
-        paths = self.getPaths(pythonVersion)
+        r'''
+        determines if the current interpreter is 64 bit or 32.
+          - 64 requires different paths than 32.
+
+        the following is the paths that need to be appended.
+        <python install ArcGISxx.x>\Lib\site-packages
+        <desktop install DesktopXX.X>\arcpy
+        <desktop install DesktopXX.X>\ArcToolbox\Scripts
+        <desktop install DesktopXX.X>\ArcToolbox\bin  (for 64bit: bin64)
+        <python install ArcGISxx.x>\lib")
+
+        where desktop install on 32 is like:
+          - <..path..>/Desktop10.5
+
+        and python:
+          - 32 big:  <..path..>/ArcGIS10.5
+          - 64 big:  <..path..>/ArcGISx6410.5
+
+        these paths need to be inserted in the front of sys.path.
+        '''
+        # what bit python:
+        pybit = struct.calcsize("P") * 8
+        paths = self.getPaths(pythonVersion=pythonVersion, bit=pybit)
         self.logger.debug("arcpypaths: %s", '\n'.join(paths))
-        sys.path.extend(paths)
+        # sys.path.extend(paths)
+        sys.path = paths + sys.path
         self.logger.debug("new paths are: %s", '\n'.join(sys.path))
 
 

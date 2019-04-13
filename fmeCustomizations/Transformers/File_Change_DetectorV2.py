@@ -16,9 +16,9 @@ import fme  # @UnresolvedImport pylint: disable=import-error
 
 class ChangeFlagFetcher(object):
     '''
-    This class implements the abstract structure required by a python executor
-    transformer.  It contains the logic that is used in the change detector
-    transformer
+    This class implements the abstract structure required by a python
+    executor transformer.  It contains the logic that is used in the change
+    detector transformer
     '''
 
     def __init__(self):

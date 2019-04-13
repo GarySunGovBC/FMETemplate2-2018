@@ -1264,7 +1264,7 @@ class TemplateConfigFileReader(object):
         sets the property 'key' to the authoritative string that should be used
         for whatever key was sent to this method.
         '''
-        self.logger.info(
+        self.logger.debug(
             "Destination database environment keyword is set to: %s",
             key)
         self.validateKey(key)
@@ -2322,7 +2322,7 @@ class CalcParamsBase(GetPublishedParams):
         dirConnectTemplate = 'sde:{0}:{1}/{2}'
         srcSDEDirectConnectString = dirConnectTemplate.\
             format(oraClientString, destHost, destServName)
-        self.logger.info("destination direct connect string: %s",
+        self.logger.debug("destination direct connect string: %s",
                          srcSDEDirectConnectString)
         return srcSDEDirectConnectString
 
@@ -3608,12 +3608,13 @@ class CalcParamsDataBC(object):
                              'source service name')
             self.logger.error(msg)
             raise IOError(msg)
-
+        # assemble the name of the connection file
         connFileName = '{0}__{1}.sde'.format(host, servName)
         connectionFileFullPath = os.path.join(destDir, connFileName)
         self.logger.debug("connectionFileFullPath: %s", connectionFileFullPath)
+        
         if not os.path.exists(connectionFileFullPath):
-            # get the url, token
+            # if the conn file doesnt exist then create it.
             self.logger.debug("conn file does not exist, attempting to " +
                               "create")
 
@@ -3649,6 +3650,7 @@ class CalcParamsDataBC(object):
                        embedded in the .sde file that is to be generated.
 
         '''
+        arcpyPaths = None
         # this will get the arcpy paths, and add them to the sys.path
         # parameter which should then allow for use of arcpy using the
         # fme python default interpreter
@@ -3660,9 +3662,11 @@ class CalcParamsDataBC(object):
             arcpyPaths.getPathsAndAddToPYTHONPATH(self.const.PythonVersion)
         except WindowsError, e:
             #
+            self.logger.error("error encountered trying to configure py paths")
             self.logger.exception(e)
-            msg = "was unable to pull the arc install from the registry.  trying " + \
-                  'to guess what the install location is before failing.'
+            msg = "was unable to pull the arc install from the registry. " + \
+                  ' trying to guess what the install location is before ' + \
+                  'failing.'
             self.logger.warning(msg)
             desktopDir = self.paramObj.getArcGISDesktopRootDirectory()
             pythonRootDir = self.paramObj.getPythonRootDir()
@@ -3694,6 +3698,10 @@ class CalcParamsDataBC(object):
         connFile = CreateSDEConnectionFile.CreateConnectionFile(
             connectionFileFullPath, host, serviceName, port, dbType)
         connFile.createConnFile()
+        
+        # once complete revert back to the original unmodified python paths
+        if arcpyPaths:
+            arcpyPaths.revert()
 
     def getDestDatabaseConnectionFilePath(self, position=None):
         '''
@@ -4870,11 +4878,11 @@ class DWMWriter(object):
                 msg = msg.format(accntName, serviceName, host)
                 self.logger.warning(msg)
                 port = self.config.getDestinationOraclePort()
-                self.logger.debug(u"port: %s", port)
-                self.logger.debug(u"host: %s", host)
+                self.logger.info(u"port: %s", port)
+                self.logger.info(u"host: %s", host)
                 self.db.connectNoDSN(accntName, passwrd,
                                      serviceName, host, port)
-                self.logger.debug(u"successfully connected to database " +
+                self.logger.info(u"successfully connected to database " +
                                   u"using direct connect")
                 # TODO: Should really capture the specific error type here
             except Exception, e:
