@@ -96,7 +96,12 @@ class TemplateConstants(object):
     ConfFile_deps_waittime = 'waittime'
 
     # Environment variable names that are consumed by the framework
+    # DBC_FRAMEWORK_LOGDIR - if set overrides default location for 
+    #                        enhanced log files
+    # DBC_FRAMEWORK_CNGCNTRL - if set overrides default location for 
+    #                          change control log files
     EnvVar_LogDir = 'DBC_FRAMEWORK_LOGDIR'
+    EnvVar_ChangeLogDir = 'DBC_FRAMEWORK_CNGCNTRL'
 
     # jenkins params
     jenkinsSection = 'jenkins'

@@ -430,8 +430,7 @@ class TemplateConfigFileReader(object):
     '''
 
     def __init__(self, key, confFile=None):
-        modDotClass = '{0}'.format(__name__)
-        self.logger = logging.getLogger(modDotClass)
+        self.logger = logging.getLogger(__name__)
 
         self.parser = None
         self.key = None
@@ -528,14 +527,27 @@ class TemplateConfigFileReader(object):
         return logConfFileName
 
     def getChangeLogsDirFullPath(self):
+        '''
+        :return: the full path to where the change log is expected to
+                 be.
+
+        if the env variable contained in the variable const.EnvVar_ChangeLogDir
+        is set then that directory will take precedence
+        '''
         # if self.isDataBCNode():
-        rootDir = self.getTemplateRootDirectory()
-        outputs = self.getOutputsDirectory()
-        changeLogDir = self.parser.get(
-            self.const.ConfFileSection_global,
-            self.const.ConfFileSection_global_changeLogDir)
-        changeLogFullPath = os.path.join(rootDir, outputs, changeLogDir)
-        changeLogFullPath = os.path.realpath(changeLogFullPath)
+        self.logger.debug('envs: %s', '\n'.join(os.environ))
+        if self.const.EnvVar_ChangeLogDir in os.environ:
+            changeLogFullPath = os.environ[self.const.EnvVar_ChangeLogDir]
+            self.logger.info("overriding default change log directory to: %s", 
+                             changeLogFullPath)
+        else:
+            rootDir = self.getTemplateRootDirectory()
+            outputs = self.getOutputsDirectory()
+            changeLogDir = self.parser.get(
+                self.const.ConfFileSection_global,
+                self.const.ConfFileSection_global_changeLogDir)
+            changeLogFullPath = os.path.join(rootDir, outputs, changeLogDir)
+            changeLogFullPath = os.path.realpath(changeLogFullPath)
         return changeLogFullPath
 
     def getChangeLogFile(self):
@@ -1264,7 +1276,7 @@ class TemplateConfigFileReader(object):
         sets the property 'key' to the authoritative string that should be used
         for whatever key was sent to this method.
         '''
-        self.logger.info(
+        self.logger.debug(
             "Destination database environment keyword is set to: %s",
             key)
         self.validateKey(key)
@@ -2322,7 +2334,7 @@ class CalcParamsBase(GetPublishedParams):
         dirConnectTemplate = 'sde:{0}:{1}/{2}'
         srcSDEDirectConnectString = dirConnectTemplate.\
             format(oraClientString, destHost, destServName)
-        self.logger.info("destination direct connect string: %s",
+        self.logger.debug("destination direct connect string: %s",
                          srcSDEDirectConnectString)
         return srcSDEDirectConnectString
 
@@ -3608,12 +3620,13 @@ class CalcParamsDataBC(object):
                              'source service name')
             self.logger.error(msg)
             raise IOError(msg)
-
+        # assemble the name of the connection file
         connFileName = '{0}__{1}.sde'.format(host, servName)
         connectionFileFullPath = os.path.join(destDir, connFileName)
         self.logger.debug("connectionFileFullPath: %s", connectionFileFullPath)
+
         if not os.path.exists(connectionFileFullPath):
-            # get the url, token
+            # if the conn file doesnt exist then create it.
             self.logger.debug("conn file does not exist, attempting to " +
                               "create")
 
@@ -3649,6 +3662,7 @@ class CalcParamsDataBC(object):
                        embedded in the .sde file that is to be generated.
 
         '''
+        arcpyPaths = None
         # this will get the arcpy paths, and add them to the sys.path
         # parameter which should then allow for use of arcpy using the
         # fme python default interpreter
@@ -3660,9 +3674,11 @@ class CalcParamsDataBC(object):
             arcpyPaths.getPathsAndAddToPYTHONPATH(self.const.PythonVersion)
         except WindowsError, e:
             #
+            self.logger.error("error encountered trying to configure py paths")
             self.logger.exception(e)
-            msg = "was unable to pull the arc install from the registry.  trying " + \
-                  'to guess what the install location is before failing.'
+            msg = "was unable to pull the arc install from the registry. " + \
+                  ' trying to guess what the install location is before ' + \
+                  'failing.'
             self.logger.warning(msg)
             desktopDir = self.paramObj.getArcGISDesktopRootDirectory()
             pythonRootDir = self.paramObj.getPythonRootDir()
@@ -3694,6 +3710,10 @@ class CalcParamsDataBC(object):
         connFile = CreateSDEConnectionFile.CreateConnectionFile(
             connectionFileFullPath, host, serviceName, port, dbType)
         connFile.createConnFile()
+
+        # once complete revert back to the original unmodified python paths
+        if arcpyPaths:
+            arcpyPaths.revert()
 
     def getDestDatabaseConnectionFilePath(self, position=None):
         '''
@@ -4333,7 +4353,7 @@ class ModuleLogConfig(object):
         # commented out this code as it is not necessary... it was created
         # as the logger config was super flakey and it should explicity
         # set the log location.
-        #self.detectAndResolve()
+        # self.detectAndResolve()
 
     def detectAndResolve(self):
         '''
@@ -4440,7 +4460,7 @@ class ModuleLogConfig(object):
                     enhancedLoggerConfiged = True
                     self.logger.debug("FileHandler log file matches " +
                                       "expected path: %s", logNameNorm)
-                    break    
+                    break
         return enhancedLoggerConfiged
 
 
@@ -4870,11 +4890,11 @@ class DWMWriter(object):
                 msg = msg.format(accntName, serviceName, host)
                 self.logger.warning(msg)
                 port = self.config.getDestinationOraclePort()
-                self.logger.debug(u"port: %s", port)
-                self.logger.debug(u"host: %s", host)
+                self.logger.info(u"port: %s", port)
+                self.logger.info(u"host: %s", host)
                 self.db.connectNoDSN(accntName, passwrd,
                                      serviceName, host, port)
-                self.logger.debug(u"successfully connected to database " +
+                self.logger.info(u"successfully connected to database " +
                                   u"using direct connect")
                 # TODO: Should really capture the specific error type here
             except Exception, e:

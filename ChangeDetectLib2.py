@@ -112,15 +112,15 @@ class ChangeDetect(object):
         self.const = Constants()
 
         if not isinstance(changeLogPath, ChangeLogFilePath):
-            msg = 'Called the ChangeDetect contructor with a {0} type object ' + \
-                  'in the parameter changeLogPath.  This parameter must be ' + \
-                  'a ChangeLogFilePathtype object'
+            msg = 'Called the ChangeDetect contructor with a {0} type ' + \
+                  'object in the parameter changeLogPath.  This ' + \
+                  'parameter must be a ChangeLogFilePathtype object'
             raise ValueError(msg.format(type(changeLogPath)))
 
         # This is a change log object (ChangeLogFilePath)
         self.chngLogFilePath = changeLogPath
         self.logger.debug("Change log file path: {0}".format(
-            self.chngLogFilePath))
+            self.chngLogFilePath.getChangeLogFullPath()))
         self.chngLog = ChangeLogFile(self.chngLogFilePath, self.const)
         # self.chngLogFile = ChangeLogFile(self.chngLogFilePath)
         self.chngLog.readChangeDetectLogFile()
@@ -151,14 +151,13 @@ class ChangeDetect(object):
             retVal = self.sourceDataCollection.getChangeParam(
                 srcDataPathNormalized, destDbEnvKey)
         else:
-            # havent' seen this source data set yet.
-
-            # create a new sourcedata object,
-            # use the sourcedata object to get the modification timestamp
-            # check with the change log to see if the source data has modiifed
-            # update the sourcedata object with the results of the modification
-            #   test
-            # add the sourdate object to the sourcedatacollections
+            # haven't seen source data yet. creating source data obj
+            #   - use the sourcedata object to get the modification timestamp
+            #   - check with the change log to see if the source data has
+            #     modiifed
+            #   - update the sourcedata object with the results of the
+            #     modification test
+            #   - add the sourdate object to the sourcedatacollections
 
             # before we do anything see if the srcData has an entry in the log
             # if it does not then its obviously
@@ -287,7 +286,7 @@ class ChangeLogFilePath(object):
         '''
         return self.fullPathToChangeLog
 
-    def calculateAndVerifyChangeLogFilePath(self): # @IgnorePep8
+    def calculateAndVerifyChangeLogFilePath(self):  # @IgnorePep8
         '''
         Verifies the properties provided in the constructor.
           - Verifies that the root directory to use for the log files exist
@@ -368,9 +367,9 @@ class ChangeLogFile(object):
             raise ValueError(msg.format(logFile))
         with open(logFile, 'r') as logFileFH:
             for line in logFileFH:
-                line = line.strip()
-                if line:
-                    logFileEvent = ChangeEvent(line, self.const)
+                changLogLine = ChangeLogLine(line)
+                if changLogLine.isLineValid():
+                    logFileEvent = ChangeEvent(changLogLine, self.const)
                     self.changeEventCollection.addChangeEvent(logFileEvent)
 
     def getChangeEventCollection(self):
@@ -446,6 +445,41 @@ class ChangeEventCollection(object):
         return retVal
 
 
+class ChangeLogLine(object):
+    '''
+    Used to keep log lines and log line validation separate from the
+    change event object which will consume log lines.
+    '''
+
+    def __init__(self, logLineString, const=None):
+        self.logger = logging.getLogger(__name__)
+        self.const = const
+        if not self.const:
+            self.const = Constants()
+
+        self.isValid = None
+        self.logLineString = logLineString.strip()
+        self.logLineList = self.logLineString.strip().split(',')
+
+    def isLineValid(self):
+        '''
+        :return: indicator of whether the line in the log is a valid
+                 log entry.
+        '''
+        if self.isValid is None:
+            isValid = True
+            if len(self.logLineList) != self.const.expectedLogLineParams:
+                msg = 'Expecting a log file line with {2} elements in it. ' + \
+                      'The line: ({0}) only has {1} elements in it.  ' + \
+                      "skipping this line: {3}"
+                msg = msg.format(self.logLineString, len(self.logLineList),
+                                 self.const.expectedLogLineParams, self.logLineList)
+                self.logger.warning(msg)
+                isValid = False
+            self.isValid = isValid
+        return self.isValid
+
+
 class ChangeEvent(object):
     '''
     each line in the change log can be represented by one of
@@ -457,16 +491,18 @@ class ChangeEvent(object):
 
     '''
 
-    def __init__(self, logLineString, const=None):
-        # modDotClass = '{0}.{1}'.format(__name__,self.__class__.__name__)
-        modDotClass = '{0}'.format(__name__)
-        self.logger = logging.getLogger(modDotClass)
+    def __init__(self, chngLogLine, const=None):
+        self.logger = logging.getLogger(__name__)
 
         self.const = const
         if not self.const:
             self.const = Constants()
 
-        self.logLineString = logLineString
+        self.isValid = None
+
+        self.chngLogLine = chngLogLine
+        # self.logLineString = logLineString
+
         self.parseLogLine()
 
     def parseLogLine(self):
@@ -477,33 +513,27 @@ class ChangeEvent(object):
         '''
         # get rid of leading or trailing whitespace characters and
         # then split into a list.
-        lineList = self.logLineString.strip().split(',')
-        if len(lineList) != self.const.expectedLogLineParams:
-            msg = 'Expecting a log file line with {2} elements in it. ' + \
-                  'The line: ({0}) only has {1} elements in it'
-            msg = msg.format(self.logLineString, len(lineList),
-                             self.const.expectedLogLineParams)
-            self.logger.error(msg)
-            raise ValueError(msg)
-
-        self.lastCheckedDateStr = lineList[
-            self.const.logFileParam_LastCheckedDateStr]
-        self.lastChecked = int(lineList[
-            self.const.logFileParam_LastCheckedUTCTimeStamp])
-        self.FMW = lineList[self.const.logFileParam_FMW]
-        self.srcData = lineList[self.const.logFileParam_SrcData]
-        self.srcData = Util.formatDataSet(self.srcData)
-        self.lastModifiedUTC = int(lineList[
-            self.const.logFileParam_LastModifiedUTCTimeStamp])
-        self.lastModifiedDateStr = lineList[
-            self.const.logFileParam_LastModifiedDateStr]
-        self.destDBEnvKeyValue = lineList[
-            self.const.logFileParam_LastModifiedDestDBEnvKey]
-        self.wasModified = lineList[self.const.logFileParam_WasModified]
-        if self.wasModified.lower() == 'false':
-            self.wasModified = False
-        else:
-            self.wasModified = True
+        if self.chngLogLine.isLineValid():
+            # lineList = self.logLineString.strip().split(',')
+            lineList = self.chngLogLine.logLineList
+            self.lastCheckedDateStr = lineList[
+                self.const.logFileParam_LastCheckedDateStr]
+            self.lastChecked = int(lineList[
+                self.const.logFileParam_LastCheckedUTCTimeStamp])
+            self.FMW = lineList[self.const.logFileParam_FMW]
+            self.srcData = lineList[self.const.logFileParam_SrcData]
+            self.srcData = Util.formatDataSet(self.srcData)
+            self.lastModifiedUTC = int(lineList[
+                self.const.logFileParam_LastModifiedUTCTimeStamp])
+            self.lastModifiedDateStr = lineList[
+                self.const.logFileParam_LastModifiedDateStr]
+            self.destDBEnvKeyValue = lineList[
+                self.const.logFileParam_LastModifiedDestDBEnvKey]
+            self.wasModified = lineList[self.const.logFileParam_WasModified]
+            if self.wasModified.lower() == 'false':
+                self.wasModified = False
+            else:
+                self.wasModified = True
 
     def getWasModified(self):
         '''
