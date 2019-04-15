@@ -74,6 +74,7 @@ class ChangeFlagFetcher(object):
         else:
             changeLogRootDir = self.fmeMacroValues[
                 self.const.FMWMacroKey_FMWDirectory]
+        self.logger.info("changeLogRootDir: %s", changeLogRootDir)
         # This parameter looks strange: self.changeDetectionEnabledParam
         # should probably be
         self.changeLogFilePath = ChangeDetectLib2.ChangeLogFilePath(

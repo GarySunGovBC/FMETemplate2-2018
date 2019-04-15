@@ -430,8 +430,7 @@ class TemplateConfigFileReader(object):
     '''
 
     def __init__(self, key, confFile=None):
-        modDotClass = '{0}'.format(__name__)
-        self.logger = logging.getLogger(modDotClass)
+        self.logger = logging.getLogger(__name__)
 
         self.parser = None
         self.key = None
@@ -528,14 +527,27 @@ class TemplateConfigFileReader(object):
         return logConfFileName
 
     def getChangeLogsDirFullPath(self):
+        '''
+        :return: the full path to where the change log is expected to
+                 be.
+
+        if the env variable contained in the variable const.EnvVar_ChangeLogDir
+        is set then that directory will take precedence
+        '''
         # if self.isDataBCNode():
-        rootDir = self.getTemplateRootDirectory()
-        outputs = self.getOutputsDirectory()
-        changeLogDir = self.parser.get(
-            self.const.ConfFileSection_global,
-            self.const.ConfFileSection_global_changeLogDir)
-        changeLogFullPath = os.path.join(rootDir, outputs, changeLogDir)
-        changeLogFullPath = os.path.realpath(changeLogFullPath)
+        self.logger.debug('envs: %s', '\n'.join(os.environ))
+        if self.const.EnvVar_ChangeLogDir in os.environ:
+            changeLogFullPath = os.environ[self.const.EnvVar_ChangeLogDir]
+            self.logger.info("overriding default change log directory to: %s", 
+                             changeLogFullPath)
+        else:
+            rootDir = self.getTemplateRootDirectory()
+            outputs = self.getOutputsDirectory()
+            changeLogDir = self.parser.get(
+                self.const.ConfFileSection_global,
+                self.const.ConfFileSection_global_changeLogDir)
+            changeLogFullPath = os.path.join(rootDir, outputs, changeLogDir)
+            changeLogFullPath = os.path.realpath(changeLogFullPath)
         return changeLogFullPath
 
     def getChangeLogFile(self):
@@ -3612,7 +3624,7 @@ class CalcParamsDataBC(object):
         connFileName = '{0}__{1}.sde'.format(host, servName)
         connectionFileFullPath = os.path.join(destDir, connFileName)
         self.logger.debug("connectionFileFullPath: %s", connectionFileFullPath)
-        
+
         if not os.path.exists(connectionFileFullPath):
             # if the conn file doesnt exist then create it.
             self.logger.debug("conn file does not exist, attempting to " +
@@ -3698,7 +3710,7 @@ class CalcParamsDataBC(object):
         connFile = CreateSDEConnectionFile.CreateConnectionFile(
             connectionFileFullPath, host, serviceName, port, dbType)
         connFile.createConnFile()
-        
+
         # once complete revert back to the original unmodified python paths
         if arcpyPaths:
             arcpyPaths.revert()
@@ -4341,7 +4353,7 @@ class ModuleLogConfig(object):
         # commented out this code as it is not necessary... it was created
         # as the logger config was super flakey and it should explicity
         # set the log location.
-        #self.detectAndResolve()
+        # self.detectAndResolve()
 
     def detectAndResolve(self):
         '''
@@ -4448,7 +4460,7 @@ class ModuleLogConfig(object):
                     enhancedLoggerConfiged = True
                     self.logger.debug("FileHandler log file matches " +
                                       "expected path: %s", logNameNorm)
-                    break    
+                    break
         return enhancedLoggerConfiged
 
 
