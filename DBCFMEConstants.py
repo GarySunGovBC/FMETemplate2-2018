@@ -174,6 +174,7 @@ class TemplateConstants(object):
     FMWParams_SrcSSDbName = 'SRC_SS_DBNAME'
 
     FMWParams_SrcSSPswd = 'SRC_SS_PASSWORD'
+    FMWParams_PasswordRegex = '^.*PASSWORD.*$'
 
     FMWParams_SrcInstance = 'SRC_ORA_INSTANCE'
     FMWParams_SrcServiceName = 'SRC_ORA_SERVICENAME'

@@ -77,11 +77,14 @@ class EmailFrameworkBridge(object):
         for macroKey in macroKeys:
             value = str(self.fmeObj.macroValues[macroKey])
             msgFormatted = msg.format(macroKey, value, value)
+            pswdregex = re.compile(self.const.FMWParams_PasswordRegex,
+                                   re.IGNORECASE)
 
             # value2 = self.fmeObj.resolveFMEMacros(macroKey)
             if macroKey in [self.const.FMWParams_DestPassword,
                             self.const.FMWParams_SrcOraPassword,
-                            self.const.FMWParams_SrcSSPswd]:
+                            self.const.FMWParams_SrcSSPswd] or \
+                            pswdregex.match(macroKey):
                 value = '***Redacted!***'
                 msgFormatted = msg.format(macroKey, value, value)
             self.logger.debug(msgFormatted)
@@ -314,7 +317,10 @@ class EmailFrameworkBridge(object):
         '''
         self.logger.debug("getting the destination for the script")
         regexObj = re.compile('SRC_.*')
-        omitRegexObj = re.compile(".*_PASSWORD$")
+        omitRegexObj = re.compile(self.const.FMWParams_PasswordRegex,
+                               re.IGNORECASE)
+
+        #omitRegexObj = re.compile(".*_PASSWORD.*$")
         returnParamList = self.getParams(regexObj, omitRegexObj)
         # returnParamStr = '\n'.join(returnParamList)
         return returnParamList
@@ -349,7 +355,10 @@ class EmailFrameworkBridge(object):
     def getDestPublishedParameters(self):
         self.logger.debug("getting the destination for the script")
         regexObj = re.compile('DEST_.*')
-        omitRegexObj = re.compile(".*_PASSWORD$")
+        #omitRegexObj = re.compile(".*_PASSWORD$")
+        omitRegexObj = re.compile(self.const.FMWParams_PasswordRegex,
+                                  re.IGNORECASE)
+
         returnParamList = self.getParams(regexObj, omitRegexObj)
         # returnParamStr = '\n'.join(returnParamList)
         return returnParamList
