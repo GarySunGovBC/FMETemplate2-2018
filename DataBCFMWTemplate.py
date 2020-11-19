@@ -71,6 +71,7 @@ class Start(object):
         self.logger = logging.getLogger(__name__)
 
         self.logger.info('running the framework startup, on fmw: %s', fmwName)
+        #self.logger.info("hi gary we are here")
         self.logger.debug('source fmw dir: %s', fmwDir)
         # Reading the global paramater config file
 
