@@ -6,10 +6,10 @@ ipaddress==1.0.22
 mock==2.0.0
 python-dateutil==2.7.3
 enum34==1.1.6
-git+https://github.com/bcgov/dbc-pylib@v3.0.7#egg=PMP&subdirectory=PMP
-git+https://github.com/bcgov/dbc-pylib@v3.0.7#egg=Misc&subdirectory=Misc
-git+https://github.com/bcgov/dbc-pylib@v3.0.7#egg=DB&subdirectory=DB
-git+https://github.com/bcgov/dbc-pylib@v3.0.7#egg=BCDCUtil&subdirectory=BCDCUtil
-git+https://github.com/bcgov/dbc-pylib@v3.0.7#egg=DBCSecrets&subdirectory=DBCSecrets
-git+https://github.com/bcgov/dbc-pylib@v3.0.7#egg=FMEUtil&subdirectory=FMEUtil
-git+https://github.com/bcgov/dbc-pylib@v3.0.7#egg=KirkUtil&subdirectory=KirkUtil
+git+https://github.com/bcgov/dbc-pylib@v3.0.10#egg=PMP&subdirectory=PMP
+git+https://github.com/bcgov/dbc-pylib@v3.0.10#egg=Misc&subdirectory=Misc
+git+https://github.com/bcgov/dbc-pylib@v3.0.10#egg=DB&subdirectory=DB
+git+https://github.com/bcgov/dbc-pylib@v3.0.10#egg=BCDCUtil&subdirectory=BCDCUtil
+git+https://github.com/bcgov/dbc-pylib@v3.0.10#egg=DBCSecrets&subdirectory=DBCSecrets
+git+https://github.com/bcgov/dbc-pylib@v3.0.10#egg=FMEUtil&subdirectory=FMEUtil
+git+https://github.com/bcgov/dbc-pylib@v3.0.10#egg=KirkUtil&subdirectory=KirkUtil
